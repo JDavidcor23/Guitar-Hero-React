@@ -119,3 +119,45 @@ export const MULTIPLIER_COLORS = {
  * Cantidad de notas de prueba para el juego
  */
 export const TEST_NOTES_COUNT = 12
+
+// ==========================================
+// PASO 4: CONSTANTES PARA CARGAR CANCIONES
+// ==========================================
+
+/**
+ * Cuántos segundos antes de que deba golpearse una nota, la hacemos aparecer
+ * Ejemplo: si SPAWN_AHEAD_TIME = 3 y una nota debe golpearse en el segundo 10,
+ * la nota aparece en el segundo 7 (3 segundos antes)
+ *
+ * Esto da tiempo al jugador de ver la nota bajando
+ */
+export const SPAWN_AHEAD_TIME = 3 // segundos
+
+/**
+ * Posición Y donde aparecen las notas (arriba de la pantalla)
+ * Valor negativo porque están fuera del canvas visible
+ */
+export const SPAWN_Y = -50
+
+/**
+ * Velocidad calculada para que las notas lleguen a HIT_ZONE exactamente a tiempo
+ *
+ * CÁLCULO:
+ * - Distancia a recorrer = HIT_ZONE_Y - SPAWN_Y = 500 - (-50) = 550 pixels
+ * - Tiempo para recorrer = SPAWN_AHEAD_TIME = 3 segundos
+ * - Velocidad = Distancia / Tiempo = 550 / 3 ≈ 183 pixels/segundo
+ *
+ * IMPORTANTE: Esta velocidad se calcula dinámicamente en el juego,
+ * pero la dejamos aquí como referencia
+ */
+export const CALCULATED_NOTE_SPEED = (GAME_CONFIG.hitZoneY - SPAWN_Y) / SPAWN_AHEAD_TIME
+
+/**
+ * Estados iniciales del juego
+ */
+export const INITIAL_GAME_STATE = 'menu' as const
+
+/**
+ * Tecla para pausar el juego
+ */
+export const PAUSE_KEY = ' ' // Espacio

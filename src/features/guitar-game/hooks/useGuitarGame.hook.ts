@@ -1,5 +1,13 @@
 import { useRef, useEffect, useCallback } from 'react'
-import type { Note, HitResult, LaneFlashState, GameStats, LastHitInfo } from '../types/GuitarGame.types'
+import type {
+  HitResult,
+  LaneFlashState,
+  GameStats,
+  LastHitInfo,
+  SongData,
+  GameNote,
+  GameState,
+} from '../types/GuitarGame.types'
 import {
   GAME_CONFIG,
   LANES,
@@ -8,21 +16,49 @@ import {
   NOTE_HIGHLIGHT,
   COLORS,
   LINE_WIDTHS,
-  TOTAL_LANES,
   KEY_TO_LANE,
   HIT_WINDOWS,
   FEEDBACK_DURATION,
   POINTS,
   COMBO_MULTIPLIERS,
   MULTIPLIER_COLORS,
-  TEST_NOTES_COUNT,
+  SPAWN_AHEAD_TIME,
+  SPAWN_Y,
+  PAUSE_KEY,
 } from '../constants/game.constants'
+
+// ==========================================
+// TIPOS PARA LOS PARÁMETROS DEL HOOK
+// ==========================================
+
+interface UseGuitarGameParams {
+  /** La canción a jugar (null si no hay ninguna cargada) */
+  song: SongData | null
+  /** Estado actual del juego (menu, playing, paused, finished) */
+  gameState: GameState
+  /** Callback cuando el juego termina (la canción acabó) */
+  onGameEnd: (stats: GameStats) => void
+  /** Callback cuando se presiona la tecla de pausa */
+  onPauseToggle: () => void
+  /** Callback cuando las estadísticas cambian (opcional, para UI en tiempo real) */
+  onStatsChange?: (stats: GameStats) => void
+}
 
 /**
  * Hook principal del juego Guitar Hero
- * Maneja toda la lógica del canvas: dibujar, animar, detectar input y scoring
+ *
+ * PASO 4: Ahora usa canciones cargadas desde JSON
+ * - Las notas aparecen según su tiempo (segundo) en el JSON
+ * - El juego tiene estados: menu, playing, paused, finished
+ * - gameTime cuenta los segundos desde que empezó la canción
  */
-export const useGuitarGame = () => {
+export const useGuitarGame = ({
+  song,
+  gameState,
+  onGameEnd,
+  onPauseToggle,
+  onStatsChange,
+}: UseGuitarGameParams) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // ==========================================
@@ -50,12 +86,15 @@ export const useGuitarGame = () => {
    * Calcula los puntos ganados por un hit
    * puntos base × multiplicador
    */
-  const calculatePoints = useCallback((result: HitResult, combo: number): number => {
-    if (!result || result === 'miss') return 0
-    const basePoints = POINTS[result]
-    const { multiplier } = getMultiplier(combo)
-    return basePoints * multiplier
-  }, [getMultiplier])
+  const calculatePoints = useCallback(
+    (result: HitResult, combo: number): number => {
+      if (!result || result === 'miss') return 0
+      const basePoints = POINTS[result]
+      const { multiplier } = getMultiplier(combo)
+      return basePoints * multiplier
+    },
+    [getMultiplier]
+  )
 
   // ==========================================
   // FUNCIONES DE DIBUJO
@@ -136,7 +175,13 @@ export const useGuitarGame = () => {
 
     ctx.fillStyle = COLORS.shadow
     ctx.beginPath()
-    ctx.arc(laneData.x + NOTE_SHADOW_OFFSET, y + NOTE_SHADOW_OFFSET, GAME_CONFIG.noteRadius, 0, Math.PI * 2)
+    ctx.arc(
+      laneData.x + NOTE_SHADOW_OFFSET,
+      y + NOTE_SHADOW_OFFSET,
+      GAME_CONFIG.noteRadius,
+      0,
+      Math.PI * 2
+    )
     ctx.fill()
 
     ctx.fillStyle = laneData.color
@@ -157,14 +202,17 @@ export const useGuitarGame = () => {
   }, [])
 
   /**
-   * Dibuja el HUD completo: score, combo, multiplicador, feedback
+   * Dibuja el HUD completo: score, combo, multiplicador, feedback, tiempo
    */
   const drawHUD = useCallback(
     (
       ctx: CanvasRenderingContext2D,
       stats: GameStats,
       lastHit: LastHitInfo,
-      currentTime: number
+      currentTime: number,
+      gameTime: number,
+      songDuration: number,
+      songName: string
     ) => {
       const { multiplier, color: multiplierColor } = getMultiplier(stats.combo)
 
@@ -194,6 +242,39 @@ export const useGuitarGame = () => {
         ctx.font = 'bold 24px Arial'
         ctx.fillText(`x${multiplier}`, 130, 60)
       }
+
+      // ==========================================
+      // CENTRO SUPERIOR: Nombre de canción y tiempo
+      // ==========================================
+      ctx.textAlign = 'center'
+      ctx.fillStyle = COLORS.white
+      ctx.font = '16px Arial'
+      ctx.fillText(songName, GAME_CONFIG.canvasWidth / 2, 20)
+
+      // Tiempo transcurrido / duración total
+      const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60)
+        const secs = Math.floor(seconds % 60)
+        return `${mins}:${secs.toString().padStart(2, '0')}`
+      }
+      ctx.font = '14px Arial'
+      ctx.fillStyle = '#AAAAAA'
+      ctx.fillText(`${formatTime(gameTime)} / ${formatTime(songDuration)}`, GAME_CONFIG.canvasWidth / 2, 40)
+
+      // Barra de progreso
+      const progressWidth = 200
+      const progressHeight = 6
+      const progressX = (GAME_CONFIG.canvasWidth - progressWidth) / 2
+      const progressY = 50
+      const progress = Math.min(gameTime / songDuration, 1)
+
+      // Fondo de la barra
+      ctx.fillStyle = '#333333'
+      ctx.fillRect(progressX, progressY, progressWidth, progressHeight)
+
+      // Progreso
+      ctx.fillStyle = '#00FF00'
+      ctx.fillRect(progressX, progressY, progressWidth * progress, progressHeight)
 
       // ==========================================
       // ESQUINA SUPERIOR DERECHA: Estadísticas
@@ -248,6 +329,26 @@ export const useGuitarGame = () => {
     [getMultiplier]
   )
 
+  /**
+   * Dibuja el texto de pausa en el centro
+   */
+  const drawPauseOverlay = useCallback((ctx: CanvasRenderingContext2D) => {
+    // Overlay semi-transparente
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+    ctx.fillRect(0, 0, GAME_CONFIG.canvasWidth, GAME_CONFIG.canvasHeight)
+
+    // Texto PAUSA
+    ctx.fillStyle = COLORS.white
+    ctx.font = 'bold 64px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('PAUSA', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 - 20)
+
+    // Instrucción
+    ctx.font = '24px Arial'
+    ctx.fillStyle = '#AAAAAA'
+    ctx.fillText('Presiona ESPACIO para continuar', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 + 30)
+  }, [])
+
   // ==========================================
   // useEffect principal - Lógica del juego
   // ==========================================
@@ -258,27 +359,31 @@ export const useGuitarGame = () => {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    // Si no hay canción o no estamos jugando/pausado, solo dibuja fondo
+    if (!song || (gameState !== 'playing' && gameState !== 'paused')) {
+      drawBackground(ctx, canvas)
+      return
+    }
+
     // ==========================================
     // ESTADO DEL JUEGO
     // ==========================================
 
     /**
-     * Genera notas de prueba distribuidas en los carriles
+     * Convierte las notas del JSON a GameNote (con propiedades de gameplay)
+     * Cada nota empieza sin spawnar, sin hit, sin miss
      */
-    const generateTestNotes = (): Note[] => {
-      const notes: Note[] = []
-      for (let i = 0; i < TEST_NOTES_COUNT; i++) {
-        notes.push({
-          lane: Math.floor(Math.random() * TOTAL_LANES),
-          y: -50 - i * 120, // Espaciadas cada 120 pixels
-          active: true,
-          hit: false,
-        })
-      }
-      return notes
-    }
+    const gameNotes: GameNote[] = song.notes.map((note) => ({
+      segundo: note.segundo,
+      carril: note.carril,
+      y: SPAWN_Y, // Posición inicial (fuera de pantalla)
+      spawned: false, // Aún no ha aparecido
+      hit: false, // No ha sido golpeada
+      missed: false, // No ha sido fallada
+    }))
 
-    const notes: Note[] = generateTestNotes()
+    // Índice de la siguiente nota por spawnar (para optimización)
+    let nextNoteIndex = 0
 
     // Estadísticas del juego
     const stats: GameStats = {
@@ -301,9 +406,80 @@ export const useGuitarGame = () => {
     // Estado del flash de cada carril
     const laneFlashes: LaneFlashState = {}
 
-    // Para deltaTime
-    let lastTime = 0
+    // ==========================================
+    // SISTEMA DE TIEMPO
+    // ==========================================
+
+    /**
+     * gameTime: Tiempo transcurrido de la canción (en segundos)
+     * gameStartTimestamp: Momento en que empezó/reanudó el juego
+     * pausedGameTime: gameTime al momento de pausar
+     */
+    let gameTime = 0
+    let gameStartTimestamp: number | null = null
+    const pausedGameTime = 0
+
+    // Para el game loop
     let animationId: number
+    const isPaused = gameState === 'paused'
+
+    /**
+     * Calcula la velocidad de las notas para que lleguen justo a tiempo
+     * Distancia = hitZoneY - spawnY
+     * Velocidad = Distancia / SPAWN_AHEAD_TIME
+     */
+    const noteSpeed = (GAME_CONFIG.hitZoneY - SPAWN_Y) / SPAWN_AHEAD_TIME
+
+    // ==========================================
+    // FUNCIÓN: Spawnar notas según el tiempo
+    // ==========================================
+    const spawnNotes = () => {
+      // Recorrer notas desde la última spawneada
+      while (nextNoteIndex < gameNotes.length) {
+        const note = gameNotes[nextNoteIndex]
+
+        // Si esta nota debe spawnar ahora (su tiempo - SPAWN_AHEAD_TIME <= gameTime)
+        if (note.segundo - SPAWN_AHEAD_TIME <= gameTime) {
+          // Calcular posición Y inicial basada en cuánto falta para que llegue
+          const timeUntilHit = note.segundo - gameTime
+          note.y = GAME_CONFIG.hitZoneY - timeUntilHit * noteSpeed
+          note.spawned = true
+          nextNoteIndex++
+        } else {
+          // Las notas están ordenadas, así que si esta no spawna, las siguientes tampoco
+          break
+        }
+      }
+    }
+
+    // ==========================================
+    // FUNCIÓN: Actualizar posición de notas
+    // ==========================================
+    const updateNotes = (deltaTime: number) => {
+      for (const note of gameNotes) {
+        // Solo mover notas que están activas (spawneadas, no hit, no missed)
+        if (!note.spawned || note.hit || note.missed) continue
+
+        // Mover hacia abajo
+        note.y += noteSpeed * deltaTime
+
+        // Si pasó la zona de hit sin ser golpeada
+        if (note.y > GAME_CONFIG.hitZoneY + GAME_CONFIG.noteRadius * 2) {
+          note.missed = true
+          stats.combo = 0
+          stats.misses++
+
+          lastHit = {
+            result: 'miss',
+            points: 0,
+            expireTime: performance.now() + FEEDBACK_DURATION.text,
+          }
+
+          // Notificar cambio de stats
+          onStatsChange?.(stats)
+        }
+      }
+    }
 
     // ==========================================
     // FUNCIÓN: Verificar si el jugador acertó
@@ -313,11 +489,13 @@ export const useGuitarGame = () => {
       laneFlashes[lane] = currentTime + FEEDBACK_DURATION.flash
 
       // Buscar la nota más cercana en este carril
-      let closestNote: Note | null = null
+      let closestNote: GameNote | null = null
       let closestDistance = Infinity
 
-      for (const note of notes) {
-        if (!note.active || note.hit || note.lane !== lane) continue
+      for (const note of gameNotes) {
+        // Solo considerar notas activas en este carril
+        if (!note.spawned || note.hit || note.missed || note.carril !== lane) continue
+
         const distance = Math.abs(note.y - GAME_CONFIG.hitZoneY)
         if (distance < closestDistance && distance <= HIT_WINDOWS.ok) {
           closestNote = note
@@ -343,7 +521,7 @@ export const useGuitarGame = () => {
           stats.oks++
         }
 
-        // Calcular puntos DESPUÉS de aumentar el combo (para que cuente el multiplicador)
+        // Calcular puntos DESPUÉS de aumentar el combo
         const points = calculatePoints(result, stats.combo)
         stats.score += points
 
@@ -361,8 +539,11 @@ export const useGuitarGame = () => {
           points,
           expireTime: currentTime + FEEDBACK_DURATION.text,
         }
+
+        // Notificar cambio de stats
+        onStatsChange?.(stats)
       } else {
-        // MISS - No había nota cerca
+        // MISS - No había nota cerca (presionó sin nota)
         result = 'miss'
         stats.combo = 0
         stats.misses++
@@ -372,6 +553,9 @@ export const useGuitarGame = () => {
           points: 0,
           expireTime: currentTime + FEEDBACK_DURATION.text,
         }
+
+        // Notificar cambio de stats
+        onStatsChange?.(stats)
       }
     }
 
@@ -379,6 +563,16 @@ export const useGuitarGame = () => {
     // EVENT LISTENER: Detectar teclas
     // ==========================================
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Tecla de pausa (ESPACIO)
+      if (event.key === PAUSE_KEY) {
+        event.preventDefault()
+        onPauseToggle()
+        return
+      }
+
+      // Si está pausado, ignorar otras teclas
+      if (isPaused) return
+
       const key = event.key.toLowerCase()
       const lane = KEY_TO_LANE[key]
 
@@ -391,62 +585,70 @@ export const useGuitarGame = () => {
     window.addEventListener('keydown', handleKeyDown)
 
     // ==========================================
-    // FUNCIÓN: Actualizar lógica del juego
-    // ==========================================
-    const update = (deltaTime: number) => {
-      for (const note of notes) {
-        if (!note.active || note.hit) continue
-
-        note.y += GAME_CONFIG.noteSpeed * deltaTime
-
-        // Nota pasó sin ser golpeada
-        if (note.y > GAME_CONFIG.hitZoneY + GAME_CONFIG.noteRadius * 2) {
-          note.active = false
-
-          if (!note.hit) {
-            stats.combo = 0
-            stats.misses++
-
-            lastHit = {
-              result: 'miss',
-              points: 0,
-              expireTime: performance.now() + FEEDBACK_DURATION.text,
-            }
-          }
-        }
-      }
-
-      // Reiniciar notas cuando todas estén inactivas
-      const allInactive = notes.every((n) => !n.active)
-      if (allInactive) {
-        notes.forEach((note, index) => {
-          note.y = -50 - index * 120
-          note.active = true
-          note.hit = false
-          note.lane = Math.floor(Math.random() * TOTAL_LANES)
-        })
-      }
-    }
-
-    // ==========================================
     // GAME LOOP
     // ==========================================
+    let lastFrameTime = 0
+
     const gameLoop = (currentTime: number) => {
-      const deltaTime = (currentTime - lastTime) / 1000
-      lastTime = currentTime
+      // Calcular deltaTime
+      const deltaTime = lastFrameTime === 0 ? 0 : (currentTime - lastFrameTime) / 1000
+      lastFrameTime = currentTime
 
-      update(deltaTime)
+      // Actualizar gameTime solo si no está pausado
+      if (!isPaused) {
+        if (gameStartTimestamp === null) {
+          gameStartTimestamp = currentTime
+        }
+        gameTime = pausedGameTime + (currentTime - gameStartTimestamp) / 1000
 
+        // Verificar si la canción terminó
+        if (gameTime >= song.metadata.duration) {
+          // Marcar notas restantes como missed
+          for (const note of gameNotes) {
+            if (note.spawned && !note.hit && !note.missed) {
+              note.missed = true
+              stats.misses++
+            }
+          }
+          // Notificar fin del juego
+          onGameEnd(stats)
+          return // Detener el loop
+        }
+
+        // Spawnar notas según el tiempo
+        spawnNotes()
+
+        // Actualizar posición de notas
+        updateNotes(deltaTime)
+      }
+
+      // ==========================================
+      // DIBUJAR
+      // ==========================================
       drawBackground(ctx, canvas)
 
-      for (const note of notes) {
-        if (note.active && !note.hit) {
-          drawNote(ctx, note.lane, note.y)
+      // Dibujar notas activas
+      for (const note of gameNotes) {
+        if (note.spawned && !note.hit && !note.missed) {
+          drawNote(ctx, note.carril, note.y)
         }
       }
 
       drawHitZone(ctx, laneFlashes, currentTime)
-      drawHUD(ctx, stats, lastHit, currentTime)
+      drawHUD(
+        ctx,
+        stats,
+        lastHit,
+        currentTime,
+        gameTime,
+        song.metadata.duration,
+        song.metadata.songName
+      )
+
+      // Si está pausado, dibujar overlay
+      if (isPaused) {
+        drawPauseOverlay(ctx)
+      }
 
       animationId = requestAnimationFrame(gameLoop)
     }
@@ -460,7 +662,19 @@ export const useGuitarGame = () => {
       cancelAnimationFrame(animationId)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [drawBackground, drawHitZone, drawNote, drawHUD, calculatePoints])
+  }, [
+    song,
+    gameState,
+    onGameEnd,
+    onPauseToggle,
+    onStatsChange,
+    drawBackground,
+    drawHitZone,
+    drawNote,
+    drawHUD,
+    drawPauseOverlay,
+    calculatePoints,
+  ])
 
   return {
     canvasRef,

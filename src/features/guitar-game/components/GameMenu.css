@@ -1,0 +1,167 @@
+/* ==========================================
+   GAME MENU - Pantalla de selección de canción
+   ========================================== */
+
+.game-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+/* Título */
+.game-menu__title {
+  font-size: 36px;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+.game-menu__subtitle {
+  font-size: 16px;
+  color: #888888;
+  margin: 0 0 30px 0;
+}
+
+/* Sección de carga */
+.game-menu__load-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Input file oculto */
+.game-menu__file-input {
+  display: none;
+}
+
+/* Botones */
+.game-menu__button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.game-menu__button--primary {
+  background-color: #0088ff;
+  color: white;
+}
+
+.game-menu__button--primary:hover {
+  background-color: #0066cc;
+  transform: scale(1.02);
+}
+
+.game-menu__button--secondary {
+  background-color: #333333;
+  color: #cccccc;
+  border: 1px solid #555555;
+}
+
+.game-menu__button--secondary:hover {
+  background-color: #444444;
+  color: white;
+}
+
+.game-menu__button--start {
+  background-color: #00cc00;
+  color: white;
+  font-size: 20px;
+  padding: 16px 32px;
+  margin-top: 20px;
+}
+
+.game-menu__button--start:hover {
+  background-color: #00ff00;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+/* Separador */
+.game-menu__separator {
+  color: #666666;
+  font-size: 14px;
+}
+
+/* Mensaje de error */
+.game-menu__error {
+  color: #ff4444;
+  font-size: 14px;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* Info de la canción */
+.game-menu__song-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #252525;
+  border-radius: 8px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.game-menu__song-name {
+  font-size: 24px;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.game-menu__song-artist {
+  font-size: 16px;
+  color: #aaaaaa;
+  margin: 0 0 16px 0;
+}
+
+.game-menu__song-details {
+  display: flex;
+  gap: 20px;
+  color: #888888;
+  font-size: 14px;
+}
+
+/* Instrucciones */
+.game-menu__instructions {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #333333;
+  text-align: center;
+  color: #666666;
+}
+
+.game-menu__instructions h3 {
+  color: #888888;
+  font-size: 14px;
+  margin: 0 0 10px 0;
+}
+
+.game-menu__instructions p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.game-menu__key {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: #333333;
+  border: 1px solid #555555;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  margin: 0 2px;
+  color: #ffffff;
+}

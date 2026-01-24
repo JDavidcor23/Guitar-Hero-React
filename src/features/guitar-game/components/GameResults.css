@@ -1,0 +1,186 @@
+/* ==========================================
+   GAME RESULTS - Pantalla de resultados
+   ========================================== */
+
+.game-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+/* Título */
+.game-results__title {
+  font-size: 28px;
+  color: #00ff00;
+  margin: 0 0 20px 0;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* Nombre de la canción */
+.game-results__song-name {
+  font-size: 24px;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.game-results__song-artist {
+  font-size: 16px;
+  color: #aaaaaa;
+  margin: 0 0 20px 0;
+}
+
+/* Rango */
+.game-results__rank {
+  font-size: 80px;
+  font-weight: bold;
+  text-shadow: 0 0 20px currentColor;
+  margin: 10px 0;
+}
+
+/* Puntuación */
+.game-results__score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.game-results__score-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.game-results__score-label {
+  font-size: 14px;
+  color: #888888;
+  text-transform: uppercase;
+}
+
+/* Stats principales */
+.game-results__main-stats {
+  display: flex;
+  gap: 40px;
+  margin: 20px 0;
+}
+
+.game-results__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-results__stat-value {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.game-results__stat-label {
+  font-size: 12px;
+  color: #888888;
+  text-transform: uppercase;
+}
+
+/* Desglose de hits */
+.game-results__breakdown {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #252525;
+  border-radius: 8px;
+}
+
+.game-results__hit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.game-results__hit-count {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.game-results__hit-label {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.game-results__hit--perfect .game-results__hit-count {
+  color: #00ff00;
+}
+
+.game-results__hit--perfect .game-results__hit-label {
+  color: #00cc00;
+}
+
+.game-results__hit--good .game-results__hit-count {
+  color: #88ff00;
+}
+
+.game-results__hit--good .game-results__hit-label {
+  color: #66cc00;
+}
+
+.game-results__hit--ok .game-results__hit-count {
+  color: #ffff00;
+}
+
+.game-results__hit--ok .game-results__hit-label {
+  color: #cccc00;
+}
+
+.game-results__hit--miss .game-results__hit-count {
+  color: #ff0000;
+}
+
+.game-results__hit--miss .game-results__hit-label {
+  color: #cc0000;
+}
+
+/* Botones */
+.game-results__buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.game-results__button {
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.game-results__button--play-again {
+  background-color: #00cc00;
+  color: white;
+}
+
+.game-results__button--play-again:hover {
+  background-color: #00ff00;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.game-results__button--menu {
+  background-color: #333333;
+  color: #cccccc;
+  border: 1px solid #555555;
+}
+
+.game-results__button--menu:hover {
+  background-color: #444444;
+  color: white;
+}
