@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+---
+
+# Reglas de Creación de Archivos
+
+## Al crear un nuevo componente:
+1. Crear carpeta con el nombre del componente en PascalCase
+2. Crear archivo principal `ComponentName.tsx`
+3. Si necesita lógica, crear `hooks/useComponentName.hook.ts`
+4. Si necesita estilos, crear `ComponentName.css`
+5. Exportar desde `index.ts` del nivel superior
+
+## Al crear una nueva feature:
+1. Crear carpeta con nombre descriptivo en kebab-case
+2. Crear estructura completa: components/, hooks/, services/, types/, constants/, styles/
+3. Crear componente principal `FeatureName.tsx`
+4. Crear hook principal `useFeatureName.hook.ts`
+
+## Reglas de Barrel Exports
+
+Cada carpeta debe tener un `index.ts` para exports:
+
+```tsx
+// components/index.ts
+export { ComponentName } from './ComponentName/ComponentName';
+
+// hooks/index.ts  
+export { useFeatureName } from './useFeatureName.hook';
+
+// services/index.ts
+export { featureService } from './featureName.service';
+```
+
+## Aplicación Automática
+
+Cuando crees archivos, sigue automáticamente estas reglas:
+- Coloca archivos en la ubicación correcta según el principio de proximidad
+- Usa la nomenclatura establecida
+- Crea la estructura de carpetas completa
+- Genera los barrel exports correspondientes
+- Separa lógica en hooks y mantén componentes presentacionales

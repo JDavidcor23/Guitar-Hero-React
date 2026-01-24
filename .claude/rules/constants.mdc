@@ -1,0 +1,212 @@
+---
+alwaysApply: true
+---
+
+# Reglas de Constantes - Evitar Números y Strings Mágicos
+
+## Principio Fundamental
+**NUNCA uses números mágicos ni strings mágicos directamente en el código.** Siempre crea constantes con nombres descriptivos.
+
+## Strings Mágicos
+
+### ❌ MAL - Strings mágicos
+```jsx
+// UserAssignmentProvider.jsx
+const [currentStep, setCurrentStep] = useState('table')
+
+const startAssignment = (user) => {
+  setSelectedUser(user)
+  setCurrentStep('assign-brand')  // ❌ String mágico
+}
+
+const goToNextStep = (stepData) => {
+  if (currentStep === 'assign-brand') {  // ❌ String mágico
+    setCurrentStep('assign-role')  // ❌ String mágico
+  }
+}
+
+const resetAssignment = () => {
+  setCurrentStep('table')  // ❌ String mágico
+}
+```
+
+### ✅ BIEN - Usar constantes
+```jsx
+// constants/VIEWS.js
+export const VIEWS = {
+  TABLE_USER: "table-user",
+  ASSIGN_BRAND: "assign-brand",
+  ASSIGN_ROLE: "assign-role",
+};
+
+// UserAssignmentProvider.jsx
+import { VIEWS } from './constants/VIEWS'
+
+const [currentStep, setCurrentStep] = useState(VIEWS.TABLE_USER)
+
+const startAssignment = (user) => {
+  setSelectedUser(user)
+  setCurrentStep(VIEWS.ASSIGN_BRAND)  // ✅ Constante
+}
+
+const goToNextStep = (stepData) => {
+  if (currentStep === VIEWS.ASSIGN_BRAND) {  // ✅ Constante
+    setCurrentStep(VIEWS.ASSIGN_ROLE)  // ✅ Constante
+  }
+}
+
+const resetAssignment = () => {
+  setCurrentStep(VIEWS.TABLE_USER)  // ✅ Constante
+}
+```
+
+## Números Mágicos
+
+### ❌ MAL - Números mágicos
+```jsx
+const validatePassword = (password) => {
+  if (password.length < 8) {  // ❌ Número mágico
+    return false
+  }
+  if (password.length > 50) {  // ❌ Número mágico
+    return false
+  }
+  return true
+}
+
+const calculateDiscount = (price) => {
+  return price * 0.15  // ❌ Número mágico
+}
+
+setTimeout(() => {
+  refreshData()
+}, 5000)  // ❌ Número mágico
+```
+
+### ✅ BIEN - Usar constantes
+```jsx
+// constants/validation.constants.js
+export const PASSWORD_LIMITS = {
+  MIN_LENGTH: 8,
+  MAX_LENGTH: 50,
+};
+
+// constants/pricing.constants.js
+export const DISCOUNT_RATE = 0.15;
+
+// constants/timing.constants.js
+export const REFRESH_INTERVAL_MS = 5000;
+
+// En el componente/hook
+import { PASSWORD_LIMITS } from './constants/validation.constants'
+import { DISCOUNT_RATE } from './constants/pricing.constants'
+import { REFRESH_INTERVAL_MS } from './constants/timing.constants'
+
+const validatePassword = (password) => {
+  if (password.length < PASSWORD_LIMITS.MIN_LENGTH) {  // ✅ Constante
+    return false
+  }
+  if (password.length > PASSWORD_LIMITS.MAX_LENGTH) {  // ✅ Constante
+    return false
+  }
+  return true
+}
+
+const calculateDiscount = (price) => {
+  return price * DISCOUNT_RATE  // ✅ Constante
+}
+
+setTimeout(() => {
+  refreshData()
+}, REFRESH_INTERVAL_MS)  // ✅ Constante
+```
+
+## Estructura de Archivos de Constantes
+
+### Ubicación según Alcance
+- **Constantes globales**: `src/constants/`
+- **Constantes de feature**: `src/features/feature-name/constants/`
+- **Constantes de componente**: `src/features/feature-name/components/ComponentName/constants/`
+
+### Nomenclatura
+- Archivo: `camelCase.constants.js` o `UPPER_CASE.js` (ej: `validation.constants.js`, `VIEWS.js`)
+- Constantes: `UPPER_SNAKE_CASE` para valores primitivos, `PascalCase` para objetos
+- Objetos de constantes: `PascalCase` (ej: `VIEWS`, `PASSWORD_LIMITS`)
+
+### Ejemplos de Estructura
+```
+src/features/users-and-roles/user/
+├── constants/
+│   ├── VIEWS.js                    # Vistas/pasos del flujo
+│   ├── validation.constants.js    # Validaciones
+│   └── status.constants.js        # Estados
+```
+
+## Casos de Uso Comunes
+
+### 1. Estados y Vistas
+```jsx
+// ✅ BIEN
+export const VIEWS = {
+  TABLE_USER: "table-user",
+  ASSIGN_BRAND: "assign-brand",
+  ASSIGN_ROLE: "assign-role",
+};
+
+export const STATUS = {
+  IDLE: "idle",
+  LOADING: "loading",
+  SUCCESS: "success",
+  ERROR: "error",
+};
+```
+
+### 2. Valores de Configuración
+```jsx
+// ✅ BIEN
+export const API_CONFIG = {
+  TIMEOUT_MS: 30000,
+  MAX_RETRIES: 3,
+  BASE_URL: "https://api.example.com",
+};
+```
+
+### 3. Validaciones y Límites
+```jsx
+// ✅ BIEN
+export const VALIDATION_RULES = {
+  MIN_PASSWORD_LENGTH: 8,
+  MAX_PASSWORD_LENGTH: 50,
+  MIN_USERNAME_LENGTH: 3,
+  MAX_USERNAME_LENGTH: 20,
+};
+```
+
+### 4. Mensajes y Textos
+```jsx
+// ✅ BIEN
+export const ERROR_MESSAGES = {
+  REQUIRED_FIELD: "Este campo es requerido",
+  INVALID_EMAIL: "El email no es válido",
+  PASSWORD_TOO_SHORT: "La contraseña debe tener al menos 8 caracteres",
+};
+```
+
+## Aplicación Automática
+
+Cuando encuentres números o strings mágicos:
+1. **Identifica el alcance** - ¿Es global, de feature o de componente?
+2. **Crea el archivo de constantes** en la ubicación apropiada según el principio de proximidad
+3. **Define la constante** con un nombre descriptivo y claro
+4. **Reemplaza todos los usos** del valor mágico con la constante
+5. **Importa la constante** donde se necesite
+
+## Excepciones Permitidas
+
+Solo se permiten valores literales en estos casos:
+- **Índices de arrays**: `array[0]`, `array[1]`
+- **Valores de inicialización triviales**: `useState(0)`, `useState('')`, `useState([])`, `useState({})`
+- **Operaciones matemáticas básicas**: `index + 1`, `total * 2`
+- **Comparaciones con cero o uno**: `if (count === 0)`, `if (items.length === 1)`
+
+Para cualquier otro caso, **SIEMPRE usa constantes**.

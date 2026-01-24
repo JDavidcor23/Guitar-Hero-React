@@ -1,0 +1,67 @@
+---
+alwaysApply: true
+---
+
+# Reglas de Estructura de Proyecto Frontend
+
+## Principio de Organización por Proximidad
+**Regla clave**: Organiza los archivos lo más cerca posible de donde se usan.
+
+- Si algo es específico de una feature → va dentro de la feature
+- Si algo es específico de un componente → va dentro del componente  
+- Si algo es global → va en el nivel raíz
+
+## Estructura Base del Proyecto
+
+```
+src/
+├── assets/          # Imágenes, fuentes, archivos estáticos
+├── components/      # Componentes globales reutilizables
+├── features/        # Features de la aplicación
+├── hooks/           # Custom hooks globales
+├── utils/           # Funciones utilitarias
+├── styles/          # Estilos globales
+├── constants/       # Constantes globales
+├── services/        # Servicios (API calls, etc.)
+└── types/           # Tipos TypeScript globales
+```
+
+## Estructura de Features
+
+Cada feature debe ser autocontenida con la siguiente estructura:
+
+```
+src/features/feature-name/
+├── FeatureName.tsx              # Componente principal
+├── components/                  # Componentes específicos de esta feature
+│   └── ComponentName/
+│       ├── ComponentName.tsx
+│       ├── hooks/              # Hooks específicos del componente
+│       │   └── useComponentName.hook.ts
+│       └── ComponentName.css   # Estilos específicos del componente
+├── hooks/                      # Hooks específicos de esta feature
+│   └── useFeatureName.hook.ts
+├── services/                   # Servicios específicos
+│   └── featureName.service.ts
+├── types/                      # Tipos específicos
+│   └── FeatureName.types.ts
+├── constants/                  # Constantes específicas
+│   └── featureName.constants.ts
+└── styles/                     # Estilos específicos de la feature
+    └── FeatureName.css
+```
+
+## Nomenclatura
+
+### Features
+- Usa nombres descriptivos con guiones
+- ✅ BIEN: `create-user`, `edit-profile`, `manage-inventory`, `generate-report`
+- ❌ MAL: `user`, `profile`, `inventory`, `report`
+
+### Archivos
+- Componentes: PascalCase (`UserTable.tsx`)
+- Hooks: camelCase con prefijo `use` y sufijo `.hook.ts` (`useUserTable.hook.ts`)
+- Servicios: camelCase con sufijo `.service.ts` (`userManagement.service.ts`)
+- Tipos: PascalCase con sufijo `.types.ts` (`UserTable.types.ts`)
+- Constantes: camelCase con sufijo `.constants.ts` (`validation.constants.ts`)
+- Estilos: PascalCase con `.css` (`UserTable.css`)

@@ -1,0 +1,213 @@
+---
+alwaysApply: true
+---
+
+# Reglas de Estilos - Prohibir Estilos Inline
+
+## Principio Fundamental
+**NUNCA uses estilos inline (`style={{}}`) en componentes React.** Todos los estilos deben estar en:
+- **Styled Components** (preferido cuando se usa styled-components)
+- **Archivos CSS/SCSS** con clases
+- **CSS Modules**
+
+## Estilos Inline Prohibidos
+
+### ❌ MAL - Estilos inline
+```jsx
+// RoleTableHeader.jsx
+<input
+  type="checkbox"
+  checked={isAllSelected}
+  onChange={handleCheckboxClick}
+  style={{
+    width: "20px",
+    height: "20px",
+    cursor: "pointer",
+    border: "1px solid #ccd2dd",
+  }}
+/>
+
+<div style={{ padding: "10px", margin: "5px" }}>
+  Contenido
+</div>
+```
+
+### ✅ BIEN - Styled Components
+```jsx
+// RoleTableHeader.jsx
+import styled from "styled-components";
+
+const CheckboxInput = styled.input`
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border: 1px solid #ccd2dd;
+`;
+
+const Container = styled.div`
+  padding: 10px;
+  margin: 5px;
+`;
+
+// Uso
+<CheckboxInput
+  type="checkbox"
+  checked={isAllSelected}
+  onChange={handleCheckboxClick}
+/>
+
+<Container>
+  Contenido
+</Container>
+```
+
+### ✅ BIEN - CSS Modules
+```jsx
+// Component.jsx
+import styles from './Component.module.css';
+
+<input
+  type="checkbox"
+  className={styles.checkboxInput}
+/>
+
+// Component.module.css
+.checkboxInput {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border: 1px solid #ccd2dd;
+}
+```
+
+### ✅ BIEN - CSS con clases
+```jsx
+// Component.jsx
+import './Component.css';
+
+<input
+  type="checkbox"
+  className="checkbox-input"
+/>
+
+// Component.css
+.checkbox-input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  border: 1px solid #ccd2dd;
+}
+```
+
+## Estructura de Estilos según Tecnología
+
+### Styled Components (Preferido)
+- Crear componentes styled en el mismo archivo o en archivo separado
+- Usar template literals para los estilos
+- Soporta props dinámicas con funciones
+
+```jsx
+const Button = styled.button`
+  padding: 10px 20px;
+  background-color: ${props => props.$primary ? '#1976d2' : '#f5f5f5'};
+  color: ${props => props.$primary ? 'white' : '#333'};
+`;
+```
+
+### CSS Modules
+- Crear archivo `.module.css` junto al componente
+- Importar como objeto `styles`
+- Usar `styles.className` en el className
+
+```jsx
+// Component.jsx
+import styles from './Component.module.css';
+
+<div className={styles.container}>
+```
+
+### CSS Global
+- Crear archivo `.css` en la carpeta del componente o feature
+- Importar en el componente
+- Usar clases normales
+
+```jsx
+// Component.jsx
+import './Component.css';
+
+<div className="container">
+```
+
+## Ubicación de Archivos de Estilos
+
+### Según Principio de Proximidad
+- **Estilos de componente**: `src/features/feature-name/components/ComponentName/ComponentName.css`
+- **Estilos de feature**: `src/features/feature-name/FeatureName.css`
+- **Estilos globales**: `src/styles/global.css`
+
+### Styled Components
+- **En el mismo archivo** del componente (preferido para componentes pequeños)
+- **En archivo separado**: `ComponentName.styled.js` (para componentes grandes)
+
+## Excepciones Permitidas
+
+Solo se permiten estilos inline en estos casos específicos:
+
+### 1. Estilos Dinámicos Calculados
+```jsx
+// ✅ BIEN - Valor calculado dinámicamente
+<div style={{
+  transform: `translateX(${scrollPosition}px)`,
+  opacity: isVisible ? 1 : 0
+}}>
+```
+
+**Alternativa preferida con Styled Components:**
+```jsx
+const DynamicDiv = styled.div`
+  transform: translateX(${props => props.$scrollPosition}px);
+  opacity: ${props => props.$isVisible ? 1 : 0};
+`;
+```
+
+### 2. Estilos de Terceros que Requieren Inline
+```jsx
+// ✅ BIEN - Librerías externas que requieren estilos inline
+<SomeLibraryComponent
+  style={{ position: 'absolute' }} // Requerido por la librería
+/>
+```
+
+### 3. Estilos Temporales para Debugging
+```jsx
+// ✅ BIEN - Solo durante desarrollo, debe eliminarse antes de commit
+<div style={{ border: '1px solid red' }}> {/* DEBUG */}
+```
+
+## Aplicación Automática
+
+Cuando encuentres estilos inline:
+1. **Identifica el tipo de estilo** - ¿Es estático o dinámico?
+2. **Elige la solución apropiada**:
+   - **Estático**: Styled Component o CSS
+   - **Dinámico**: Styled Component con props o CSS variables
+3. **Crea el componente styled o clase CSS**
+4. **Reemplaza el estilo inline** con el nuevo componente/clase
+5. **Verifica que el estilo se mantiene igual**
+
+## Reglas Adicionales
+
+### No mezclar tecnologías innecesariamente
+- Si el proyecto usa **styled-components**, úsalo consistentemente
+- Si el proyecto usa **CSS Modules**, úsalo consistentemente
+- Evita mezclar múltiples sistemas de estilos en el mismo componente
+
+### Performance
+- Styled Components genera componentes optimizados
+- CSS Modules tiene mejor rendimiento para estilos estáticos
+- Los estilos inline tienen peor rendimiento y no se pueden cachear
+
+### Mantenibilidad
+- Los estilos en archivos separados son más fáciles de mantener
+- Los estilos inline dificultan la reutilización
+- Los componentes styled son más fáciles de testear

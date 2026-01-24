@@ -1,0 +1,66 @@
+---
+alwaysApply: true
+---
+
+# Reglas de Patrones React
+
+## Separación de Responsabilidades
+- **Componentes**: Solo renderizado y UI (presentacionales)
+- **Hooks**: Solo lógica de negocio y estado
+- **Servicios**: Solo llamadas a APIs y lógica externa
+
+## Estructura de Componentes
+```tsx
+// ✅ Componente presentacional
+export const ComponentName = ({ prop1, prop2 }) => {
+  // Solo usar custom hooks - NO lógica interna
+  const { state, handlers } = useComponentName(prop1, prop2);
+  
+  // Solo renderizado - NO lógica
+  return <div>{/* JSX */}</div>;
+};
+```
+
+## Estructura de Hooks
+```tsx
+// ✅ Hook con toda la lógica
+export const useComponentName = (initialValue) => {
+  const [state, setState] = useState(initialValue);
+  
+  const handleAction = () => {
+    // Toda la lógica aquí
+  };
+  
+  return { state, handleAction };
+};
+```
+
+## Reglas de Imports
+
+### Orden de Imports
+1. React y librerías externas
+2. Componentes internos
+3. Hooks internos
+4. Servicios
+5. Tipos
+6. Constantes
+7. Estilos
+
+```tsx
+// ✅ Orden correcto
+import React from 'react';
+import { Button } from 'external-library';
+
+import { ComponentName } from './components';
+import { useFeatureName } from './hooks';
+import { featureService } from './services';
+import { FeatureTypes } from './types';
+import { FEATURE_CONSTANTS } from './constants';
+import './styles/Feature.css';
+```
+
+### Paths de Imports
+- Hooks de componentes: `./hooks/useHookName.hook`
+- Hooks de feature: `../hooks/useHookName.hook`
+- Componentes de feature: `./components/ComponentName`
+- Servicios de feature: `./services/serviceName.service`

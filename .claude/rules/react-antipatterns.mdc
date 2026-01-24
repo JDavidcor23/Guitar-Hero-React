@@ -1,0 +1,131 @@
+---
+alwaysApply: true
+---
+
+# Antipatrones y Errores Frecuentes en React
+
+## 1. Props Drilling Excesivo
+
+### ❌ MAL - Props Drilling
+```jsx
+<GrandParent user={user}>
+  <Parent user={user}>
+    <Child user={user}>
+      <GrandChild user={user} />
+    </Child>
+  </Parent>
+</GrandParent>
+```
+
+### ✅ BIEN - Context Provider Local
+```jsx
+const UserContext = createContext();
+
+<UserContext.Provider value={user}>
+  <GrandParent>
+    <Parent>
+      <Child>
+        <GrandChild />
+      </Child>
+    </Parent>
+  </GrandParent>
+</UserContext.Provider>
+
+// En GrandChild:
+const user = useContext(UserContext);
+```
+
+### 📏 Regla de Niveles:
+- **1-2 niveles de props** = ✅ OK
+- **3+ niveles de props** = ❌ Usar Context
+
+## 2. Evitar GrandParentProvider
+
+### ❌ MAL - Provider muy arriba en el árbol
+```jsx
+// App.jsx - Demasiado alto
+<UserProvider>
+  <Router>
+    <Routes>
+      <Route path="/users" element={<UsersFeature />} />
+      <Route path="/products" element={<ProductsFeature />} />
+    </Routes>
+  </Router>
+</UserProvider>
+```
+
+### ✅ BIEN - Provider cerca de donde se usa
+```jsx
+// UsersFeature.jsx - Cerca del uso
+<UserProvider>
+  <UserTable />
+  <UserForm />
+</UserProvider>
+```
+
+## 3. Principio de Proximidad para Context
+
+### Crear Providers:
+- **Lo más cerca posible** de donde se usan
+- **Dentro de la feature** que los necesita
+- **No en el nivel de aplicación** a menos que sea realmente global
+
+### Estructura Recomendada:
+```
+src/features/users/
+├── UserProvider.jsx          # Provider específico de la feature
+├── hooks/
+│   └── useUser.hook.js      # Hook para consumir el context
+├── components/
+│   ├── UserTable.jsx        # Consume el context
+│   └── UserForm.jsx         # Consume el context
+└── Users.jsx                # Envuelve con el Provider
+```
+
+## 4. Reglas de Context
+
+### Cuándo usar Context:
+- **Props pasan por 3+ componentes**
+- **Múltiples componentes necesitan los mismos datos**
+- **Estado compartido en una feature específica**
+
+### Cuándo NO usar Context:
+- **Solo 1-2 niveles de props**
+- **Datos que cambian muy frecuentemente**
+- **Estado que solo usa un componente**
+
+## 5. Patrón de Provider + Hook
+
+### ✅ Estructura Recomendada:
+```jsx
+// UserProvider.jsx
+const UserContext = createContext();
+
+export const UserProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+// useUser.hook.js
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within UserProvider');
+  }
+  return context;
+};
+```
+
+## 6. Aplicación Automática
+
+Cuando detectes props drilling:
+1. **Identifica el alcance** - ¿Qué componentes necesitan los datos?
+2. **Crea el Provider** en el componente padre más cercano
+3. **Crea el hook personalizado** para consumir el context
+4. **Reemplaza las props** con el hook en los componentes hijos
+5. **Mantén el Provider local** a la feature que lo usa
