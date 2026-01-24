@@ -41,3 +41,25 @@ export interface GameConfig {
   laneWidth: number
   noteSpeed: number
 }
+
+/**
+ * Estado del score y estadísticas del juego
+ */
+export interface GameStats {
+  score: number // Puntuación total
+  combo: number // Combo actual
+  maxCombo: number // Mejor combo de la partida
+  perfects: number // Contador de PERFECT
+  goods: number // Contador de GOOD
+  oks: number // Contador de OK
+  misses: number // Contador de MISS
+}
+
+/**
+ * Información del último hit para mostrar en el HUD
+ */
+export interface LastHitInfo {
+  result: HitResult
+  points: number // Puntos ganados (con multiplicador)
+  expireTime: number
+}

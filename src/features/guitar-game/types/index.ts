@@ -5,4 +5,6 @@ export type {
   HitResult,
   FeedbackState,
   LaneFlashState,
+  GameStats,
+  LastHitInfo,
 } from './GuitarGame.types'
