@@ -71,11 +71,12 @@ export interface LastHitInfo {
 /**
  * Estados posibles del juego
  * - menu: Pantalla de selección de canción
+ * - countdown: Cuenta regresiva antes de empezar (3, 2, 1, GO!)
  * - playing: Jugando la canción
  * - paused: Juego pausado (ESPACIO)
  * - finished: Canción terminada, mostrando resultados
  */
-export type GameState = 'menu' | 'playing' | 'paused' | 'finished'
+export type GameState = 'menu' | 'countdown' | 'playing' | 'paused' | 'finished'
 
 /**
  * Una nota tal como viene del JSON del Chart Generator

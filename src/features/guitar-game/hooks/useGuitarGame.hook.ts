@@ -34,7 +34,7 @@ import {
 interface UseGuitarGameParams {
   /** La canción a jugar (null si no hay ninguna cargada) */
   song: SongData | null
-  /** Estado actual del juego (menu, playing, paused, finished) */
+  /** Estado actual del juego (menu, countdown, playing, paused, finished) */
   gameState: GameState
   /** Callback cuando el juego termina (la canción acabó) */
   onGameEnd: (stats: GameStats) => void
@@ -42,6 +42,17 @@ interface UseGuitarGameParams {
   onPauseToggle: () => void
   /** Callback cuando las estadísticas cambian (opcional, para UI en tiempo real) */
   onStatsChange?: (stats: GameStats) => void
+  /**
+   * PASO 5: Función para obtener el tiempo del audio
+   * Si está definida, usa el tiempo del audioContext (más preciso)
+   * Si no, usa performance.now() internamente
+   */
+  getAudioTime?: () => number
+  /**
+   * PASO 5: Offset de calibración en milisegundos
+   * Permite ajustar la sincronización si hay delay
+   */
+  calibrationOffset?: number
 }
 
 /**
@@ -58,6 +69,8 @@ export const useGuitarGame = ({
   onGameEnd,
   onPauseToggle,
   onStatsChange,
+  getAudioTime,
+  calibrationOffset = 0,
 }: UseGuitarGameParams) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -596,10 +609,26 @@ export const useGuitarGame = ({
 
       // Actualizar gameTime solo si no está pausado
       if (!isPaused) {
-        if (gameStartTimestamp === null) {
-          gameStartTimestamp = currentTime
+        // PASO 5: Usar tiempo del audio si está disponible
+        if (getAudioTime) {
+          const audioTime = getAudioTime()
+          if (audioTime >= 0) {
+            // Usar tiempo del audio (más preciso) + offset de calibración
+            gameTime = audioTime + calibrationOffset / 1000
+          } else {
+            // Fallback a tiempo interno
+            if (gameStartTimestamp === null) {
+              gameStartTimestamp = currentTime
+            }
+            gameTime = pausedGameTime + (currentTime - gameStartTimestamp) / 1000
+          }
+        } else {
+          // Sin audio: usar tiempo interno
+          if (gameStartTimestamp === null) {
+            gameStartTimestamp = currentTime
+          }
+          gameTime = pausedGameTime + (currentTime - gameStartTimestamp) / 1000
         }
-        gameTime = pausedGameTime + (currentTime - gameStartTimestamp) / 1000
 
         // Verificar si la canción terminó
         if (gameTime >= song.metadata.duration) {
@@ -668,6 +697,8 @@ export const useGuitarGame = ({
     onGameEnd,
     onPauseToggle,
     onStatsChange,
+    getAudioTime,
+    calibrationOffset,
     drawBackground,
     drawHitZone,
     drawNote,
