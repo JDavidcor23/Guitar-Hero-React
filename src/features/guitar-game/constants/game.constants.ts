@@ -161,3 +161,37 @@ export const INITIAL_GAME_STATE = 'menu' as const
  * Tecla para pausar el juego
  */
 export const PAUSE_KEY = ' ' // Espacio
+
+// ==========================================
+// CONFIGURACIÓN DE NOTAS SOSTENIDAS (SUSTAINS)
+// ==========================================
+
+/**
+ * Configuración visual de las notas sostenidas
+ */
+export const SUSTAIN_CONFIG = {
+  /** Ancho de la cola del sustain en pixels */
+  tailWidth: 30,
+  /** Transparencia de la cola (hex) */
+  tailAlpha: '99',
+  /** Transparencia cuando el jugador está sosteniendo */
+  activeAlpha: 'CC',
+  /** Transparencia cuando se completó el sustain */
+  completeAlpha: 'FF',
+  /** Transparencia cuando se soltó antes de tiempo */
+  releasedAlpha: '40',
+  /** Longitud mínima visible en pixels */
+  minVisualLength: 50,
+}
+
+/**
+ * Configuración de puntuación para notas sostenidas
+ */
+export const SUSTAIN_SCORING = {
+  /** Puntos por segundo sostenido */
+  pointsPerSecond: 50,
+  /** Bonus por completar el sustain al 100% */
+  completionBonus: 25,
+  /** Porcentaje mínimo para no romper el combo (0.5 = 50%) */
+  minHoldPercent: 0.5,
+}

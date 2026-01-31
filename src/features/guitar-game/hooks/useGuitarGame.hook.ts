@@ -25,6 +25,8 @@ import {
   SPAWN_AHEAD_TIME,
   SPAWN_Y,
   PAUSE_KEY,
+  SUSTAIN_CONFIG,
+  SUSTAIN_SCORING,
 } from '../constants/game.constants'
 
 // ==========================================
@@ -215,6 +217,60 @@ export const useGuitarGame = ({
   }, [])
 
   /**
+   * Dibuja la cola de una nota sostenida (sustain)
+   * La cola se extiende hacia arriba desde la cabeza de la nota
+   */
+  const drawSustainTail = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      lane: number,
+      headY: number,
+      tailEndY: number,
+      isActive: boolean,
+      isComplete: boolean,
+      isReleased: boolean
+    ) => {
+      const laneData = LANES[lane]
+      const width = SUSTAIN_CONFIG.tailWidth
+
+      // No dibujar si la cola es muy corta o está debajo de la cabeza
+      if (tailEndY >= headY - 5) return
+
+      // Determinar transparencia según el estado
+      let alpha = SUSTAIN_CONFIG.tailAlpha
+      if (isReleased) alpha = SUSTAIN_CONFIG.releasedAlpha
+      else if (isComplete) alpha = SUSTAIN_CONFIG.completeAlpha
+      else if (isActive) alpha = SUSTAIN_CONFIG.activeAlpha
+
+      // Dibujar el cuerpo de la cola (rectángulo)
+      ctx.fillStyle = laneData.color + alpha
+      ctx.fillRect(laneData.x - width / 2, tailEndY, width, headY - tailEndY)
+
+      // Dibujar tapa redondeada en la parte superior
+      ctx.beginPath()
+      ctx.arc(laneData.x, tailEndY, width / 2, Math.PI, 0)
+      ctx.fill()
+
+      // Agregar brillo central para dar profundidad
+      const gradient = ctx.createLinearGradient(
+        laneData.x - width / 2,
+        tailEndY,
+        laneData.x + width / 2,
+        tailEndY
+      )
+      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.2)')
+      gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.15)')
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)')
+      gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.15)')
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)')
+
+      ctx.fillStyle = gradient
+      ctx.fillRect(laneData.x - width / 2, tailEndY, width, headY - tailEndY)
+    },
+    []
+  )
+
+  /**
    * Dibuja el HUD completo: score, combo, multiplicador, feedback, tiempo
    */
   const drawHUD = useCallback(
@@ -393,6 +449,7 @@ export const useGuitarGame = ({
       spawned: false, // Aún no ha aparecido
       hit: false, // No ha sido golpeada
       missed: false, // No ha sido fallada
+      duracion: note.duracion || 0, // Duración del sustain (0 = nota normal)
     }))
 
     // Índice de la siguiente nota por spawnar (para optimización)
@@ -407,6 +464,9 @@ export const useGuitarGame = ({
       goods: 0,
       oks: 0,
       misses: 0,
+      sustainsHit: 0,
+      sustainsComplete: 0,
+      sustainsDropped: 0,
     }
 
     // Info del último hit (para mostrar en HUD)
@@ -418,6 +478,16 @@ export const useGuitarGame = ({
 
     // Estado del flash de cada carril
     const laneFlashes: LaneFlashState = {}
+
+    // ==========================================
+    // TRACKING DE SUSTAINS ACTIVOS
+    // ==========================================
+
+    /**
+     * Mapa de sustains activos: lane → índice de la nota
+     * Cuando el jugador presiona una nota sostenida, se guarda aquí
+     */
+    const activeSustains = new Map<number, number>()
 
     // ==========================================
     // SISTEMA DE TIEMPO
@@ -546,6 +616,13 @@ export const useGuitarGame = ({
         // Marcar nota como golpeada
         closestNote.hit = true
 
+        // Si es una nota sostenida, iniciar tracking del sustain
+        if (closestNote.duracion > 0) {
+          closestNote.sustainActive = true
+          activeSustains.set(lane, gameNotes.indexOf(closestNote))
+          stats.sustainsHit++
+        }
+
         // Guardar info del hit
         lastHit = {
           result,
@@ -595,7 +672,87 @@ export const useGuitarGame = ({
       checkHit(lane, performance.now())
     }
 
+    /**
+     * Maneja cuando el jugador suelta una tecla
+     * Importante para detectar si soltó un sustain antes de tiempo
+     */
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      const lane = KEY_TO_LANE[key]
+
+      if (lane === undefined) return
+
+      // Verificar si hay un sustain activo en este carril
+      const noteIndex = activeSustains.get(lane)
+      if (noteIndex !== undefined) {
+        const note = gameNotes[noteIndex]
+        const expectedEnd = note.segundo + note.duracion
+
+        if (gameTime >= expectedEnd) {
+          // El jugador completó el sustain
+          note.sustainComplete = true
+          note.sustainActive = false
+          stats.sustainsComplete++
+
+          // Bonus por completar
+          const { multiplier } = getMultiplier(stats.combo)
+          stats.score += SUSTAIN_SCORING.completionBonus * multiplier
+        } else {
+          // El jugador soltó antes de tiempo
+          note.sustainReleased = true
+          note.sustainActive = false
+
+          // Calcular porcentaje sostenido
+          const heldPercent = (gameTime - note.segundo) / note.duracion
+
+          // Si sostuvo menos del mínimo, romper combo
+          if (heldPercent < SUSTAIN_SCORING.minHoldPercent) {
+            stats.combo = 0
+            stats.sustainsDropped++
+          }
+        }
+
+        // Remover del tracking
+        activeSustains.delete(lane)
+
+        // Notificar cambio de stats
+        onStatsChange?.(stats)
+      }
+    }
+
     window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+
+    // ==========================================
+    // FUNCIÓN: Actualizar sustains activos
+    // ==========================================
+    const updateSustains = (deltaTime: number) => {
+      for (const [lane, noteIndex] of activeSustains.entries()) {
+        const note = gameNotes[noteIndex]
+        const expectedEnd = note.segundo + note.duracion
+
+        // Dar puntos por tiempo sostenido (con multiplicador de combo)
+        const { multiplier } = getMultiplier(stats.combo)
+        const pointsThisFrame = Math.floor(SUSTAIN_SCORING.pointsPerSecond * deltaTime * multiplier)
+        stats.score += pointsThisFrame
+
+        // Auto-completar si llegó al final del sustain
+        if (gameTime >= expectedEnd) {
+          note.sustainComplete = true
+          note.sustainActive = false
+          stats.sustainsComplete++
+
+          // Bonus por completar
+          stats.score += SUSTAIN_SCORING.completionBonus * multiplier
+
+          // Remover del tracking
+          activeSustains.delete(lane)
+
+          // Notificar cambio de stats
+          onStatsChange?.(stats)
+        }
+      }
+    }
 
     // ==========================================
     // GAME LOOP
@@ -649,6 +806,9 @@ export const useGuitarGame = ({
 
         // Actualizar posición de notas
         updateNotes(deltaTime)
+
+        // Actualizar sustains activos (dar puntos, verificar completado)
+        updateSustains(deltaTime)
       }
 
       // ==========================================
@@ -656,10 +816,53 @@ export const useGuitarGame = ({
       // ==========================================
       drawBackground(ctx, canvas)
 
-      // Dibujar notas activas
+      // 1. Dibujar colas de sustain primero (debajo de las cabezas)
       for (const note of gameNotes) {
+        if (note.spawned && note.duracion > 0 && !note.missed) {
+          // Calcular la longitud de la cola en pixels
+          const tailLength = Math.max(SUSTAIN_CONFIG.minVisualLength, note.duracion * noteSpeed)
+
+          // La cola termina arriba de la cabeza
+          // Si el sustain está activo, la cola se "consume" desde abajo
+          let headY = note.y
+          let tailEndY = note.y - tailLength
+
+          // Si está activo, la cabeza se queda fija en la hit zone
+          if (note.sustainActive) {
+            headY = GAME_CONFIG.hitZoneY
+            // La cola se va consumiendo basado en cuánto tiempo ha pasado
+            const elapsedInSustain = gameTime - note.segundo
+            const consumedLength = elapsedInSustain * noteSpeed
+            tailEndY = GAME_CONFIG.hitZoneY - tailLength + consumedLength
+          }
+
+          // Clampear para que no salga de la pantalla
+          tailEndY = Math.max(SPAWN_Y, tailEndY)
+
+          // No dibujar si ya se soltó o completó y la cola ya pasó
+          if (!note.sustainReleased || tailEndY < GAME_CONFIG.canvasHeight) {
+            drawSustainTail(
+              ctx,
+              note.carril,
+              headY,
+              tailEndY,
+              note.sustainActive || false,
+              note.sustainComplete || false,
+              note.sustainReleased || false
+            )
+          }
+        }
+      }
+
+      // 2. Dibujar cabezas de notas
+      for (const note of gameNotes) {
+        // Notas normales que aún no han sido golpeadas
         if (note.spawned && !note.hit && !note.missed) {
           drawNote(ctx, note.carril, note.y)
+        }
+        // Cabeza de sustain activo (fija en la hit zone)
+        if (note.sustainActive) {
+          drawNote(ctx, note.carril, GAME_CONFIG.hitZoneY)
         }
       }
 
@@ -690,6 +893,7 @@ export const useGuitarGame = ({
     return () => {
       cancelAnimationFrame(animationId)
       window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
     }
   }, [
     song,
@@ -702,9 +906,11 @@ export const useGuitarGame = ({
     drawBackground,
     drawHitZone,
     drawNote,
+    drawSustainTail,
     drawHUD,
     drawPauseOverlay,
     calculatePoints,
+    getMultiplier,
   ])
 
   return {

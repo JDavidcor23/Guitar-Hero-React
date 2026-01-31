@@ -1,4 +1,5 @@
 import type { SongData } from '../types/GuitarGame.types'
+import { AudioFormatHelp } from './AudioFormatHelp'
 import './GameMenu.css'
 
 // ==========================================
@@ -18,12 +19,14 @@ interface GameMenuProps {
   isAudioLoading: boolean
   /** Error del audio (null si no hay error) */
   audioError: string | null
-  /** Callback cuando el usuario selecciona un archivo JSON */
-  onJsonFileSelect: (file: File) => void
+  /** Dificultades disponibles en el archivo .chart */
+  availableDifficulties: string[]
+  /** Callback cuando el usuario selecciona un archivo .chart */
+  onChartFileSelect: (file: File) => void
   /** Callback cuando el usuario selecciona un archivo de audio */
   onAudioFileSelect: (file: File) => void
-  /** Callback para cargar la canción de prueba (sin audio) */
-  onLoadTestSong: () => void
+  /** Callback cuando el usuario cambia la dificultad */
+  onDifficultyChange: (difficulty: string) => void
   /** Callback cuando el usuario quiere empezar a jugar */
   onStartGame: () => void
 }
@@ -31,9 +34,7 @@ interface GameMenuProps {
 /**
  * Componente del menú principal
  *
- * PASO 5: Ahora carga 2 archivos:
- * - Archivo JSON con las notas
- * - Archivo de audio (MP3, WAV, OGG)
+ * Carga archivos .chart de Clone Hero con selector de dificultad
  */
 export const GameMenu = ({
   song,
@@ -42,18 +43,19 @@ export const GameMenu = ({
   isAudioLoaded,
   isAudioLoading,
   audioError,
-  onJsonFileSelect,
+  availableDifficulties,
+  onChartFileSelect,
   onAudioFileSelect,
-  onLoadTestSong,
+  onDifficultyChange,
   onStartGame,
 }: GameMenuProps) => {
   /**
-   * Maneja el cambio del input file JSON
+   * Maneja el cambio del input file .chart
    */
-  const handleJsonFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChartFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      onJsonFileSelect(file)
+      onChartFileSelect(file)
     }
   }
 
@@ -77,8 +79,6 @@ export const GameMenu = ({
   }
 
   // Determinar si se puede empezar a jugar
-  // Se puede jugar si hay canción cargada
-  // El audio es opcional (para canción de prueba)
   const canStartGame = song !== null
 
   return (
@@ -90,32 +90,50 @@ export const GameMenu = ({
       {/* Sección de carga de archivos */}
       <div className="game-menu__load-section">
         {/* ======================================
-            CARGAR ARCHIVO JSON
+            CARGAR ARCHIVO .CHART
             ====================================== */}
         <div className="game-menu__file-group">
-          <span className="game-menu__file-label">1. Archivo de notas (JSON):</span>
+          <span className="game-menu__file-label">1. Archivo de chart (.chart):</span>
 
           {/* Input file oculto */}
           <input
             type="file"
-            id="json-file"
-            accept=".json"
-            onChange={handleJsonFileChange}
+            id="chart-file"
+            accept=".chart,.txt"
+            onChange={handleChartFileChange}
             className="game-menu__file-input"
           />
 
-          {/* Botón para cargar JSON */}
-          <label htmlFor="json-file" className="game-menu__button game-menu__button--file">
-            {isLoading ? 'Cargando...' : song ? 'Cambiar JSON' : 'Seleccionar JSON'}
+          {/* Botón para cargar .chart */}
+          <label htmlFor="chart-file" className="game-menu__button game-menu__button--file">
+            {isLoading ? 'Cargando...' : song ? 'Cambiar Chart' : 'Seleccionar Chart'}
           </label>
 
-          {/* Estado del JSON */}
+          {/* Estado del .chart */}
           {song && (
-            <span className="game-menu__status game-menu__status--success">
-              Cargado
-            </span>
+            <span className="game-menu__status game-menu__status--success">Cargado</span>
           )}
         </div>
+
+        {/* ======================================
+            SELECTOR DE DIFICULTAD
+            ====================================== */}
+        {song && availableDifficulties.length > 1 && (
+          <div className="game-menu__difficulty-selector">
+            <span className="game-menu__file-label">Dificultad:</span>
+            <select
+              onChange={(e) => onDifficultyChange(e.target.value)}
+              defaultValue={song.metadata.difficulty?.toLowerCase()}
+              className="game-menu__select"
+            >
+              {availableDifficulties.map((diff) => (
+                <option key={diff} value={diff}>
+                  {diff.charAt(0).toUpperCase() + diff.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* ======================================
             CARGAR ARCHIVO DE AUDIO
@@ -127,21 +145,23 @@ export const GameMenu = ({
           <input
             type="file"
             id="audio-file"
-            accept=".mp3,.wav,.ogg,.m4a"
+            accept=".mp3,.wav,.ogg,.m4a,.opus,.flac"
             onChange={handleAudioFileChange}
             className="game-menu__file-input"
           />
 
           {/* Botón para cargar audio */}
           <label htmlFor="audio-file" className="game-menu__button game-menu__button--file">
-            {isAudioLoading ? 'Cargando...' : isAudioLoaded ? 'Cambiar Audio' : 'Seleccionar Audio'}
+            {isAudioLoading
+              ? 'Cargando...'
+              : isAudioLoaded
+                ? 'Cambiar Audio'
+                : 'Seleccionar Audio'}
           </label>
 
           {/* Estado del audio */}
           {isAudioLoaded && (
-            <span className="game-menu__status game-menu__status--success">
-              Cargado
-            </span>
+            <span className="game-menu__status game-menu__status--success">Cargado</span>
           )}
           {!isAudioLoaded && !isAudioLoading && (
             <span className="game-menu__status game-menu__status--optional">
@@ -149,25 +169,16 @@ export const GameMenu = ({
             </span>
           )}
         </div>
-
-        {/* Separador */}
-        <div className="game-menu__divider">
-          <span>o usa la cancion de prueba</span>
-        </div>
-
-        {/* Botón para canción de prueba */}
-        <button
-          type="button"
-          onClick={onLoadTestSong}
-          className="game-menu__button game-menu__button--secondary"
-        >
-          Usar cancion de prueba (sin audio)
-        </button>
       </div>
 
       {/* Mensajes de error */}
       {error && <p className="game-menu__error">{error}</p>}
-      {audioError && <p className="game-menu__error">{audioError}</p>}
+      {audioError && (
+        <>
+          <p className="game-menu__error">{audioError}</p>
+          <AudioFormatHelp />
+        </>
+      )}
 
       {/* Info de la canción cargada */}
       {song && (
@@ -176,15 +187,61 @@ export const GameMenu = ({
           {song.metadata.artist && (
             <p className="game-menu__song-artist">{song.metadata.artist}</p>
           )}
+          {song.metadata.charter && (
+            <p className="game-menu__song-charter">Charter: {song.metadata.charter}</p>
+          )}
+
+          {/* Indicadores de dificultad del chart */}
+          <div className="game-menu__difficulty-indicators">
+            {/* Dificultad general del chart (0-6) */}
+            {song.metadata.chartDifficulty !== undefined && (
+              <div className="game-menu__indicator">
+                <span className="game-menu__indicator-label">Dificultad Chart:</span>
+                <span
+                  className={`game-menu__indicator-value game-menu__chart-diff-${song.metadata.chartDifficulty}`}
+                >
+                  {
+                    [
+                      '⭐ Muy Fácil',
+                      '⭐ Fácil',
+                      '⭐⭐ Fácil+',
+                      '⭐⭐ Medio',
+                      '⭐⭐⭐ Medio+',
+                      '⭐⭐⭐ Difícil',
+                      '⭐⭐⭐⭐ Muy Difícil',
+                    ][song.metadata.chartDifficulty] || 'N/A'
+                  }
+                </span>
+              </div>
+            )}
+
+            {/* NPS Promedio */}
+            {song.metadata.averageNPS !== undefined && (
+              <div className="game-menu__indicator">
+                <span className="game-menu__indicator-label">NPS Promedio:</span>
+                <span className="game-menu__indicator-value">{song.metadata.averageNPS}</span>
+              </div>
+            )}
+
+            {/* NPS Máximo */}
+            {song.metadata.maxNPS !== undefined && (
+              <div className="game-menu__indicator">
+                <span className="game-menu__indicator-label">NPS Máximo:</span>
+                <span className="game-menu__indicator-value">{song.metadata.maxNPS}</span>
+              </div>
+            )}
+          </div>
 
           {/* Estado de carga */}
           <div className="game-menu__load-status">
             <div className="game-menu__load-item">
               <span className="game-menu__load-icon game-menu__load-icon--success">&#10003;</span>
-              <span>JSON cargado</span>
+              <span>Chart cargado</span>
             </div>
             <div className="game-menu__load-item">
-              <span className={`game-menu__load-icon ${isAudioLoaded ? 'game-menu__load-icon--success' : 'game-menu__load-icon--pending'}`}>
+              <span
+                className={`game-menu__load-icon ${isAudioLoaded ? 'game-menu__load-icon--success' : 'game-menu__load-icon--pending'}`}
+              >
                 {isAudioLoaded ? '\u2713' : '\u2014'}
               </span>
               <span>{isAudioLoaded ? 'Audio cargado' : 'Sin audio'}</span>

@@ -54,8 +54,8 @@ export const GuitarGame = () => {
   // HOOKS
   // ==========================================
 
-  // Hook para cargar canciones (JSON)
-  const { song, error, isLoading, loadFromFile, loadTestSong, clearSong } = useSongLoader()
+  // Hook para cargar canciones (.chart)
+  const { song, error, isLoading, availableDifficulties, loadFromFile, changeDifficulty, clearSong } = useSongLoader()
 
   // Hook para manejar audio
   const audioPlayer = useAudioPlayer()
@@ -261,9 +261,10 @@ export const GuitarGame = () => {
           isAudioLoaded={audioPlayer.isLoaded}
           isAudioLoading={isAudioLoading}
           audioError={audioPlayer.error}
-          onJsonFileSelect={loadFromFile}
+          availableDifficulties={availableDifficulties}
+          onChartFileSelect={loadFromFile}
           onAudioFileSelect={handleAudioFileSelect}
-          onLoadTestSong={loadTestSong}
+          onDifficultyChange={changeDifficulty}
           onStartGame={handleStartGame}
         />
       )}

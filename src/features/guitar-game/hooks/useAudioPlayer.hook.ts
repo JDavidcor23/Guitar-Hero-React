@@ -109,7 +109,7 @@ export const useAudioPlayer = () => {
         const arrayBuffer = await file.arrayBuffer()
 
         // Decodificar los datos de audio
-        // Esto convierte el MP3/WAV/OGG a datos que el navegador puede reproducir
+        // Web Audio API soporta: MP3, WAV, OGG, OPUS, FLAC (en navegadores modernos)
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
 
         // Guardar el buffer
@@ -123,10 +123,20 @@ export const useAudioPlayer = () => {
           error: null,
         })
 
-        console.log(`Audio cargado: ${audioBuffer.duration.toFixed(2)} segundos`)
+        console.log(`✓ Audio cargado: ${audioBuffer.duration.toFixed(2)}s (${file.name})`)
         return true
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar el audio'
+        let errorMessage = 'Error al cargar el audio'
+
+        // Mensaje más específico según el error
+        if (err instanceof Error) {
+          if (err.message.includes('decodeAudioData') || err.name === 'EncodingError') {
+            errorMessage = `Formato de audio no soportado. Intenta convertir ${file.name} a MP3 o OGG`
+          } else {
+            errorMessage = err.message
+          }
+        }
+
         setState((prev) => ({
           ...prev,
           isLoaded: false,

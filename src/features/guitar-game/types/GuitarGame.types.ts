@@ -53,6 +53,10 @@ export interface GameStats {
   goods: number // Contador de GOOD
   oks: number // Contador de OK
   misses: number // Contador de MISS
+  // Estadísticas de notas sostenidas
+  sustainsHit: number // Sustains iniciados correctamente
+  sustainsComplete: number // Sustains completados (100%)
+  sustainsDropped: number // Sustains soltados antes de tiempo
 }
 
 /**
@@ -80,11 +84,12 @@ export type GameState = 'menu' | 'countdown' | 'playing' | 'paused' | 'finished'
 
 /**
  * Una nota tal como viene del JSON del Chart Generator
- * El JSON tiene: { segundo: 5.2, carril: 0 }
+ * El JSON tiene: { segundo: 5.2, carril: 0, duracion: 1.5 }
  */
 export interface SongNote {
   segundo: number // Momento exacto en segundos cuando debe golpearse
   carril: number // 0-4 (verde, rojo, amarillo, azul, naranja)
+  duracion?: number // Duración en segundos para notas sostenidas (0 o undefined = nota normal)
 }
 
 /**
@@ -93,9 +98,13 @@ export interface SongNote {
 export interface SongMetadata {
   songName: string // Nombre de la canción
   artist?: string // Artista (opcional)
+  charter?: string // Quién creó el chart
   duration: number // Duración total en segundos
   totalNotes: number // Cantidad total de notas
   difficulty?: string // easy, medium, hard, expert (opcional)
+  chartDifficulty?: number // Dificultad general (0-6)
+  averageNPS?: number // NPS promedio
+  maxNPS?: number // NPS máximo
 }
 
 /**
@@ -117,6 +126,11 @@ export interface GameNote {
   spawned: boolean // Ya apareció en pantalla
   hit: boolean // El jugador la golpeó
   missed: boolean // El jugador la falló (pasó sin golpear)
+  // Propiedades para notas sostenidas
+  duracion: number // Duración en segundos (0 = nota normal)
+  sustainActive?: boolean // El jugador está sosteniendo esta nota
+  sustainComplete?: boolean // El jugador completó el sustain
+  sustainReleased?: boolean // El jugador soltó antes de tiempo
 }
 
 /**
