@@ -70,6 +70,10 @@ export const useAudioPlayer = () => {
   /** Offset de calibración en milisegundos */
   const calibrationOffsetRef = useRef<number>(0)
 
+  /** Ref para rastrear si está reproduciendo (para getCurrentTime sin depender de state) */
+  const isPlayingRef = useRef<boolean>(false)
+
+
   // ==========================================
   // FUNCIONES
   // ==========================================
@@ -251,6 +255,7 @@ export const useAudioPlayer = () => {
     }
 
     setState((prev) => ({ ...prev, isPlaying: true }))
+    isPlayingRef.current = true
     pausedAtRef.current = fromTime
 
     console.log(`Reproduciendo ${stems.length} stems desde: ${fromTime.toFixed(2)}s`)
@@ -282,6 +287,7 @@ export const useAudioPlayer = () => {
     await audioContext.suspend()
 
     setState((prev) => ({ ...prev, isPlaying: false }))
+    isPlayingRef.current = false
     console.log(`Pausado en: ${pausedAtRef.current.toFixed(2)}s`)
   }, [state.isPlaying])
 
@@ -296,6 +302,7 @@ export const useAudioPlayer = () => {
     startTimeRef.current = audioContext.currentTime - pausedAtRef.current
 
     setState((prev) => ({ ...prev, isPlaying: true }))
+    isPlayingRef.current = true
     console.log(`Reanudado desde: ${pausedAtRef.current.toFixed(2)}s`)
   }, [state.isPlaying])
 
@@ -307,23 +314,22 @@ export const useAudioPlayer = () => {
     pausedAtRef.current = 0
     startTimeRef.current = 0
     setState((prev) => ({ ...prev, isPlaying: false }))
+    isPlayingRef.current = false
   }, [stopSources])
 
-  /**
-   * Obtiene el tiempo actual de reproducción en segundos
-   */
   const getCurrentTime = useCallback((): number => {
     const audioContext = audioContextRef.current
     if (!audioContext) return 0
 
-    if (!state.isPlaying) {
+    // Usar ref en lugar de state para evitar problemas de closures estancados
+    if (!isPlayingRef.current) {
       return pausedAtRef.current
     }
 
     const elapsed = audioContext.currentTime - startTimeRef.current
     const offset = calibrationOffsetRef.current / 1000
     return elapsed + offset
-  }, [state.isPlaying])
+  }, []) // Sin dependencias - usa refs
 
   /**
    * Establece el offset de calibración

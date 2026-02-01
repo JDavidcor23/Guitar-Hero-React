@@ -109,11 +109,15 @@ export class ChartParser {
   private parseNote(line: string, difficulty: string): void {
     const match = line.match(/(\d+)\s*=\s*N\s+(\d+)\s+(\d+)/)
     if (match) {
-      this.difficulties[difficulty].push({
-        beat: parseInt(match[1]),
-        carril: parseInt(match[2]),
-        sustainBeats: parseInt(match[3]), // Ahora capturamos la duración del sustain
-      })
+      const carril = parseInt(match[2])
+      // Filtrar carriles inválidos (5 y 6 son force strum/tap notes)
+      if (carril < 5) {
+        this.difficulties[difficulty].push({
+          beat: parseInt(match[1]),
+          carril: carril,
+          sustainBeats: parseInt(match[3]), // Ahora capturamos la duración del sustain
+        })
+      }
     }
   }
 
