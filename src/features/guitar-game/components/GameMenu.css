@@ -271,6 +271,22 @@
 }
 
 /* ==========================================
+   Selector de instrumento
+   ========================================== */
+
+.game-menu__instrument-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background-color: #2a2a35;
+  border-radius: 8px;
+  margin-top: 12px;
+  border: 1px solid #3a3a4a;
+}
+
+/* ==========================================
    Selector de dificultad
    ========================================== */
 
@@ -374,4 +390,25 @@
 
 .game-menu__chart-diff-6 {
   color: #ff0000 !important; /* Rojo - Muy difícil */
+}
+
+/* ==========================================
+   Botón de carpeta (opción principal)
+   ========================================== */
+
+.game-menu__file-group--primary {
+  background-color: #1a3a1a;
+  border: 1px solid #00aa00;
+}
+
+.game-menu__button--folder {
+  background-color: #00aa00;
+  color: white;
+  padding: 10px 20px;
+  font-size: 15px;
+}
+
+.game-menu__button--folder:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }

@@ -2,18 +2,56 @@ import type { SongData, SongMetadata } from '../types/GuitarGame.types'
 
 /**
  * Mapeo de notas MIDI a carriles del juego
- * Rock Band/Clone Hero usa estos rangos para guitarra:
+ * Rock Band/Clone Hero usa estos rangos para guitarra/bajo:
  * - Easy: 60-64
  * - Medium: 72-76
  * - Hard: 84-88
  * - Expert: 96-100
  */
-const MIDI_NOTE_MAP: Record<string, Record<number, number>> = {
+const GUITAR_NOTE_MAP: Record<string, Record<number, number>> = {
   easy: { 60: 0, 61: 1, 62: 2, 63: 3, 64: 4 },
   medium: { 72: 0, 73: 1, 74: 2, 75: 3, 76: 4 },
   hard: { 84: 0, 85: 1, 86: 2, 87: 3, 88: 4 },
   expert: { 96: 0, 97: 1, 98: 2, 99: 3, 100: 4 },
 }
+
+/**
+ * Mapeo de notas MIDI para batería (drums)
+ * - Easy: 60-64 (kick, snare, hi-hat, etc.)
+ * - Medium: 72-76
+ * - Hard: 84-88
+ * - Expert: 96-100
+ * Nota: En drums se usa el mismo rango pero con diferente interpretación
+ */
+const DRUMS_NOTE_MAP: Record<string, Record<number, number>> = {
+  easy: { 60: 0, 61: 1, 62: 2, 63: 3, 64: 4 },
+  medium: { 72: 0, 73: 1, 74: 2, 75: 3, 76: 4 },
+  hard: { 84: 0, 85: 1, 86: 2, 87: 3, 88: 4 },
+  expert: { 96: 0, 97: 1, 98: 2, 99: 3, 100: 4 },
+}
+
+/**
+ * Mapeo de tracks MIDI a nombres de instrumentos legibles
+ */
+const INSTRUMENT_NAMES: Record<string, string> = {
+  'PART GUITAR': 'Guitarra',
+  'PART BASS': 'Bajo',
+  'PART DRUMS': 'Batería',
+  'PART VOCALS': 'Voz',
+  'PART KEYS': 'Teclado',
+  'PART RHYTHM': 'Guitarra Rítmica',
+  'PART GUITAR COOP': 'Guitarra Coop',
+}
+
+/**
+ * Instrumentos que usan el mapeo de guitarra (5 carriles)
+ */
+const GUITAR_LIKE_INSTRUMENTS = ['PART GUITAR', 'PART BASS', 'PART KEYS', 'PART RHYTHM', 'PART GUITAR COOP']
+
+/**
+ * Instrumentos que usan el mapeo de batería
+ */
+const DRUM_LIKE_INSTRUMENTS = ['PART DRUMS']
 
 interface TempoEvent {
   tick: number
@@ -176,18 +214,57 @@ export class MidiParser {
   }
 
   /**
-   * Obtiene las dificultades disponibles
+   * Obtiene los instrumentos disponibles en el MIDI
    */
-  getAvailableDifficulties(): string[] {
-    const guitarEvents = this.tracks.get('PART GUITAR') || this.tracks.get('PART BASS')
-    if (!guitarEvents) return []
+  getAvailableInstruments(): Array<{ trackName: string; displayName: string }> {
+    const instruments: Array<{ trackName: string; displayName: string }> = []
+
+    for (const trackName of this.tracks.keys()) {
+      // Solo incluir tracks que son instrumentos conocidos y tienen notas jugables
+      if (INSTRUMENT_NAMES[trackName]) {
+        const events = this.tracks.get(trackName)
+        if (events && events.length > 0) {
+          // Verificar si tiene notas en alguna dificultad
+          const noteMap = GUITAR_LIKE_INSTRUMENTS.includes(trackName) ? GUITAR_NOTE_MAP : DRUMS_NOTE_MAP
+          const noteNumbers = new Set(events.map((e) => e.note))
+
+          const hasPlayableNotes = Object.values(noteMap).some((diffMap) =>
+            Object.keys(diffMap).some((n) => noteNumbers.has(parseInt(n)))
+          )
+
+          if (hasPlayableNotes) {
+            instruments.push({
+              trackName,
+              displayName: INSTRUMENT_NAMES[trackName],
+            })
+          }
+        }
+      }
+    }
+
+    return instruments
+  }
+
+  /**
+   * Obtiene las dificultades disponibles para un instrumento específico
+   */
+  getAvailableDifficulties(trackName: string = 'PART GUITAR'): string[] {
+    // Intentar con el track especificado, o fallback a PART GUITAR / PART BASS
+    let events = this.tracks.get(trackName)
+    if (!events) {
+      events = this.tracks.get('PART GUITAR') || this.tracks.get('PART BASS')
+    }
+    if (!events) return []
 
     const available: string[] = []
-    const noteNumbers = new Set(guitarEvents.map((e) => e.note))
+    const noteNumbers = new Set(events.map((e) => e.note))
+
+    // Seleccionar el mapeo correcto según el instrumento
+    const noteMap = DRUM_LIKE_INSTRUMENTS.includes(trackName) ? DRUMS_NOTE_MAP : GUITAR_NOTE_MAP
 
     // Verificar qué dificultades tienen notas
-    for (const [difficulty, noteMap] of Object.entries(MIDI_NOTE_MAP)) {
-      const hasNotes = Object.keys(noteMap).some((n) => noteNumbers.has(parseInt(n)))
+    for (const [difficulty, diffNoteMap] of Object.entries(noteMap)) {
+      const hasNotes = Object.keys(diffNoteMap).some((n) => noteNumbers.has(parseInt(n)))
       if (hasNotes) {
         available.push(difficulty)
       }
@@ -250,10 +327,16 @@ export class MidiParser {
    * Extrae las notas de una dificultad específica
    */
   private extractNotes(difficulty: string, trackName: string = 'PART GUITAR'): ParsedNote[] {
-    const events = this.tracks.get(trackName) || this.tracks.get('PART BASS')
+    // Intentar con el track especificado, o fallback a PART GUITAR / PART BASS
+    let events = this.tracks.get(trackName)
+    if (!events) {
+      events = this.tracks.get('PART GUITAR') || this.tracks.get('PART BASS')
+    }
     if (!events) return []
 
-    const noteMap = MIDI_NOTE_MAP[difficulty]
+    // Seleccionar el mapeo correcto según el instrumento
+    const instrumentNoteMap = DRUM_LIKE_INSTRUMENTS.includes(trackName) ? DRUMS_NOTE_MAP : GUITAR_NOTE_MAP
+    const noteMap = instrumentNoteMap[difficulty]
     if (!noteMap) return []
 
     const notes: ParsedNote[] = []

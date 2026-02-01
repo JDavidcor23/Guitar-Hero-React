@@ -818,7 +818,8 @@ export const useGuitarGame = ({
 
       // 1. Dibujar colas de sustain primero (debajo de las cabezas)
       for (const note of gameNotes) {
-        if (note.spawned && note.duracion > 0 && !note.missed) {
+        // No dibujar si: no spawneó, no es sustain, fue missed, o ya se completó/soltó
+        if (note.spawned && note.duracion > 0 && !note.missed && !note.sustainComplete && !note.sustainReleased) {
           // Calcular la longitud de la cola en pixels
           const tailLength = Math.max(SUSTAIN_CONFIG.minVisualLength, note.duracion * noteSpeed)
 
@@ -839,18 +840,15 @@ export const useGuitarGame = ({
           // Clampear para que no salga de la pantalla
           tailEndY = Math.max(SPAWN_Y, tailEndY)
 
-          // No dibujar si ya se soltó o completó y la cola ya pasó
-          if (!note.sustainReleased || tailEndY < GAME_CONFIG.canvasHeight) {
-            drawSustainTail(
-              ctx,
-              note.carril,
-              headY,
-              tailEndY,
-              note.sustainActive || false,
-              note.sustainComplete || false,
-              note.sustainReleased || false
-            )
-          }
+          drawSustainTail(
+            ctx,
+            note.carril,
+            headY,
+            tailEndY,
+            note.sustainActive || false,
+            note.sustainComplete || false,
+            note.sustainReleased || false
+          )
         }
       }
 

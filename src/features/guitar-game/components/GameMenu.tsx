@@ -1,4 +1,5 @@
 import type { SongData } from '../types/GuitarGame.types'
+import type { InstrumentInfo } from '../hooks/useSongLoader.hook'
 import { AudioFormatHelp } from './AudioFormatHelp'
 import './GameMenu.css'
 
@@ -19,14 +20,24 @@ interface GameMenuProps {
   isAudioLoading: boolean
   /** Error del audio (null si no hay error) */
   audioError: string | null
+  /** Número de stems de audio cargados */
+  stemsLoaded?: number
   /** Dificultades disponibles en el archivo .chart */
   availableDifficulties: string[]
+  /** Instrumentos disponibles en el archivo MIDI */
+  availableInstruments?: InstrumentInfo[]
+  /** Instrumento actualmente seleccionado */
+  currentInstrument?: string
   /** Callback cuando el usuario selecciona un archivo .chart */
   onChartFileSelect: (file: File) => void
   /** Callback cuando el usuario selecciona un archivo de audio */
   onAudioFileSelect: (file: File) => void
+  /** Callback cuando el usuario selecciona una carpeta de canción */
+  onFolderSelect?: (files: FileList) => void
   /** Callback cuando el usuario cambia la dificultad */
   onDifficultyChange: (difficulty: string) => void
+  /** Callback cuando el usuario cambia el instrumento */
+  onInstrumentChange?: (trackName: string) => void
   /** Callback cuando el usuario quiere empezar a jugar */
   onStartGame: () => void
 }
@@ -34,7 +45,8 @@ interface GameMenuProps {
 /**
  * Componente del menú principal
  *
- * Carga archivos .chart de Clone Hero con selector de dificultad
+ * Carga archivos .chart/.mid de Clone Hero con selector de dificultad
+ * Soporta cargar carpetas completas con chart + audio stems
  */
 export const GameMenu = ({
   song,
@@ -43,10 +55,15 @@ export const GameMenu = ({
   isAudioLoaded,
   isAudioLoading,
   audioError,
+  stemsLoaded = 0,
   availableDifficulties,
+  availableInstruments = [],
+  currentInstrument = 'PART GUITAR',
   onChartFileSelect,
   onAudioFileSelect,
+  onFolderSelect,
   onDifficultyChange,
+  onInstrumentChange,
   onStartGame,
 }: GameMenuProps) => {
   /**
@@ -66,6 +83,16 @@ export const GameMenu = ({
     const file = event.target.files?.[0]
     if (file) {
       onAudioFileSelect(file)
+    }
+  }
+
+  /**
+   * Maneja la selección de una carpeta de canción
+   */
+  const handleFolderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0 && onFolderSelect) {
+      onFolderSelect(files)
     }
   }
 
@@ -90,7 +117,36 @@ export const GameMenu = ({
       {/* Sección de carga de archivos */}
       <div className="game-menu__load-section">
         {/* ======================================
-            CARGAR ARCHIVO .CHART
+            OPCIÓN 1: CARGAR CARPETA COMPLETA
+            ====================================== */}
+        {onFolderSelect && (
+          <>
+            <div className="game-menu__file-group game-menu__file-group--primary">
+              <span className="game-menu__file-label">Carpeta de canción:</span>
+
+              {/* Input carpeta oculto */}
+              <input
+                type="file"
+                id="folder-input"
+                onChange={handleFolderChange}
+                className="game-menu__file-input"
+                {...({ webkitdirectory: '', directory: '' } as React.InputHTMLAttributes<HTMLInputElement>)}
+              />
+
+              {/* Botón para cargar carpeta */}
+              <label htmlFor="folder-input" className="game-menu__button game-menu__button--folder">
+                {isLoading || isAudioLoading ? 'Cargando...' : 'Seleccionar Carpeta'}
+              </label>
+            </div>
+
+            <div className="game-menu__divider">
+              <span>o carga archivos individuales</span>
+            </div>
+          </>
+        )}
+
+        {/* ======================================
+            OPCIÓN 2: CARGAR ARCHIVO .CHART/.MID
             ====================================== */}
         <div className="game-menu__file-group">
           <span className="game-menu__file-label">1. Archivo de chart:</span>
@@ -116,6 +172,26 @@ export const GameMenu = ({
         </div>
 
         {/* ======================================
+            SELECTOR DE INSTRUMENTO
+            ====================================== */}
+        {song && availableInstruments.length > 1 && onInstrumentChange && (
+          <div className="game-menu__instrument-selector">
+            <span className="game-menu__file-label">Instrumento:</span>
+            <select
+              onChange={(e) => onInstrumentChange(e.target.value)}
+              value={currentInstrument}
+              className="game-menu__select"
+            >
+              {availableInstruments.map((inst) => (
+                <option key={inst.trackName} value={inst.trackName}>
+                  {inst.displayName}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* ======================================
             SELECTOR DE DIFICULTAD
             ====================================== */}
         {song && availableDifficulties.length > 1 && (
@@ -123,7 +199,7 @@ export const GameMenu = ({
             <span className="game-menu__file-label">Dificultad:</span>
             <select
               onChange={(e) => onDifficultyChange(e.target.value)}
-              defaultValue={song.metadata.difficulty?.toLowerCase()}
+              value={song.metadata.difficulty?.toLowerCase()}
               className="game-menu__select"
             >
               {availableDifficulties.map((diff) => (
@@ -161,7 +237,9 @@ export const GameMenu = ({
 
           {/* Estado del audio */}
           {isAudioLoaded && (
-            <span className="game-menu__status game-menu__status--success">Cargado</span>
+            <span className="game-menu__status game-menu__status--success">
+              {stemsLoaded > 1 ? `${stemsLoaded} stems` : 'Cargado'}
+            </span>
           )}
           {!isAudioLoaded && !isAudioLoading && (
             <span className="game-menu__status game-menu__status--optional">
@@ -194,11 +272,11 @@ export const GameMenu = ({
           {/* Indicadores de dificultad del chart */}
           <div className="game-menu__difficulty-indicators">
             {/* Dificultad general del chart (0-6) */}
-            {song.metadata.chartDifficulty !== undefined && (
+            {song.metadata.chartDifficulty !== undefined && song.metadata.chartDifficulty >= 0 && (
               <div className="game-menu__indicator">
                 <span className="game-menu__indicator-label">Dificultad Chart:</span>
                 <span
-                  className={`game-menu__indicator-value game-menu__chart-diff-${song.metadata.chartDifficulty}`}
+                  className={`game-menu__indicator-value game-menu__chart-diff-${Math.min(6, song.metadata.chartDifficulty)}`}
                 >
                   {
                     [
@@ -209,7 +287,7 @@ export const GameMenu = ({
                       '⭐⭐⭐ Medio+',
                       '⭐⭐⭐ Difícil',
                       '⭐⭐⭐⭐ Muy Difícil',
-                    ][song.metadata.chartDifficulty] || 'N/A'
+                    ][Math.min(6, song.metadata.chartDifficulty)] || 'N/A'
                   }
                 </span>
               </div>
@@ -244,7 +322,13 @@ export const GameMenu = ({
               >
                 {isAudioLoaded ? '\u2713' : '\u2014'}
               </span>
-              <span>{isAudioLoaded ? 'Audio cargado' : 'Sin audio'}</span>
+              <span>
+                {isAudioLoaded
+                  ? stemsLoaded > 1
+                    ? `Audio (${stemsLoaded} pistas)`
+                    : 'Audio cargado'
+                  : 'Sin audio'}
+              </span>
             </div>
           </div>
 

@@ -54,8 +54,20 @@ export const GuitarGame = () => {
   // HOOKS
   // ==========================================
 
-  // Hook para cargar canciones (.chart)
-  const { song, error, isLoading, availableDifficulties, loadFromFile, changeDifficulty, clearSong } = useSongLoader()
+  // Hook para cargar canciones (.chart o .mid)
+  const {
+    song,
+    error,
+    isLoading,
+    availableDifficulties,
+    availableInstruments,
+    currentInstrument,
+    loadFromFile,
+    loadFromFolder,
+    changeDifficulty,
+    changeInstrument,
+    clearSong,
+  } = useSongLoader()
 
   // Hook para manejar audio
   const audioPlayer = useAudioPlayer()
@@ -74,6 +86,36 @@ export const GuitarGame = () => {
       setIsAudioLoading(false)
     },
     [audioPlayer]
+  )
+
+  /**
+   * Carga una carpeta completa de canción (chart + audio stems)
+   */
+  const handleFolderSelect = useCallback(
+    async (files: FileList) => {
+      // Primero cargar el chart
+      await loadFromFolder(files)
+
+      // Buscar archivos de audio en la carpeta
+      const audioExtensions = ['.ogg', '.opus', '.mp3', '.wav', '.flac']
+      const audioFiles: File[] = []
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
+        if (audioExtensions.includes(ext)) {
+          audioFiles.push(file)
+        }
+      }
+
+      // Cargar stems si hay archivos de audio
+      if (audioFiles.length > 0) {
+        setIsAudioLoading(true)
+        await audioPlayer.loadAudioStems(audioFiles)
+        setIsAudioLoading(false)
+      }
+    },
+    [loadFromFolder, audioPlayer]
   )
 
   // ==========================================
@@ -261,10 +303,15 @@ export const GuitarGame = () => {
           isAudioLoaded={audioPlayer.isLoaded}
           isAudioLoading={isAudioLoading}
           audioError={audioPlayer.error}
+          stemsLoaded={audioPlayer.stemsLoaded}
           availableDifficulties={availableDifficulties}
+          availableInstruments={availableInstruments}
+          currentInstrument={currentInstrument}
           onChartFileSelect={loadFromFile}
           onAudioFileSelect={handleAudioFileSelect}
+          onFolderSelect={handleFolderSelect}
           onDifficultyChange={changeDifficulty}
+          onInstrumentChange={changeInstrument}
           onStartGame={handleStartGame}
         />
       )}

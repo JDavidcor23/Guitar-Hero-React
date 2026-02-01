@@ -8,7 +8,8 @@
       "Bash(git commit:*)",
       "Bash(npm run build:*)",
       "Bash(xxd:*)",
-      "Bash(strings:*)"
+      "Bash(strings:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

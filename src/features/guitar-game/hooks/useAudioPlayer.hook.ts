@@ -5,23 +5,31 @@ import { useState, useCallback, useRef } from 'react'
 // ==========================================
 
 interface AudioState {
-  /** Indica si hay un audio cargado */
+  /** Indica si hay audio cargado */
   isLoaded: boolean
   /** Indica si está reproduciendo */
   isPlaying: boolean
+  /** Indica si está cargando */
+  isLoading: boolean
   /** Duración del audio en segundos */
   duration: number
   /** Error al cargar (null si no hay error) */
   error: string | null
+  /** Número de stems cargados */
+  stemsLoaded: number
+}
+
+interface AudioStem {
+  name: string
+  buffer: AudioBuffer
 }
 
 /**
  * Hook para manejar audio con Web Audio API
+ * Soporta múltiples stems (pistas de audio) que se mezclan automáticamente
  *
  * Web Audio API es más preciso que el elemento <audio> HTML
  * porque usa el reloj del sistema de audio, no el de JavaScript.
- *
- * Esto es CRÍTICO para sincronizar las notas con la música.
  */
 export const useAudioPlayer = () => {
   // ==========================================
@@ -31,48 +39,35 @@ export const useAudioPlayer = () => {
   const [state, setState] = useState<AudioState>({
     isLoaded: false,
     isPlaying: false,
+    isLoading: false,
     duration: 0,
     error: null,
+    stemsLoaded: 0,
   })
 
   // ==========================================
   // REFS (no causan re-render)
   // ==========================================
 
-  /**
-   * AudioContext: El "motor" de audio del navegador
-   * Solo necesitamos uno para toda la app
-   */
+  /** AudioContext: El "motor" de audio del navegador */
   const audioContextRef = useRef<AudioContext | null>(null)
 
-  /**
-   * AudioBuffer: Los datos de audio decodificados
-   * Se carga una vez y se puede reutilizar
-   */
-  const audioBufferRef = useRef<AudioBuffer | null>(null)
+  /** Array de stems de audio cargados */
+  const stemsRef = useRef<AudioStem[]>([])
 
-  /**
-   * AudioBufferSourceNode: La "fuente" que reproduce el audio
-   * Se crea cada vez que queremos reproducir
-   */
-  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null)
+  /** Array de source nodes activos (uno por stem) */
+  const sourceNodesRef = useRef<AudioBufferSourceNode[]>([])
 
-  /**
-   * Tiempo en que empezó a reproducir (audioContext.currentTime)
-   * Usado para calcular cuánto tiempo ha pasado
-   */
+  /** GainNode para control de volumen master */
+  const masterGainRef = useRef<GainNode | null>(null)
+
+  /** Tiempo en que empezó a reproducir (audioContext.currentTime) */
   const startTimeRef = useRef<number>(0)
 
-  /**
-   * Tiempo pausado (en segundos de la canción)
-   * Cuando reanudamos, empezamos desde aquí
-   */
+  /** Tiempo pausado (en segundos de la canción) */
   const pausedAtRef = useRef<number>(0)
 
-  /**
-   * Offset de calibración en milisegundos
-   * Positivo = notas aparecen antes, Negativo = notas aparecen después
-   */
+  /** Offset de calibración en milisegundos */
   const calibrationOffsetRef = useRef<number>(0)
 
   // ==========================================
@@ -81,46 +76,43 @@ export const useAudioPlayer = () => {
 
   /**
    * Obtiene o crea el AudioContext
-   * Debe llamarse después de una interacción del usuario (click)
-   * debido a las políticas de autoplay de los navegadores
    */
   const getAudioContext = useCallback((): AudioContext => {
     if (!audioContextRef.current) {
-      // Crear nuevo AudioContext
-      // webkitAudioContext es para Safari antiguo
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       audioContextRef.current = new AudioContextClass()
+
+      // Crear master gain node
+      masterGainRef.current = audioContextRef.current.createGain()
+      masterGainRef.current.connect(audioContextRef.current.destination)
     }
     return audioContextRef.current
   }, [])
 
   /**
-   * Carga un archivo de audio desde un File
+   * Carga un único archivo de audio
    */
   const loadAudioFile = useCallback(
     async (file: File): Promise<boolean> => {
       try {
-        setState((prev) => ({ ...prev, error: null, isLoaded: false }))
+        setState((prev) => ({ ...prev, error: null, isLoaded: false, isLoading: true }))
 
-        // Obtener/crear AudioContext
         const audioContext = getAudioContext()
-
-        // Leer el archivo como ArrayBuffer
         const arrayBuffer = await file.arrayBuffer()
-
-        // Decodificar los datos de audio
-        // Web Audio API soporta: MP3, WAV, OGG, OPUS, FLAC (en navegadores modernos)
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
 
-        // Guardar el buffer
-        audioBufferRef.current = audioBuffer
+        // Guardar como único stem
+        stemsRef.current = [{ name: file.name, buffer: audioBuffer }]
 
-        // Actualizar estado
         setState({
           isLoaded: true,
           isPlaying: false,
+          isLoading: false,
           duration: audioBuffer.duration,
           error: null,
+          stemsLoaded: 1,
         })
 
         console.log(`✓ Audio cargado: ${audioBuffer.duration.toFixed(2)}s (${file.name})`)
@@ -128,7 +120,6 @@ export const useAudioPlayer = () => {
       } catch (err) {
         let errorMessage = 'Error al cargar el audio'
 
-        // Mensaje más específico según el error
         if (err instanceof Error) {
           if (err.message.includes('decodeAudioData') || err.name === 'EncodingError') {
             errorMessage = `Formato de audio no soportado. Intenta convertir ${file.name} a MP3 o OGG`
@@ -140,6 +131,7 @@ export const useAudioPlayer = () => {
         setState((prev) => ({
           ...prev,
           isLoaded: false,
+          isLoading: false,
           error: errorMessage,
         }))
         console.error('Error cargando audio:', err)
@@ -150,67 +142,143 @@ export const useAudioPlayer = () => {
   )
 
   /**
-   * Inicia la reproducción del audio
-   * @param fromTime - Tiempo en segundos desde donde empezar (default: 0)
+   * Carga múltiples archivos de audio (stems) y los mezcla
    */
-  const play = useCallback(
-    (fromTime: number = 0): boolean => {
-      const audioContext = audioContextRef.current
-      const audioBuffer = audioBufferRef.current
+  const loadAudioStems = useCallback(
+    async (files: File[]): Promise<boolean> => {
+      if (files.length === 0) return false
 
-      if (!audioContext || !audioBuffer) {
-        console.error('No hay audio cargado')
+      try {
+        setState((prev) => ({
+          ...prev,
+          error: null,
+          isLoaded: false,
+          isLoading: true,
+          stemsLoaded: 0,
+        }))
+
+        const audioContext = getAudioContext()
+        const stems: AudioStem[] = []
+        let maxDuration = 0
+        let loadedCount = 0
+
+        // Cargar todos los stems en paralelo
+        const loadPromises = files.map(async (file) => {
+          try {
+            const arrayBuffer = await file.arrayBuffer()
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+            stems.push({ name: file.name, buffer: audioBuffer })
+            maxDuration = Math.max(maxDuration, audioBuffer.duration)
+            loadedCount++
+
+            setState((prev) => ({ ...prev, stemsLoaded: loadedCount }))
+            console.log(`✓ Stem cargado: ${file.name} (${audioBuffer.duration.toFixed(2)}s)`)
+          } catch (err) {
+            console.warn(`⚠ No se pudo cargar stem: ${file.name}`, err)
+          }
+        })
+
+        await Promise.all(loadPromises)
+
+        if (stems.length === 0) {
+          throw new Error('No se pudo cargar ningún archivo de audio')
+        }
+
+        stemsRef.current = stems
+
+        setState({
+          isLoaded: true,
+          isPlaying: false,
+          isLoading: false,
+          duration: maxDuration,
+          error: null,
+          stemsLoaded: stems.length,
+        })
+
+        console.log(`✓ ${stems.length} stems cargados. Duración total: ${maxDuration.toFixed(2)}s`)
+        return true
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error al cargar los stems'
+
+        setState((prev) => ({
+          ...prev,
+          isLoaded: false,
+          isLoading: false,
+          error: errorMessage,
+        }))
+        console.error('Error cargando stems:', err)
         return false
       }
-
-      // Detener reproducción anterior si existe
-      if (sourceNodeRef.current) {
-        try {
-          sourceNodeRef.current.stop()
-        } catch {
-          // Ignorar error si ya estaba detenido
-        }
-      }
-
-      // Crear nuevo source node
-      // IMPORTANTE: Un source node solo puede usarse UNA vez
-      // Por eso creamos uno nuevo cada vez que reproducimos
-      const sourceNode = audioContext.createBufferSource()
-      sourceNode.buffer = audioBuffer
-      sourceNode.connect(audioContext.destination)
-
-      // Guardar referencia
-      sourceNodeRef.current = sourceNode
-
-      // Guardar tiempo de inicio
-      // audioContext.currentTime es el reloj preciso del sistema de audio
-      startTimeRef.current = audioContext.currentTime
-
-      // Empezar a reproducir desde el tiempo indicado
-      sourceNode.start(0, fromTime)
-
-      // Actualizar estado
-      setState((prev) => ({ ...prev, isPlaying: true }))
-      pausedAtRef.current = fromTime
-
-      console.log(`Reproduciendo desde: ${fromTime.toFixed(2)}s`)
-      return true
     },
-    []
+    [getAudioContext]
   )
 
   /**
+   * Inicia la reproducción de todos los stems simultáneamente
+   */
+  const play = useCallback((fromTime: number = 0): boolean => {
+    const audioContext = audioContextRef.current
+    const masterGain = masterGainRef.current
+    const stems = stemsRef.current
+
+    if (!audioContext || !masterGain || stems.length === 0) {
+      console.error('No hay audio cargado')
+      return false
+    }
+
+    // Detener reproducción anterior si existe
+    stopSources()
+
+    // Crear un source node para cada stem
+    const newSourceNodes: AudioBufferSourceNode[] = []
+
+    for (const stem of stems) {
+      const sourceNode = audioContext.createBufferSource()
+      sourceNode.buffer = stem.buffer
+      sourceNode.connect(masterGain)
+      newSourceNodes.push(sourceNode)
+    }
+
+    sourceNodesRef.current = newSourceNodes
+
+    // Guardar tiempo de inicio
+    startTimeRef.current = audioContext.currentTime
+
+    // Iniciar todos los stems simultáneamente
+    for (const sourceNode of newSourceNodes) {
+      sourceNode.start(0, fromTime)
+    }
+
+    setState((prev) => ({ ...prev, isPlaying: true }))
+    pausedAtRef.current = fromTime
+
+    console.log(`Reproduciendo ${stems.length} stems desde: ${fromTime.toFixed(2)}s`)
+    return true
+  }, [])
+
+  /**
+   * Detiene los source nodes actuales
+   */
+  const stopSources = useCallback((): void => {
+    for (const sourceNode of sourceNodesRef.current) {
+      try {
+        sourceNode.stop()
+      } catch {
+        // Ignorar error si ya estaba detenido
+      }
+    }
+    sourceNodesRef.current = []
+  }, [])
+
+  /**
    * Pausa la reproducción
-   * Usa audioContext.suspend() para pausar todo el motor de audio
    */
   const pause = useCallback(async (): Promise<void> => {
     const audioContext = audioContextRef.current
     if (!audioContext || !state.isPlaying) return
 
-    // Guardar el tiempo actual antes de pausar
     pausedAtRef.current = getCurrentTime()
-
-    // Suspender el AudioContext (pausa todo el audio)
     await audioContext.suspend()
 
     setState((prev) => ({ ...prev, isPlaying: false }))
@@ -224,10 +292,7 @@ export const useAudioPlayer = () => {
     const audioContext = audioContextRef.current
     if (!audioContext || state.isPlaying) return
 
-    // Reanudar el AudioContext
     await audioContext.resume()
-
-    // Ajustar el startTime para que getCurrentTime() devuelva el valor correcto
     startTimeRef.current = audioContext.currentTime - pausedAtRef.current
 
     setState((prev) => ({ ...prev, isPlaying: true }))
@@ -238,47 +303,30 @@ export const useAudioPlayer = () => {
    * Detiene completamente la reproducción
    */
   const stop = useCallback((): void => {
-    if (sourceNodeRef.current) {
-      try {
-        sourceNodeRef.current.stop()
-      } catch {
-        // Ignorar error si ya estaba detenido
-      }
-      sourceNodeRef.current = null
-    }
-
+    stopSources()
     pausedAtRef.current = 0
     startTimeRef.current = 0
-
     setState((prev) => ({ ...prev, isPlaying: false }))
-  }, [])
+  }, [stopSources])
 
   /**
    * Obtiene el tiempo actual de reproducción en segundos
-   * Esta es la función MÁS IMPORTANTE para la sincronización
-   *
-   * Usa audioContext.currentTime que es súper preciso
    */
   const getCurrentTime = useCallback((): number => {
     const audioContext = audioContextRef.current
     if (!audioContext) return 0
 
     if (!state.isPlaying) {
-      // Si está pausado, devolver el tiempo donde se pausó
       return pausedAtRef.current
     }
 
-    // Calcular tiempo transcurrido desde que empezamos
     const elapsed = audioContext.currentTime - startTimeRef.current
-
-    // Aplicar offset de calibración
-    const offset = calibrationOffsetRef.current / 1000 // convertir ms a segundos
+    const offset = calibrationOffsetRef.current / 1000
     return elapsed + offset
   }, [state.isPlaying])
 
   /**
    * Establece el offset de calibración
-   * @param offsetMs - Offset en milisegundos
    */
   const setCalibrationOffset = useCallback((offsetMs: number): void => {
     calibrationOffsetRef.current = offsetMs
@@ -293,22 +341,34 @@ export const useAudioPlayer = () => {
   }, [])
 
   /**
+   * Establece el volumen master (0.0 a 1.0)
+   */
+  const setVolume = useCallback((volume: number): void => {
+    if (masterGainRef.current) {
+      masterGainRef.current.gain.value = Math.max(0, Math.min(1, volume))
+    }
+  }, [])
+
+  /**
    * Limpia todos los recursos
    */
   const cleanup = useCallback((): void => {
     stop()
-    audioBufferRef.current = null
+    stemsRef.current = []
 
     if (audioContextRef.current) {
       audioContextRef.current.close()
       audioContextRef.current = null
     }
+    masterGainRef.current = null
 
     setState({
       isLoaded: false,
       isPlaying: false,
+      isLoading: false,
       duration: 0,
       error: null,
+      stemsLoaded: 0,
     })
   }, [stop])
 
@@ -320,11 +380,14 @@ export const useAudioPlayer = () => {
     // Estado
     isLoaded: state.isLoaded,
     isPlaying: state.isPlaying,
+    isLoading: state.isLoading,
     duration: state.duration,
     error: state.error,
+    stemsLoaded: state.stemsLoaded,
 
     // Funciones
     loadAudioFile,
+    loadAudioStems,
     play,
     pause,
     resume,
@@ -332,6 +395,7 @@ export const useAudioPlayer = () => {
     getCurrentTime,
     setCalibrationOffset,
     getCalibrationOffset,
+    setVolume,
     cleanup,
   }
 }

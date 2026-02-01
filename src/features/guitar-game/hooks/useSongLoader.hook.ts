@@ -4,11 +4,20 @@ import { ChartParser } from '../utils/chartParser'
 import { MidiParser, parseSongIni } from '../utils/midiParser'
 
 /**
+ * Información de un instrumento disponible
+ */
+export interface InstrumentInfo {
+  trackName: string
+  displayName: string
+}
+
+/**
  * Interfaz común para los parsers
  */
 interface ParserInterface {
-  getAvailableDifficulties(): string[]
-  convertToSongData(difficulty: string, metadata?: Partial<SongMetadata>): SongData | null
+  getAvailableDifficulties(trackName?: string): string[]
+  getAvailableInstruments?: () => InstrumentInfo[]
+  convertToSongData(difficulty: string, metadata?: Partial<SongMetadata>, trackName?: string): SongData | null
 }
 
 /**
@@ -19,6 +28,8 @@ export const useSongLoader = () => {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [availableDifficulties, setAvailableDifficulties] = useState<string[]>([])
+  const [availableInstruments, setAvailableInstruments] = useState<InstrumentInfo[]>([])
+  const [currentInstrument, setCurrentInstrument] = useState<string>('PART GUITAR')
 
   // Usar ref para el parser para evitar re-renders
   const parserRef = useRef<ParserInterface | null>(null)
@@ -88,16 +99,26 @@ export const useSongLoader = () => {
             parserRef.current = parser
             metadataRef.current = metadata || {}
 
-            // Obtener dificultades disponibles
-            const difficulties = parser.getAvailableDifficulties()
+            // Obtener instrumentos disponibles
+            const instruments = parser.getAvailableInstruments()
+            setAvailableInstruments(instruments)
+
+            // Seleccionar el primer instrumento disponible (preferir guitarra)
+            const defaultInstrument = instruments.find((i) => i.trackName === 'PART GUITAR')?.trackName ||
+              instruments[0]?.trackName ||
+              'PART GUITAR'
+            setCurrentInstrument(defaultInstrument)
+
+            // Obtener dificultades disponibles para el instrumento seleccionado
+            const difficulties = parser.getAvailableDifficulties(defaultInstrument)
             setAvailableDifficulties(difficulties)
 
             if (difficulties.length === 0) {
-              reject(new Error('No se encontraron notas de guitarra en el archivo MIDI'))
+              reject(new Error('No se encontraron notas jugables en el archivo MIDI'))
             } else {
               // Por defecto, cargar la dificultad más difícil disponible
               const defaultDifficulty = difficulties[difficulties.length - 1]
-              const songData = parser.convertToSongData(defaultDifficulty, metadata)
+              const songData = parser.convertToSongData(defaultDifficulty, metadata, defaultInstrument)
 
               if (songData) {
                 setSong(songData)
@@ -221,12 +242,44 @@ export const useSongLoader = () => {
       return
     }
 
-    const songData = parserRef.current.convertToSongData(difficulty, metadataRef.current)
+    const songData = parserRef.current.convertToSongData(difficulty, metadataRef.current, currentInstrument)
     if (songData) {
       setSong(songData)
       setError(null)
     } else {
       setError('Error al cargar dificultad')
+    }
+  }, [currentInstrument])
+
+  /**
+   * Cambia el instrumento de la canción actual
+   */
+  const changeInstrument = useCallback((trackName: string) => {
+    if (!parserRef.current) {
+      setError('No hay canción cargada')
+      return
+    }
+
+    setCurrentInstrument(trackName)
+
+    // Obtener dificultades disponibles para el nuevo instrumento
+    const difficulties = parserRef.current.getAvailableDifficulties(trackName)
+    setAvailableDifficulties(difficulties)
+
+    if (difficulties.length === 0) {
+      setError('No hay notas para este instrumento')
+      return
+    }
+
+    // Cargar la dificultad más difícil disponible
+    const defaultDifficulty = difficulties[difficulties.length - 1]
+    const songData = parserRef.current.convertToSongData(defaultDifficulty, metadataRef.current, trackName)
+
+    if (songData) {
+      setSong(songData)
+      setError(null)
+    } else {
+      setError('Error al cargar instrumento')
     }
   }, [])
 
@@ -239,6 +292,8 @@ export const useSongLoader = () => {
     parserRef.current = null
     metadataRef.current = {}
     setAvailableDifficulties([])
+    setAvailableInstruments([])
+    setCurrentInstrument('PART GUITAR')
   }, [])
 
   return {
@@ -246,9 +301,12 @@ export const useSongLoader = () => {
     error,
     isLoading,
     availableDifficulties,
+    availableInstruments,
+    currentInstrument,
     loadFromFile,
     loadFromFolder,
     changeDifficulty,
+    changeInstrument,
     clearSong,
   }
 }
