@@ -146,17 +146,33 @@ export class MidiParser {
     let trackName = ''
     const events: NoteEvent[] = []
     let currentTick = 0
+    let lastStatus = 0
 
     while (this.pos < trackEnd) {
       // Leer delta time (variable length)
       const deltaTime = this.readVariableLength()
       currentTick += deltaTime
 
-      // Leer evento
-      const eventByte = this.readUint8()
+      // Leer byte de status
+      let status = this.readUint8()
 
-      if (eventByte === 0xff) {
-        // Meta evento
+      // Soporte para Running Status
+      // Si el byte más significativo no está activo, es un byte de datos y usamos el status anterior
+      if (status < 0x80) {
+        if (lastStatus === 0) {
+          // Esto no debería pasar en un MIDI válido, pero lo manejamos
+          this.pos-- // Retroceder para saltar este byte de datos
+          continue
+        }
+        status = lastStatus
+        this.pos-- // El byte que leímos era el primer byte de datos, retroceder para leerlo bien
+      } else if (status < 0xF0) {
+        // Solo guardar como running status si no es un system message (>= 0xF0)
+        lastStatus = status
+      }
+
+      if (status === 0xff) {
+        // Meta evento (no tiene running status)
         const metaType = this.readUint8()
         const metaLength = this.readVariableLength()
 
@@ -165,8 +181,7 @@ export class MidiParser {
           trackName = this.readString(metaLength)
         } else if (metaType === 0x51 && metaLength === 3) {
           // Set Tempo
-          const tempo =
-            (this.readUint8() << 16) | (this.readUint8() << 8) | this.readUint8()
+          const tempo = (this.readUint8() << 16) | (this.readUint8() << 8) | this.readUint8()
           this.tempoTrack.push({ tick: currentTick, tempo })
         } else if (metaType === 0x2f) {
           // End of Track
@@ -175,11 +190,12 @@ export class MidiParser {
           // Saltar otros meta eventos
           this.pos += metaLength
         }
-      } else if (eventByte === 0xf0 || eventByte === 0xf7) {
-        // SysEx evento - saltar
+        // Los meta-eventos resetean el running status en algunas implementaciones
+      } else if (status === 0xf0 || status === 0xf7) {
+        // SysEx evento - saltar (no tiene running status)
         const sysexLength = this.readVariableLength()
         this.pos += sysexLength
-      } else if ((eventByte & 0xf0) === 0x90) {
+      } else if ((status & 0xf0) === 0x90) {
         // Note On
         const note = this.readUint8()
         const velocity = this.readUint8()
@@ -189,7 +205,7 @@ export class MidiParser {
           velocity,
           isOn: velocity > 0,
         })
-      } else if ((eventByte & 0xf0) === 0x80) {
+      } else if ((status & 0xf0) === 0x80) {
         // Note Off
         const note = this.readUint8()
         const velocity = this.readUint8()
@@ -199,8 +215,11 @@ export class MidiParser {
           velocity,
           isOn: false,
         })
-      } else if ((eventByte & 0xf0) >= 0x80) {
-        // Otros eventos de canal (2 bytes de datos)
+      } else if ((status & 0xf0) === 0xc0 || (status & 0xf0) === 0xd0) {
+        // Program Change o Channel Pressure (1 byte de datos)
+        this.pos += 1
+      } else if ((status & 0xf0) >= 0x80) {
+        // Otros eventos de canal (2 bytes de datos: Control Change, Pitch Bend, etc.)
         this.pos += 2
       }
     }
@@ -210,6 +229,9 @@ export class MidiParser {
 
     if (trackName) {
       this.tracks.set(trackName, events)
+    } else if (events.length > 0) {
+      // Si no tiene nombre pero tiene notas, darle un nombre genérico
+      this.tracks.set(`TRACK_${this.tracks.size}`, events)
     }
   }
 
@@ -347,18 +369,54 @@ export class MidiParser {
       if (carril === undefined) continue
 
       if (event.isOn) {
-        // Note On - guardar tick de inicio
+        // Note On - Si ya estaba activa, cerrarla primero (evitar notas infinitas)
+        if (activeNotes.has(event.note)) {
+          const prevStartTick = activeNotes.get(event.note)!
+          // Si es el mismo tick, ignorar (nota duplicada)
+          if (prevStartTick < event.tick) {
+            notes.push({
+              tick: prevStartTick,
+              carril,
+              duration: event.tick - prevStartTick,
+            })
+          }
+        }
         activeNotes.set(event.note, event.tick)
       } else {
         // Note Off - calcular duración
         const startTick = activeNotes.get(event.note)
         if (startTick !== undefined) {
+          // Solo agregar si la duración es positiva
+          if (event.tick > startTick) {
+            notes.push({
+              tick: startTick,
+              carril,
+              duration: event.tick - startTick,
+            })
+          } else if (event.tick === startTick) {
+            // Nota de duración cero, darle una duración mínima (1/32 de beat aprox)
+            notes.push({
+              tick: startTick,
+              carril,
+              duration: Math.max(1, Math.floor(this.resolution / 8)),
+            })
+          }
+          activeNotes.delete(event.note)
+        }
+      }
+    }
+
+    // Cerrar notas que quedaron abiertas al final del track
+    if (activeNotes.size > 0 && events.length > 0) {
+      const lastTick = events[events.length - 1].tick
+      for (const [note, startTick] of activeNotes.entries()) {
+        const carril = noteMap[note]
+        if (carril !== undefined) {
           notes.push({
             tick: startTick,
-            carril,
-            duration: event.tick - startTick,
+            carril: carril,
+            duration: Math.max(1, lastTick - startTick),
           })
-          activeNotes.delete(event.note)
         }
       }
     }
