@@ -93,13 +93,13 @@ export const GameMenu = ({
             CARGAR ARCHIVO .CHART
             ====================================== */}
         <div className="game-menu__file-group">
-          <span className="game-menu__file-label">1. Archivo de chart (.chart):</span>
+          <span className="game-menu__file-label">1. Archivo de chart:</span>
 
           {/* Input file oculto */}
           <input
             type="file"
             id="chart-file"
-            accept=".chart,.txt"
+            accept=".chart,.txt,.mid,.midi"
             onChange={handleChartFileChange}
             className="game-menu__file-input"
           />

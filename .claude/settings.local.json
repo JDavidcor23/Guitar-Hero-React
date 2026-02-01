@@ -6,7 +6,9 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Guitar Hero game with basic gameplay\n\n- Canvas rendering with 5 colored lanes \\(green, red, yellow, blue, orange\\)\n- Notes falling animation with deltaTime for consistent speed\n- Hit detection system with timing windows \\(PERFECT/GOOD/OK/MISS\\)\n- Visual feedback: lane flash on keypress, result text display\n- Combo counter tracking consecutive hits\n- Keyboard input: A, S, D, F, J mapped to lanes\n- Project structure following React patterns with hooks and constants\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(xxd:*)",
+      "Bash(strings:*)"
     ],
     "deny": [],
     "ask": []

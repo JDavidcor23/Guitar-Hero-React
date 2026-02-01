@@ -1,0 +1,424 @@
+import type { SongData, SongMetadata } from '../types/GuitarGame.types'
+
+/**
+ * Mapeo de notas MIDI a carriles del juego
+ * Rock Band/Clone Hero usa estos rangos para guitarra:
+ * - Easy: 60-64
+ * - Medium: 72-76
+ * - Hard: 84-88
+ * - Expert: 96-100
+ */
+const MIDI_NOTE_MAP: Record<string, Record<number, number>> = {
+  easy: { 60: 0, 61: 1, 62: 2, 63: 3, 64: 4 },
+  medium: { 72: 0, 73: 1, 74: 2, 75: 3, 76: 4 },
+  hard: { 84: 0, 85: 1, 86: 2, 87: 3, 88: 4 },
+  expert: { 96: 0, 97: 1, 98: 2, 99: 3, 100: 4 },
+}
+
+interface TempoEvent {
+  tick: number
+  tempo: number // microsegundos por beat
+}
+
+interface NoteEvent {
+  tick: number
+  note: number
+  velocity: number
+  isOn: boolean
+}
+
+interface ParsedNote {
+  tick: number
+  carril: number
+  duration: number // en ticks
+}
+
+/**
+ * Parser de archivos MIDI para Rock Band/Clone Hero
+ */
+export class MidiParser {
+  private data: DataView
+  private pos: number = 0
+  private trackCount: number = 0
+  private resolution: number = 480 // ticks por beat (PPQ)
+  private tempoTrack: TempoEvent[] = []
+  private tracks: Map<string, NoteEvent[]> = new Map()
+
+  constructor(arrayBuffer: ArrayBuffer) {
+    this.data = new DataView(arrayBuffer)
+  }
+
+  /**
+   * Parsea el archivo MIDI completo
+   */
+  parse(): this {
+    this.parseHeader()
+
+    for (let i = 0; i < this.trackCount; i++) {
+      this.parseTrack()
+    }
+
+    return this
+  }
+
+  /**
+   * Parsea el header MIDI (MThd)
+   */
+  private parseHeader(): void {
+    // Verificar "MThd"
+    const magic = this.readString(4)
+    if (magic !== 'MThd') {
+      throw new Error('No es un archivo MIDI válido')
+    }
+
+    // Tamaño del header (siempre 6)
+    const headerLength = this.readUint32()
+    if (headerLength !== 6) {
+      throw new Error('Header MIDI inválido')
+    }
+
+    // Formato (0, 1, o 2) - lo leemos pero no lo usamos
+    this.readUint16()
+
+    // Número de tracks
+    this.trackCount = this.readUint16()
+
+    // División de tiempo (ticks por beat)
+    this.resolution = this.readUint16()
+
+    // Si el bit más alto está activo, es SMPTE timing (no soportado)
+    if (this.resolution & 0x8000) {
+      throw new Error('SMPTE timing no soportado')
+    }
+  }
+
+  /**
+   * Parsea un track MIDI (MTrk)
+   */
+  private parseTrack(): void {
+    // Verificar "MTrk"
+    const magic = this.readString(4)
+    if (magic !== 'MTrk') {
+      throw new Error('Track MIDI inválido')
+    }
+
+    const trackLength = this.readUint32()
+    const trackEnd = this.pos + trackLength
+
+    let trackName = ''
+    const events: NoteEvent[] = []
+    let currentTick = 0
+
+    while (this.pos < trackEnd) {
+      // Leer delta time (variable length)
+      const deltaTime = this.readVariableLength()
+      currentTick += deltaTime
+
+      // Leer evento
+      const eventByte = this.readUint8()
+
+      if (eventByte === 0xff) {
+        // Meta evento
+        const metaType = this.readUint8()
+        const metaLength = this.readVariableLength()
+
+        if (metaType === 0x03) {
+          // Track name
+          trackName = this.readString(metaLength)
+        } else if (metaType === 0x51 && metaLength === 3) {
+          // Set Tempo
+          const tempo =
+            (this.readUint8() << 16) | (this.readUint8() << 8) | this.readUint8()
+          this.tempoTrack.push({ tick: currentTick, tempo })
+        } else if (metaType === 0x2f) {
+          // End of Track
+          break
+        } else {
+          // Saltar otros meta eventos
+          this.pos += metaLength
+        }
+      } else if (eventByte === 0xf0 || eventByte === 0xf7) {
+        // SysEx evento - saltar
+        const sysexLength = this.readVariableLength()
+        this.pos += sysexLength
+      } else if ((eventByte & 0xf0) === 0x90) {
+        // Note On
+        const note = this.readUint8()
+        const velocity = this.readUint8()
+        events.push({
+          tick: currentTick,
+          note,
+          velocity,
+          isOn: velocity > 0,
+        })
+      } else if ((eventByte & 0xf0) === 0x80) {
+        // Note Off
+        const note = this.readUint8()
+        const velocity = this.readUint8()
+        events.push({
+          tick: currentTick,
+          note,
+          velocity,
+          isOn: false,
+        })
+      } else if ((eventByte & 0xf0) >= 0x80) {
+        // Otros eventos de canal (2 bytes de datos)
+        this.pos += 2
+      }
+    }
+
+    // Asegurar que estamos al final del track
+    this.pos = trackEnd
+
+    if (trackName) {
+      this.tracks.set(trackName, events)
+    }
+  }
+
+  /**
+   * Obtiene las dificultades disponibles
+   */
+  getAvailableDifficulties(): string[] {
+    const guitarEvents = this.tracks.get('PART GUITAR') || this.tracks.get('PART BASS')
+    if (!guitarEvents) return []
+
+    const available: string[] = []
+    const noteNumbers = new Set(guitarEvents.map((e) => e.note))
+
+    // Verificar qué dificultades tienen notas
+    for (const [difficulty, noteMap] of Object.entries(MIDI_NOTE_MAP)) {
+      const hasNotes = Object.keys(noteMap).some((n) => noteNumbers.has(parseInt(n)))
+      if (hasNotes) {
+        available.push(difficulty)
+      }
+    }
+
+    return available
+  }
+
+  /**
+   * Obtiene los nombres de tracks disponibles
+   */
+  getAvailableTracks(): string[] {
+    return Array.from(this.tracks.keys())
+  }
+
+  /**
+   * Convierte ticks a segundos usando el tempo track
+   */
+  private ticksToSeconds(tick: number): number {
+    if (this.tempoTrack.length === 0) {
+      // Tempo default: 120 BPM = 500000 microsegundos por beat
+      return (tick / this.resolution) * 0.5
+    }
+
+    let seconds = 0
+    let lastTick = 0
+    let currentTempo = 500000 // 120 BPM default
+
+    for (const tempoEvent of this.tempoTrack) {
+      if (tempoEvent.tick > tick) break
+
+      // Calcular tiempo desde el último cambio de tempo
+      const deltaTicks = tempoEvent.tick - lastTick
+      const deltaBeats = deltaTicks / this.resolution
+      const deltaSeconds = deltaBeats * (currentTempo / 1000000)
+      seconds += deltaSeconds
+
+      lastTick = tempoEvent.tick
+      currentTempo = tempoEvent.tempo
+    }
+
+    // Calcular tiempo restante con el tempo actual
+    const remainingTicks = tick - lastTick
+    const remainingBeats = remainingTicks / this.resolution
+    const remainingSeconds = remainingBeats * (currentTempo / 1000000)
+    seconds += remainingSeconds
+
+    return parseFloat(seconds.toFixed(3))
+  }
+
+  /**
+   * Convierte una duración en ticks a segundos
+   */
+  private ticksDurationToSeconds(startTick: number, durationTicks: number): number {
+    const endTick = startTick + durationTicks
+    return this.ticksToSeconds(endTick) - this.ticksToSeconds(startTick)
+  }
+
+  /**
+   * Extrae las notas de una dificultad específica
+   */
+  private extractNotes(difficulty: string, trackName: string = 'PART GUITAR'): ParsedNote[] {
+    const events = this.tracks.get(trackName) || this.tracks.get('PART BASS')
+    if (!events) return []
+
+    const noteMap = MIDI_NOTE_MAP[difficulty]
+    if (!noteMap) return []
+
+    const notes: ParsedNote[] = []
+    const activeNotes: Map<number, number> = new Map() // note -> startTick
+
+    for (const event of events) {
+      const carril = noteMap[event.note]
+      if (carril === undefined) continue
+
+      if (event.isOn) {
+        // Note On - guardar tick de inicio
+        activeNotes.set(event.note, event.tick)
+      } else {
+        // Note Off - calcular duración
+        const startTick = activeNotes.get(event.note)
+        if (startTick !== undefined) {
+          notes.push({
+            tick: startTick,
+            carril,
+            duration: event.tick - startTick,
+          })
+          activeNotes.delete(event.note)
+        }
+      }
+    }
+
+    return notes.sort((a, b) => a.tick - b.tick)
+  }
+
+  /**
+   * Convierte a formato SongData del juego
+   */
+  convertToSongData(
+    difficulty: string,
+    metadata?: Partial<SongMetadata>,
+    trackName: string = 'PART GUITAR'
+  ): SongData | null {
+    const notes = this.extractNotes(difficulty, trackName)
+
+    if (notes.length === 0) {
+      return null
+    }
+
+    // Convertir notas a formato del juego
+    const songNotes = notes.map((note) => ({
+      segundo: this.ticksToSeconds(note.tick),
+      carril: note.carril,
+      duracion: this.ticksDurationToSeconds(note.tick, note.duration),
+    }))
+
+    // Calcular duración total
+    const lastNote = notes[notes.length - 1]
+    const duration = this.ticksToSeconds(lastNote.tick + lastNote.duration) + 5
+
+    // Calcular NPS
+    const averageNPS = parseFloat((songNotes.length / duration).toFixed(2))
+
+    return {
+      metadata: {
+        songName: metadata?.songName || 'Unknown Song',
+        artist: metadata?.artist || 'Unknown Artist',
+        charter: metadata?.charter || '',
+        duration: parseFloat(duration.toFixed(2)),
+        totalNotes: songNotes.length,
+        difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
+        chartDifficulty: metadata?.chartDifficulty,
+        averageNPS,
+        maxNPS: this.calculateMaxNPS(songNotes, duration),
+      },
+      notes: songNotes,
+    }
+  }
+
+  /**
+   * Calcula el NPS máximo en ventanas de 1 segundo
+   */
+  private calculateMaxNPS(
+    notes: Array<{ segundo: number; carril: number; duracion: number }>,
+    duration: number
+  ): number {
+    let maxNPS = 0
+
+    for (let time = 0; time < duration; time += 0.5) {
+      const count = notes.filter((n) => n.segundo >= time && n.segundo < time + 1).length
+      maxNPS = Math.max(maxNPS, count)
+    }
+
+    return maxNPS
+  }
+
+  // ==========================================
+  // Funciones auxiliares de lectura
+  // ==========================================
+
+  private readUint8(): number {
+    const value = this.data.getUint8(this.pos)
+    this.pos += 1
+    return value
+  }
+
+  private readUint16(): number {
+    const value = this.data.getUint16(this.pos, false) // Big endian
+    this.pos += 2
+    return value
+  }
+
+  private readUint32(): number {
+    const value = this.data.getUint32(this.pos, false) // Big endian
+    this.pos += 4
+    return value
+  }
+
+  private readString(length: number): string {
+    let str = ''
+    for (let i = 0; i < length; i++) {
+      str += String.fromCharCode(this.readUint8())
+    }
+    return str
+  }
+
+  private readVariableLength(): number {
+    let value = 0
+    let byte: number
+
+    do {
+      byte = this.readUint8()
+      value = (value << 7) | (byte & 0x7f)
+    } while (byte & 0x80)
+
+    return value
+  }
+}
+
+/**
+ * Parsea un archivo song.ini para obtener metadata
+ */
+export function parseSongIni(content: string): Partial<SongMetadata> {
+  const metadata: Partial<SongMetadata> = {}
+  const lines = content.split('\n')
+
+  for (const line of lines) {
+    const match = line.match(/^(\w+)\s*=\s*(.+)$/)
+    if (!match) continue
+
+    const [, key, value] = match
+    const trimmedValue = value.trim()
+
+    switch (key.toLowerCase()) {
+      case 'name':
+        metadata.songName = trimmedValue
+        break
+      case 'artist':
+        metadata.artist = trimmedValue
+        break
+      case 'charter':
+        metadata.charter = trimmedValue
+        break
+      case 'diff_guitar':
+        metadata.chartDifficulty = parseInt(trimmedValue)
+        break
+      case 'song_length':
+        metadata.duration = parseInt(trimmedValue) / 1000 // ms a segundos
+        break
+    }
+  }
+
+  return metadata
+}
