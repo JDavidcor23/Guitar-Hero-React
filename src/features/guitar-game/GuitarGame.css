@@ -5,6 +5,15 @@
   align-items: center;
   min-height: 100vh;
   background-color: #222;
+  position: relative;
+}
+
+/* Selector de perfil posicionado arriba a la derecha */
+.game-profile-selector {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
 }
 
 .game-canvas {
@@ -45,10 +54,12 @@
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.8;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;

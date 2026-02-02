@@ -1,0 +1,419 @@
+/* ==========================================
+   ESTILOS PARA EL SISTEMA DE PERFILES
+   ========================================== */
+
+/* ==========================================
+   PROFILE SELECTOR
+   ========================================== */
+
+.profile-selector {
+  position: relative;
+  z-index: 100;
+}
+
+.profile-selector__current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(60, 60, 80, 0.9), rgba(40, 40, 60, 0.9));
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.profile-selector__current:hover {
+  border-color: rgba(255, 200, 100, 0.5);
+  box-shadow: 0 0 15px rgba(255, 200, 100, 0.3);
+}
+
+.profile-selector__avatar {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.profile-selector__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-selector__arrow {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
+/* Dropdown */
+.profile-selector__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: linear-gradient(135deg, rgba(40, 40, 60, 0.98), rgba(30, 30, 50, 0.98));
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-selector__list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.profile-selector__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.profile-selector__item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-selector__item--active {
+  background: rgba(100, 200, 100, 0.15);
+}
+
+.profile-selector__item-avatar {
+  font-size: 1.3rem;
+}
+
+.profile-selector__item-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.profile-selector__item-check {
+  color: #4ade80;
+  font-size: 0.9rem;
+}
+
+.profile-selector__item-delete {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: all 0.15s ease;
+}
+
+.profile-selector__item:hover .profile-selector__item-delete {
+  opacity: 1;
+}
+
+.profile-selector__item-delete:hover {
+  color: #ef4444;
+}
+
+.profile-selector__add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 200, 100, 0.1);
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffc864;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+
+.profile-selector__add:hover {
+  background: rgba(255, 200, 100, 0.2);
+}
+
+.profile-selector__add-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Overlay para cerrar dropdown */
+.profile-selector__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
+
+/* Modal backdrop */
+.profile-selector__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal de confirmación */
+.profile-selector__confirm-modal {
+  background: linear-gradient(135deg, rgba(50, 50, 70, 0.98), rgba(35, 35, 55, 0.98));
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 320px;
+  text-align: center;
+}
+
+.profile-selector__confirm-modal h3 {
+  color: #fff;
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+}
+
+.profile-selector__confirm-modal p {
+  color: #aaa;
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+}
+
+.profile-selector__confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.profile-selector__confirm-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.profile-selector__confirm-buttons button:first-child {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.profile-selector__confirm-buttons button:first-child:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-selector__confirm-delete {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: #fff !important;
+}
+
+.profile-selector__confirm-delete:hover {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+/* ==========================================
+   REGISTER FORM
+   ========================================== */
+
+.register-form--initial {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0d0d15 100%);
+  z-index: 300;
+}
+
+.register-form--modal {
+  animation: scaleIn 0.25s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.register-form__container {
+  background: linear-gradient(135deg, rgba(50, 50, 80, 0.95), rgba(30, 30, 55, 0.95));
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.register-form__title {
+  color: #fff;
+  font-size: 1.8rem;
+  margin: 0 0 8px;
+  text-align: center;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.register-form__subtitle {
+  color: #aaa;
+  font-size: 0.95rem;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.register-form__form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.register-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.register-form__label {
+  color: #ccc;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.register-form__input {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.register-form__input:focus {
+  border-color: rgba(255, 200, 100, 0.5);
+  box-shadow: 0 0 15px rgba(255, 200, 100, 0.2);
+}
+
+.register-form__input::placeholder {
+  color: #666;
+}
+
+.register-form__error {
+  color: #ef4444;
+  font-size: 0.8rem;
+}
+
+/* Selector de avatares */
+.register-form__avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.register-form__avatar {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.register-form__avatar:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.register-form__avatar--selected {
+  background: rgba(255, 200, 100, 0.2);
+  border-color: #ffc864;
+  box-shadow: 0 0 20px rgba(255, 200, 100, 0.3);
+  transform: scale(1.1);
+}
+
+/* Botones */
+.register-form__buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.register-form__button {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.register-form__button--cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+.register-form__button--cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.register-form__button--submit {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #1a1a2e;
+}
+
+.register-form__button--submit:hover {
+  box-shadow: 0 0 30px rgba(255, 200, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.register-form__button--submit:active {
+  transform: translateY(0);
+}

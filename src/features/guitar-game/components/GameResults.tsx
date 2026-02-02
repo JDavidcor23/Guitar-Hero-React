@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type { GameStats, SongData } from '../types/GuitarGame.types'
 import './GameResults.css'
 
@@ -14,6 +15,10 @@ interface GameResultsProps {
   onPlayAgain: () => void
   /** Callback para volver al menú y elegir otra canción */
   onBackToMenu: () => void
+  /** Callback para guardar la puntuación (opcional) */
+  onSaveScore?: (stats: GameStats) => void
+  /** Nombre del jugador actual (opcional) */
+  playerName?: string
 }
 
 /**
@@ -27,7 +32,18 @@ interface GameResultsProps {
  * - Desglose de Perfect/Good/OK/Miss
  * - Botones para jugar de nuevo o volver al menú
  */
-export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu }: GameResultsProps) => {
+export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScore, playerName }: GameResultsProps) => {
+  // Ref para evitar guardar la puntuación múltiples veces
+  const scoreSavedRef = useRef(false)
+
+  // Guardar puntuación al montar el componente
+  useEffect(() => {
+    if (onSaveScore && !scoreSavedRef.current) {
+      scoreSavedRef.current = true
+      onSaveScore(stats)
+    }
+  }, [onSaveScore, stats])
+
   /**
    * Calcula el porcentaje de accuracy
    * (Perfect + Good + OK) / Total notas * 100
@@ -63,6 +79,9 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu }: GameResu
       <h2 className="game-results__song-name">{song.metadata.songName}</h2>
       {song.metadata.artist && (
         <p className="game-results__song-artist">{song.metadata.artist}</p>
+      )}
+      {playerName && (
+        <p className="game-results__player-name">Jugador: {playerName}</p>
       )}
 
       {/* Rango */}

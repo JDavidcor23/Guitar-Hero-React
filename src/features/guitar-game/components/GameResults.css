@@ -31,7 +31,16 @@
 .game-results__song-artist {
   font-size: 16px;
   color: #aaaaaa;
+  margin: 0 0 8px 0;
+}
+
+.game-results__player-name {
+  font-size: 14px;
+  color: #ffc864;
   margin: 0 0 20px 0;
+  padding: 4px 12px;
+  background: rgba(255, 200, 100, 0.15);
+  border-radius: 12px;
 }
 
 /* Rango */

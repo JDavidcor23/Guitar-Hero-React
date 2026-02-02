@@ -4,6 +4,7 @@ import { useSongLoader } from './hooks/useSongLoader.hook'
 import { useAudioPlayer } from './hooks/useAudioPlayer.hook'
 import { GameMenu } from './components/GameMenu'
 import { GameResults } from './components/GameResults'
+import { useUserProfiles, ProfileSelector, RegisterForm } from '../user-profiles'
 import type { GameState, GameStats } from './types/GuitarGame.types'
 import './GuitarGame.css'
 
@@ -68,6 +69,18 @@ export const GuitarGame = () => {
     changeInstrument,
     clearSong,
   } = useSongLoader()
+
+  // Hook para manejar perfiles de usuario
+  const {
+    profiles,
+    currentUser,
+    hasProfiles,
+    hasActiveUser,
+    registerUser,
+    switchUser,
+    deleteUser,
+    addScore,
+  } = useUserProfiles()
 
   // Hook para manejar audio
   const audioPlayer = useAudioPlayer()
@@ -292,8 +305,65 @@ export const GuitarGame = () => {
   // ==========================================
   // RENDER
   // ==========================================
+
+  // Calcular accuracy para el score
+  const calculateAccuracy = (stats: GameStats): number => {
+    const totalHits = stats.perfects + stats.goods + stats.oks
+    const totalNotes = totalHits + stats.misses
+    if (totalNotes === 0) return 0
+    return Math.round((totalHits / totalNotes) * 100)
+  }
+
+  // Obtener rank basado en accuracy
+  const getRank = (accuracy: number): string => {
+    if (accuracy >= 95) return 'S'
+    if (accuracy >= 90) return 'A'
+    if (accuracy >= 80) return 'B'
+    if (accuracy >= 70) return 'C'
+    if (accuracy >= 60) return 'D'
+    return 'F'
+  }
+
+  // Guardar puntuación al terminar
+  const handleSaveScore = (stats: GameStats) => {
+    if (!song || !hasActiveUser) return
+    
+    const accuracy = calculateAccuracy(stats)
+    addScore({
+      songId: song.metadata.songName.toLowerCase().replace(/\s+/g, '_'),
+      songName: song.metadata.songName,
+      artist: song.metadata.artist,
+      score: stats.score,
+      accuracy,
+      rank: getRank(accuracy),
+      maxCombo: stats.maxCombo,
+      difficulty: song.metadata.difficulty || 'unknown',
+    })
+  }
+
+  // Si no hay perfiles, mostrar formulario de registro inicial
+  if (!hasProfiles) {
+    return <RegisterForm 
+      isInitialSetup={true} 
+      onRegister={registerUser} 
+    />
+  }
+
   return (
     <div className="game-container">
+      {/* Selector de perfil (visible en menú y resultados) */}
+      {(gameState === 'menu' || gameState === 'finished') && hasActiveUser && (
+        <div className="game-profile-selector">
+          <ProfileSelector
+            profiles={profiles}
+            currentUser={currentUser}
+            onSwitchUser={switchUser}
+            onRegisterUser={registerUser}
+            onDeleteUser={deleteUser}
+          />
+        </div>
+      )}
+
       {/* ESTADO: Menú */}
       {gameState === 'menu' && (
         <GameMenu
@@ -351,8 +421,11 @@ export const GuitarGame = () => {
           song={song}
           onPlayAgain={handlePlayAgain}
           onBackToMenu={handleBackToMenu}
+          onSaveScore={handleSaveScore}
+          playerName={currentUser?.profile.name}
         />
       )}
     </div>
   )
 }
+
