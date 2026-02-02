@@ -1,6 +1,6 @@
-import type { SongData } from '../types/GuitarGame.types'
-import type { InstrumentInfo } from '../hooks/useSongLoader.hook'
-import { AudioFormatHelp } from './AudioFormatHelp'
+import type { SongData } from '../gameplay/types/GuitarGame.types'
+import type { InstrumentInfo } from './hooks/useSongLoader.hook'
+import { AudioFormatHelp } from './components/AudioFormatHelp'
 import './GameMenu.css'
 
 // ==========================================

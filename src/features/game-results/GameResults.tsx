@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { GameStats, SongData } from '../types/GuitarGame.types'
+import type { GameStats, SongData } from '../gameplay/types/GuitarGame.types'
 import './GameResults.css'
 
 // ==========================================

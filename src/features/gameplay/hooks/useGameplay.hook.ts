@@ -33,7 +33,7 @@ import {
 // TIPOS PARA LOS PARÁMETROS DEL HOOK
 // ==========================================
 
-interface UseGuitarGameParams {
+interface UseGameplayParams {
   /** La canción a jugar (null si no hay ninguna cargada) */
   song: SongData | null
   /** Estado actual del juego (menu, countdown, playing, paused, finished) */
@@ -65,7 +65,7 @@ interface UseGuitarGameParams {
  * - El juego tiene estados: menu, playing, paused, finished
  * - gameTime cuenta los segundos desde que empezó la canción
  */
-export const useGuitarGame = ({
+export const useGameplay = ({
   song,
   gameState,
   onGameEnd,
@@ -73,7 +73,7 @@ export const useGuitarGame = ({
   onStatsChange,
   getAudioTime,
   calibrationOffset = 0,
-}: UseGuitarGameParams) => {
+}: UseGameplayParams) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // ==========================================

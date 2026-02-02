@@ -70,17 +70,19 @@ Una implementación moderna de Guitar Hero construida con **React**, **TypeScrip
 
 ## 📁 Estructura del Proyecto
 
+El proyecto está organizado siguiendo el **Principio de Proximidad**, con funcionalidades divididas en features autocontenidas:
+
 ```text
 src/
 ├── features/
-│   └── guitar-game/         # Lógica principal del juego
-│       ├── components/     # Menús, resultados, elementos UI
-│       ├── constants/      # Configuración, colores, tiempos
-│       ├── hooks/          # useGuitarGame, useAudioPlayer, etc.
-│       ├── types/          # Definiciones de TypeScript
-│       └── utils/          # Parsers de .chart y procesos de audio
-├── assets/                 # Estilos globales y archivos estáticos
-└── main.tsx                # Punto de entrada de la aplicación
+│   ├── game-menu/           # Selección de canciones y carga de archivos
+│   ├── gameplay/            # Lógica central del juego, renderizado y audio
+│   ├── game-results/        # Pantalla de estadísticas finales
+│   └── user-profiles/       # Gestión de perfiles de usuario y puntuaciones (High Scores)
+├── components/              # Componentes globales y reutilizables
+├── hooks/                   # Hooks compartidos entre features
+├── assets/                  # Estilos globales, imágenes y fuentes
+└── App.tsx                  # Orquestador principal que maneja los estados del juego
 ```
 
 ## 📝 Licencia

@@ -1,7 +1,7 @@
-import { GuitarGame } from './features/guitar-game'
+import { Gameplay } from './features/gameplay'
 
 function App() {
-  return <GuitarGame />
+  return <Gameplay />
 }
 
 export default App

@@ -1,12 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { useGuitarGame } from './hooks/useGuitarGame.hook'
-import { useSongLoader } from './hooks/useSongLoader.hook'
+import { useGameplay } from './hooks/useGameplay.hook'
 import { useAudioPlayer } from './hooks/useAudioPlayer.hook'
-import { GameMenu } from './components/GameMenu'
-import { GameResults } from './components/GameResults'
+import { GameMenu, useSongLoader } from '../game-menu'
+import { GameResults } from '../game-results'
 import { useUserProfiles, ProfileSelector, RegisterForm } from '../user-profiles'
 import type { GameState, GameStats } from './types/GuitarGame.types'
-import './GuitarGame.css'
+import './Gameplay.css'
 
 // ==========================================
 // CONSTANTES
@@ -31,7 +30,7 @@ const COUNTDOWN_START = 3
  * - Sincronización de notas con el audio
  * - Pausa/Resume del audio
  */
-export const GuitarGame = () => {
+export const Gameplay = () => {
   // ==========================================
   // ESTADO DEL JUEGO
   // ==========================================
@@ -293,7 +292,7 @@ export const GuitarGame = () => {
     return -1 // Indica que el hook debe usar su propio sistema de tiempo
   }, [audioPlayer])
 
-  const { canvasRef, canvasWidth, canvasHeight } = useGuitarGame({
+  const { canvasRef, canvasWidth, canvasHeight } = useGameplay({
     song,
     gameState,
     onGameEnd: handleGameEnd,

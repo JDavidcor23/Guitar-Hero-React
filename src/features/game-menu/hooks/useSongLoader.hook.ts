@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
-import type { SongData, SongMetadata } from '../types/GuitarGame.types'
-import { ChartParser } from '../utils/chartParser'
-import { MidiParser, parseSongIni } from '../utils/midiParser'
+import type { SongData, SongMetadata } from '../../gameplay/types/GuitarGame.types'
+import { ChartParser } from '../../gameplay/utils/chartParser'
+import { MidiParser, parseSongIni } from '../../gameplay/utils/midiParser'
 
 /**
  * Información de un instrumento disponible
