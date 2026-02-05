@@ -1,344 +1,59 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { useGameplay } from './hooks/useGameplay.hook'
-import { useAudioPlayer } from './hooks/useAudioPlayer.hook'
-import { GameMenu, useSongLoader } from '../game-menu'
+import { useGameplayManager } from './hooks/useGameplayManager.hook'
+import { GameMenu } from '../game-menu'
 import { GameResults } from '../game-results'
-import { useUserProfiles, ProfileSelector, RegisterForm } from '../user-profiles'
-import type { GameState, GameStats } from './types/GuitarGame.types'
+import { ProfileSelector, RegisterForm } from '../user-profiles'
 import './Gameplay.css'
-
-// ==========================================
-// CONSTANTES
-// ==========================================
-
-/** Duración de cada número de la cuenta regresiva (ms) */
-const COUNTDOWN_INTERVAL = 1000
-
-/** Número inicial de la cuenta regresiva */
-const COUNTDOWN_START = 3
-
-// ==========================================
-// COMPONENTE PRINCIPAL
-// ==========================================
 
 /**
  * Componente principal del juego Guitar Hero
  *
- * PASO 5: Ahora incluye:
- * - Carga de audio con Web Audio API
- * - Cuenta regresiva antes de empezar
- * - Sincronización de notas con el audio
- * - Pausa/Resume del audio
+ * AHORA: Componente puramente presentacional. 
+ * Toda la lógica reside en useGameplayManager.
  */
 export const Gameplay = () => {
-  // ==========================================
-  // ESTADO DEL JUEGO
-  // ==========================================
-
-  // Estado actual: menu, countdown, playing, paused, finished
-  const [gameState, setGameState] = useState<GameState>('menu')
-
-  // Número actual de la cuenta regresiva (3, 2, 1, 0 = GO!)
-  const [countdownNumber, setCountdownNumber] = useState<number>(COUNTDOWN_START)
-
-  // Estadísticas finales (se guardan cuando termina el juego)
-  const [finalStats, setFinalStats] = useState<GameStats | null>(null)
-
-  // Estado para tracking de carga de audio
-  const [isAudioLoading, setIsAudioLoading] = useState(false)
-
-  // Ref para el intervalo de countdown
-  const countdownIntervalRef = useRef<number | null>(null)
-
-  // ==========================================
-  // HOOKS
-  // ==========================================
-
-  // Hook para cargar canciones (.chart o .mid)
   const {
+    // Estado
+    gameState,
+    countdownNumber,
+    finalStats,
+    isAudioLoading,
+    
+    // Canción
     song,
     error,
     isLoading,
     availableDifficulties,
     availableInstruments,
     currentInstrument,
-    loadFromFile,
-    loadFromFolder,
-    changeDifficulty,
-    changeInstrument,
-    clearSong,
-  } = useSongLoader()
-
-  // Hook para manejar perfiles de usuario
-  const {
+    
+    // Perfiles
     profiles,
     currentUser,
     hasProfiles,
     hasActiveUser,
+    
+    // Audio Player info
+    audioPlayer,
+    
+    // Canvas
+    canvasRef,
+    canvasWidth,
+    canvasHeight,
+    
+    // Handlers
+    handleAudioFileSelect,
+    handleFolderSelect,
+    handleStartGame,
+    handlePlayAgain,
+    handleBackToMenu,
+    handleSaveScore,
+    loadFromFile,
+    changeDifficulty,
+    changeInstrument,
     registerUser,
     switchUser,
     deleteUser,
-    addScore,
-  } = useUserProfiles()
-
-  // Hook para manejar audio
-  const audioPlayer = useAudioPlayer()
-
-  // ==========================================
-  // FUNCIONES DE AUDIO
-  // ==========================================
-
-  /**
-   * Carga un archivo de audio
-   */
-  const handleAudioFileSelect = useCallback(
-    async (file: File) => {
-      setIsAudioLoading(true)
-      await audioPlayer.loadAudioFile(file)
-      setIsAudioLoading(false)
-    },
-    [audioPlayer]
-  )
-
-  /**
-   * Carga una carpeta completa de canción (chart + audio stems)
-   */
-  const handleFolderSelect = useCallback(
-    async (files: FileList) => {
-      // Primero cargar el chart
-      await loadFromFolder(files)
-
-      // Buscar archivos de audio en la carpeta
-      const audioExtensions = ['.ogg', '.opus', '.mp3', '.wav', '.flac']
-      const audioFiles: File[] = []
-
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
-        if (audioExtensions.includes(ext)) {
-          audioFiles.push(file)
-        }
-      }
-
-      // Cargar stems si hay archivos de audio
-      if (audioFiles.length > 0) {
-        setIsAudioLoading(true)
-        await audioPlayer.loadAudioStems(audioFiles)
-        setIsAudioLoading(false)
-      }
-    },
-    [loadFromFolder, audioPlayer]
-  )
-
-  // ==========================================
-  // CALLBACKS: Manejo de eventos del juego
-  // ==========================================
-
-  /**
-   * Limpia el intervalo de countdown
-   */
-  const clearCountdownInterval = useCallback(() => {
-    if (countdownIntervalRef.current !== null) {
-      clearInterval(countdownIntervalRef.current)
-      countdownIntervalRef.current = null
-    }
-  }, [])
-
-  /**
-   * Inicia la cuenta regresiva y luego el juego
-   */
-  const startCountdown = useCallback(() => {
-    // Limpiar intervalo anterior si existe
-    clearCountdownInterval()
-
-    // Resetear contador
-    setCountdownNumber(COUNTDOWN_START)
-    setGameState('countdown')
-
-    // Iniciar intervalo
-    countdownIntervalRef.current = window.setInterval(() => {
-      setCountdownNumber((prev) => {
-        if (prev <= 1) {
-          // Countdown terminado, empezar juego
-          clearCountdownInterval()
-
-          // Iniciar audio si está cargado
-          if (audioPlayer.isLoaded) {
-            audioPlayer.play(0)
-          }
-
-          // Cambiar a estado playing
-          setGameState('playing')
-          return 0
-        }
-        return prev - 1
-      })
-    }, COUNTDOWN_INTERVAL)
-  }, [audioPlayer, clearCountdownInterval])
-
-  /**
-   * Se llama cuando el usuario presiona "Empezar a jugar"
-   */
-  const handleStartGame = useCallback(() => {
-    if (song) {
-      setFinalStats(null)
-      startCountdown()
-    }
-  }, [song, startCountdown])
-
-  /**
-   * Se llama cuando el usuario presiona ESPACIO (pausar/reanudar)
-   */
-  const handlePauseToggle = useCallback(async () => {
-    if (gameState === 'playing') {
-      // Pausar
-      if (audioPlayer.isLoaded) {
-        await audioPlayer.pause()
-      }
-      setGameState('paused')
-    } else if (gameState === 'paused') {
-      // Reanudar
-      if (audioPlayer.isLoaded) {
-        await audioPlayer.resume()
-      }
-      setGameState('playing')
-    }
-  }, [gameState, audioPlayer])
-
-  /**
-   * Se llama cuando la canción termina
-   */
-  const handleGameEnd = useCallback(
-    (stats: GameStats) => {
-      // Detener audio
-      if (audioPlayer.isLoaded) {
-        audioPlayer.stop()
-      }
-      setFinalStats(stats)
-      setGameState('finished')
-    },
-    [audioPlayer]
-  )
-
-  /**
-   * Se llama cuando el usuario presiona "Jugar de nuevo"
-   */
-  const handlePlayAgain = useCallback(() => {
-    setFinalStats(null)
-    startCountdown()
-  }, [startCountdown])
-
-  /**
-   * Se llama cuando el usuario presiona "Cambiar canción"
-   */
-  const handleBackToMenu = useCallback(() => {
-    setFinalStats(null)
-    clearSong()
-    audioPlayer.cleanup()
-    setGameState('menu')
-  }, [clearSong, audioPlayer])
-
-  /**
-   * Ajusta el offset de calibración
-   */
-  const handleCalibrationChange = useCallback(
-    (delta: number) => {
-      const currentOffset = audioPlayer.getCalibrationOffset()
-      const newOffset = Math.max(-200, Math.min(200, currentOffset + delta))
-      audioPlayer.setCalibrationOffset(newOffset)
-    },
-    [audioPlayer]
-  )
-
-  // ==========================================
-  // EFECTOS
-  // ==========================================
-
-  // Limpiar intervalo cuando el componente se desmonta
-  useEffect(() => {
-    return () => {
-      clearCountdownInterval()
-    }
-  }, [clearCountdownInterval])
-
-  // Manejar teclas de calibración (+/-)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (gameState === 'playing' || gameState === 'paused') {
-        if (event.key === '+' || event.key === '=') {
-          handleCalibrationChange(10) // +10ms
-        } else if (event.key === '-' || event.key === '_') {
-          handleCalibrationChange(-10) // -10ms
-        }
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [gameState, handleCalibrationChange])
-
-  // ==========================================
-  // HOOK: Lógica del juego (canvas)
-  // ==========================================
-
-  /**
-   * Función para obtener el tiempo actual del juego
-   * Usa audioContext.currentTime si hay audio, sino performance.now()
-   */
-  const getGameTime = useCallback((): number => {
-    if (audioPlayer.isLoaded && audioPlayer.isPlaying) {
-      return audioPlayer.getCurrentTime()
-    }
-    return -1 // Indica que el hook debe usar su propio sistema de tiempo
-  }, [audioPlayer])
-
-  const { canvasRef, canvasWidth, canvasHeight } = useGameplay({
-    song,
-    gameState,
-    onGameEnd: handleGameEnd,
-    onPauseToggle: handlePauseToggle,
-    getAudioTime: audioPlayer.isLoaded ? getGameTime : undefined,
-    calibrationOffset: audioPlayer.getCalibrationOffset(),
-  })
-
-  // ==========================================
-  // RENDER
-  // ==========================================
-
-  // Calcular accuracy para el score
-  const calculateAccuracy = (stats: GameStats): number => {
-    const totalHits = stats.perfects + stats.goods + stats.oks
-    const totalNotes = totalHits + stats.misses
-    if (totalNotes === 0) return 0
-    return Math.round((totalHits / totalNotes) * 100)
-  }
-
-  // Obtener rank basado en accuracy
-  const getRank = (accuracy: number): string => {
-    if (accuracy >= 95) return 'S'
-    if (accuracy >= 90) return 'A'
-    if (accuracy >= 80) return 'B'
-    if (accuracy >= 70) return 'C'
-    if (accuracy >= 60) return 'D'
-    return 'F'
-  }
-
-  // Guardar puntuación al terminar
-  const handleSaveScore = (stats: GameStats) => {
-    if (!song || !hasActiveUser) return
-    
-    const accuracy = calculateAccuracy(stats)
-    addScore({
-      songId: song.metadata.songName.toLowerCase().replace(/\s+/g, '_'),
-      songName: song.metadata.songName,
-      artist: song.metadata.artist,
-      score: stats.score,
-      accuracy,
-      rank: getRank(accuracy),
-      maxCombo: stats.maxCombo,
-      difficulty: song.metadata.difficulty || 'unknown',
-    })
-  }
+  } = useGameplayManager()
 
   // Si no hay perfiles, mostrar formulario de registro inicial
   if (!hasProfiles) {
@@ -407,7 +122,7 @@ export const Gameplay = () => {
           {/* Indicador de offset (solo si hay audio) */}
           {audioPlayer.isLoaded && (
             <div className="game-calibration">
-              Offset: {audioPlayer.getCalibrationOffset()}ms (+/- para ajustar)
+              Offset: {audioPlayer.calibrationOffset}ms (+/- para ajustar)
             </div>
           )}
         </>
@@ -427,4 +142,5 @@ export const Gameplay = () => {
     </div>
   )
 }
+
 
