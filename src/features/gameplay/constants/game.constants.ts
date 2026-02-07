@@ -1,25 +1,25 @@
 import type { Lane, GameConfig } from '../types/GuitarGame.types'
 
 export const GAME_CONFIG: GameConfig = {
-  canvasWidth: 800,
-  canvasHeight: 600,
-  hitZoneY: 500,
-  noteRadius: 25,
-  laneWidth: 80,
+  canvasWidth: 1000,
+  canvasHeight: 750,
+  hitZoneY: 625,
+  noteRadius: 30,
+  laneWidth: 100,
   noteSpeed: 200,
 }
 
 export const LANES: Lane[] = [
-  { x: 100, color: '#00FF00' },  // Verde
-  { x: 200, color: '#FF0000' },  // Rojo
-  { x: 300, color: '#FFFF00' },  // Amarillo
-  { x: 400, color: '#0088FF' },  // Azul
-  { x: 500, color: '#FF8800' },  // Naranja
+  { x: 300, color: '#00FF00' },  // Verde
+  { x: 400, color: '#FF0000' },  // Rojo
+  { x: 500, color: '#FFFF00' },  // Amarillo
+  { x: 600, color: '#0088FF' },  // Azul
+  { x: 700, color: '#FF8800' },  // Naranja
 ]
 
 export const HIT_ZONE_LINE = {
-  startX: 60,
-  endX: 540,
+  startX: 250,
+  endX: 750,
 }
 
 export const NOTE_SHADOW_OFFSET = 3

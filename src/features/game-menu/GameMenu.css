@@ -6,16 +6,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px;
+  padding: 60px;
   background-color: #1a1a1a;
   border-radius: 12px;
-  min-width: 400px;
-  max-width: 500px;
+  min-width: 600px;
+  max-width: 800px;
 }
 
 /* Título */
 .game-menu__title {
-  font-size: 36px;
+  font-size: 48px;
   color: #ffffff;
   margin: 0 0 8px 0;
   text-shadow: 0 0 10px #00ff00;
@@ -365,31 +365,38 @@
 
 /* Colores según dificultad del chart (0-6) */
 .game-menu__chart-diff-0 {
-  color: #00ff00 !important; /* Verde brillante - Muy fácil */
+  color: #00ff00 !important;
+  /* Verde brillante - Muy fácil */
 }
 
 .game-menu__chart-diff-1 {
-  color: #88ff00 !important; /* Verde lima - Fácil */
+  color: #88ff00 !important;
+  /* Verde lima - Fácil */
 }
 
 .game-menu__chart-diff-2 {
-  color: #ffff00 !important; /* Amarillo - Fácil+ */
+  color: #ffff00 !important;
+  /* Amarillo - Fácil+ */
 }
 
 .game-menu__chart-diff-3 {
-  color: #ffaa00 !important; /* Naranja claro - Medio */
+  color: #ffaa00 !important;
+  /* Naranja claro - Medio */
 }
 
 .game-menu__chart-diff-4 {
-  color: #ff6600 !important; /* Naranja - Medio+ */
+  color: #ff6600 !important;
+  /* Naranja - Medio+ */
 }
 
 .game-menu__chart-diff-5 {
-  color: #ff3300 !important; /* Rojo naranja - Difícil */
+  color: #ff3300 !important;
+  /* Rojo naranja - Difícil */
 }
 
 .game-menu__chart-diff-6 {
-  color: #ff0000 !important; /* Rojo - Muy difícil */
+  color: #ff0000 !important;
+  /* Rojo - Muy difícil */
 }
 
 /* ==========================================

@@ -6,16 +6,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px;
+  padding: 60px;
   background-color: #1a1a1a;
   border-radius: 12px;
-  min-width: 400px;
-  max-width: 500px;
+  min-width: 600px;
+  max-width: 800px;
 }
 
 /* Título */
 .game-results__title {
-  font-size: 28px;
+  font-size: 36px;
   color: #00ff00;
   margin: 0 0 20px 0;
   text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
@@ -23,7 +23,7 @@
 
 /* Nombre de la canción */
 .game-results__song-name {
-  font-size: 24px;
+  font-size: 32px;
   color: #ffffff;
   margin: 0 0 4px 0;
 }

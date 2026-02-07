@@ -29,14 +29,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 800px;
-  height: 600px;
+  width: 1000px;
+  height: 750px;
   background-color: #000;
   border: 2px solid #444;
 }
 
 .game-countdown__number {
-  font-size: 150px;
+  font-size: 200px;
   font-weight: bold;
   color: #00ff00;
   text-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
