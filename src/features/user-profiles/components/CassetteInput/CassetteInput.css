@@ -1,0 +1,354 @@
+.cassette-input-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Reemplaza tu bloque .cassette actual con este */
+.cassette {
+    width: 60%;
+    max-width: 500px;
+    aspect-ratio: 600 / 350;
+
+    /* 1. Fondo Púrpura con profundidad */
+    background: radial-gradient(circle at 50% 30%, #5e3b68 0%, #2d1038 60%, #1a0524 100%);
+
+    /* 2. Borde Dorado/Bronce estilo "Espejo" */
+    border: 4px solid #bfa668;
+    border-radius: 15px;
+    position: relative;
+
+    /* Sombras para dar volumen y brillo interno */
+    box-shadow:
+        inset 0 0 20px rgba(255, 255, 255, 0.1),
+        /* Brillo interior suave */
+        inset 0 0 0 2px #7a5c2f,
+        /* Borde interior oscuro para contraste */
+        0 15px 40px rgba(36, 11, 46, 0.6);
+    /* Sombra exterior teñida de púrpura */
+
+    overflow: hidden;
+    /* Importante para que el brillo no se salga */
+}
+
+/* NUEVO: Efecto de brillo/reflejo diagonal (El efecto espejo) */
+.cassette::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+
+    /* Un rayo de luz diagonal semitransparente */
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0) 45%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0) 55%);
+
+    transform: rotate(30deg);
+    pointer-events: none;
+    /* Permite hacer clic a través del brillo */
+    z-index: 20;
+    /* Por encima del fondo pero ten cuidado con los inputs */
+}
+
+/* Tornillos en las esquinas */
+.corner-screw {
+    position: absolute;
+    width: 4.5%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #555 0%, #333 100%);
+    border-radius: 50%;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.corner-screw::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.6);
+    top: 50%;
+    left: 25%;
+    transform: translateY(-50%);
+}
+
+.corner-screw::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    left: 50%;
+    top: 25%;
+    transform: translateX(-50%);
+}
+
+.corner-screw.top-left {
+    top: 4%;
+    left: 3%;
+}
+
+.corner-screw.top-right {
+    top: 4%;
+    right: 3%;
+}
+
+.corner-screw.bottom-left {
+    bottom: 4%;
+    left: 3%;
+}
+
+.corner-screw.bottom-right {
+    bottom: 4%;
+    right: 3%;
+}
+
+/* Label superior */
+.label {
+    position: absolute;
+    top: 9%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 25%;
+    background: linear-gradient(180deg, #f5f0e8 0%, #e8dcc8 100%);
+    border-radius: 8px;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.5),
+        0 2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 5%;
+}
+
+/* Letra A en la esquina */
+.label-letter {
+    position: absolute;
+    left: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #666;
+    font-family: Arial, sans-serif;
+}
+
+/* Contenedor de líneas */
+.label-lines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 10%;
+}
+
+/* Líneas individuales */
+.label-line {
+    width: 100%;
+    height: 1px;
+    background: #888;
+    position: relative;
+}
+
+/* Input sobre las líneas */
+.label-input {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 60px);
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    font-style: italic;
+    text-align: center;
+    font-family: 'Brush Script MT', cursive, 'Comic Sans MS', sans-serif;
+    outline: none;
+    padding: 5px 0;
+    z-index: 2;
+}
+
+.label-input::placeholder {
+    color: #888;
+    opacity: 0.5;
+}
+
+/* Sección naranja del casete */
+.orange-section {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 37%;
+    background: linear-gradient(180deg, #bfa668 0%, #8c7335 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Ventana interna negra */
+.inner-window {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92%;
+    height: 75%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8%;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Rodillos blancos */
+.reel {
+    width: 25%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #f0f5f0 0%, #d8e5d8 100%);
+    border-radius: 50%;
+    position: relative;
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.reel::before {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    top: 15%;
+    left: 15%;
+    background: radial-gradient(circle, #e0ebe0 0%, #c8d8c8 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.reel::after {
+    content: '';
+    position: absolute;
+    width: 28%;
+    height: 28%;
+    top: 36%;
+    left: 36%;
+    background: #2a2a2a;
+    border-radius: 50%;
+}
+
+.reel-lines {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.reel-line {
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.15);
+    top: 50%;
+    left: 0;
+    transform-origin: center;
+}
+
+.reel-line:nth-child(1) {
+    transform: rotate(0deg);
+}
+
+.reel-line:nth-child(2) {
+    transform: rotate(45deg);
+}
+
+.reel-line:nth-child(3) {
+    transform: rotate(90deg);
+}
+
+.reel-line:nth-child(4) {
+    transform: rotate(135deg);
+}
+
+/* Sección central entre rodillos */
+.center-space {
+    flex: 1;
+    height: 100%;
+}
+
+/* Sección inferior */
+.bottom-section {
+    position: absolute;
+    bottom: 11%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8%;
+}
+
+/* Puntos inferiores */
+.bottom-dot {
+    width: 4%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #f0f5f0 0%, #c8d8c8 100%);
+    border-radius: 50%;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Tornillo central inferior */
+.center-screw {
+    width: 5%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #555 0%, #333 100%);
+    border-radius: 50%;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.center-screw::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.6);
+    top: 50%;
+    left: 25%;
+    transform: translateY(-50%);
+}
+
+.center-screw::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    left: 50%;
+    top: 25%;
+    transform: translateX(-50%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .label-input {
+        font-size: 1.2rem;
+    }
+}

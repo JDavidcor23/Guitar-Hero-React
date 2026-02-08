@@ -68,7 +68,9 @@ export const ProfileSelector = ({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
         >
-          <span className="profile-selector__avatar">{currentUser.profile.avatar}</span>
+          <div className="profile-selector__avatar">
+            <div className={`avatar-icon avatar-icon--${currentUser.profile.avatar}`} style={{ width: '20px', height: '20px' }} />
+          </div>
           <span className="profile-selector__name">{currentUser.profile.name}</span>
           <span className="profile-selector__arrow">{isOpen ? '▲' : '▼'}</span>
         </button>
@@ -85,7 +87,9 @@ export const ProfileSelector = ({
                   role="option"
                   aria-selected={profile.id === currentUser.profile.id}
                 >
-                  <span className="profile-selector__item-avatar">{profile.avatar}</span>
+                  <div className="profile-selector__item-avatar">
+                    <div className={`avatar-icon avatar-icon--${profile.avatar}`} style={{ width: '18px', height: '18px', backgroundColor: 'rgba(255,255,255,0.7)' }} />
+                  </div>
                   <span className="profile-selector__item-name">{profile.name}</span>
                   {profile.id === currentUser.profile.id && (
                     <span className="profile-selector__item-check">✓</span>

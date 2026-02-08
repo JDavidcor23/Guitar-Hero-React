@@ -1,6 +1,10 @@
 import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { AVAILABLE_AVATARS } from './types'
 import './ProfileSelector.css'
+import backgroundImage from '../../assets/user-profiles/background registry.webp'
+
+import { CassetteInput } from './components/CassetteInput/CassetteInput'
 
 interface RegisterFormProps {
   /** Callback cuando se completa el registro */
@@ -18,11 +22,11 @@ interface RegisterFormProps {
  */
 export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: RegisterFormProps) => {
   const [name, setName] = useState('')
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVAILABLE_AVATARS[0])
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('')
   const [error, setError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = (e?: FormEvent) => {
+    e?.preventDefault()
     
     const trimmedName = name.trim()
     if (!trimmedName) {
@@ -45,36 +49,33 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
 
   return (
     <div className={`register-form ${isInitialSetup ? 'register-form--initial' : 'register-form--modal'}`}>
+      {isInitialSetup && (
+        <div 
+          className="register-form__background"
+          style={{ 
+            backgroundImage: `url(${backgroundImage})`,
+          }}
+        />
+      )}
       <div className="register-form__container">
         <h2 className="register-form__title">
           {isInitialSetup ? '¡Bienvenido!' : 'Nuevo Jugador'}
         </h2>
-        <p className="register-form__subtitle">
-          {isInitialSetup 
-            ? 'Crea tu perfil para comenzar a jugar' 
-            : 'Agrega un nuevo jugador'}
-        </p>
 
         <form onSubmit={handleSubmit} className="register-form__form">
-          {/* Input de nombre */}
+          {/* Input de nombre con Casete */}
           <div className="register-form__field">
-            <label htmlFor="player-name" className="register-form__label">
-              Nombre
-            </label>
-            <input
-              id="player-name"
-              type="text"
+            <label className="register-form__label">Tu Nombre de Artista</label>
+            <CassetteInput
               value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                setError('')
+              onChange={(val) => {
+                setName(val);
+                setError('');
               }}
-              placeholder="Tu nombre de jugador"
-              className="register-form__input"
-              maxLength={20}
-              autoFocus
+              placeholder="Escribe tu nombre..."
+              onEnter={() => handleSubmit()}
             />
-            {error && <span className="register-form__error">{error}</span>}
+            {error && <span className="register-form__error" style={{ textAlign: 'center' }}>{error}</span>}
           </div>
 
           {/* Selector de avatar */}
@@ -85,11 +86,12 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
                 <button
                   key={avatar}
                   type="button"
+                  style={{ outline: 'none' }}
                   onClick={() => setSelectedAvatar(avatar)}
                   className={`register-form__avatar ${selectedAvatar === avatar ? 'register-form__avatar--selected' : ''}`}
                   aria-label={`Seleccionar avatar ${avatar}`}
                 >
-                  {avatar}
+                  <div className={`avatar-icon avatar-icon--${avatar}`} />
                 </button>
               ))}
             </div>
@@ -108,6 +110,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
             )}
             <button 
               type="submit" 
+              disabled={!name.trim() || !selectedAvatar}
               className="register-form__button register-form__button--submit"
             >
               {isInitialSetup ? '¡Comenzar!' : 'Crear Perfil'}

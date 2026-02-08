@@ -52,7 +52,7 @@ export interface ProfilesState {
   activeUserId: string | null
 }
 
-/** Avatares disponibles para elegir */
-export const AVAILABLE_AVATARS = ['🎸', '🎮', '🎵', '🎤', '🔥', '⚡', '🎹', '🥁', '🎧', '🌟', '🚀', '💀'] as const
+/** Avatares disponibles (Set completo de instrumentos y tributos) */
+export const AVAILABLE_AVATARS = ['guitar', 'bass', 'drums', 'mic', 'bat', 'cassette'] as const
 
-export type AvatarEmoji = typeof AVAILABLE_AVATARS[number]
+export type UserAvatarId = typeof AVAILABLE_AVATARS[number]
