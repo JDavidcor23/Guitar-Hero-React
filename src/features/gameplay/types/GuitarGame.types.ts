@@ -105,6 +105,7 @@ export interface SongMetadata {
   chartDifficulty?: number // Dificultad general (0-6)
   averageNPS?: number // NPS promedio
   maxNPS?: number // NPS máximo
+  albumArt?: string // URL o path de la imagen del álbum (opcional)
 }
 
 /**

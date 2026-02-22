@@ -146,6 +146,121 @@ export const useAudioPlayer = () => {
   )
 
   /**
+   * Carga un único archivo de audio desde una URL
+   */
+  const loadAudioFromUrl = useCallback(
+    async (url: string): Promise<boolean> => {
+      try {
+        setState((prev) => ({ ...prev, error: null, isLoaded: false, isLoading: true }))
+
+        const audioContext = getAudioContext()
+        const response = await fetch(url)
+        const arrayBuffer = await response.arrayBuffer()
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+        // Guardar como único stem
+        const name = url.split('/').pop() || 'audio'
+        stemsRef.current = [{ name, buffer: audioBuffer }]
+
+        setState({
+          isLoaded: true,
+          isPlaying: false,
+          isLoading: false,
+          duration: audioBuffer.duration,
+          error: null,
+          stemsLoaded: 1,
+        })
+
+        console.log(`✓ Audio cargado desde URL: ${audioBuffer.duration.toFixed(2)}s (${name})`)
+        return true
+      } catch (err) {
+        setState((prev) => ({
+          ...prev,
+          isLoaded: false,
+          isLoading: false,
+          error: `Error al cargar el audio desde URL: ${err instanceof Error ? err.message : 'Error desconocido'}`,
+        }))
+        console.error('Error cargando audio desde URL:', err)
+        return false
+      }
+    },
+    [getAudioContext]
+  )
+
+  /**
+   * Carga múltiples archivos de audio (stems) desde URLs y los mezcla
+   */
+  const loadStemsFromUrls = useCallback(
+    async (urls: string[]): Promise<boolean> => {
+      if (urls.length === 0) return false
+
+      try {
+        setState((prev) => ({
+          ...prev,
+          error: null,
+          isLoaded: false,
+          isLoading: true,
+          stemsLoaded: 0,
+        }))
+
+        const audioContext = getAudioContext()
+        const stems: AudioStem[] = []
+        let maxDuration = 0
+        let loadedCount = 0
+
+        // Cargar todos los stems en paralelo
+        const loadPromises = urls.map(async (url) => {
+          try {
+            const response = await fetch(url)
+            const arrayBuffer = await response.arrayBuffer()
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+            const name = url.split('/').pop() || 'stem'
+            stems.push({ name, buffer: audioBuffer })
+            maxDuration = Math.max(maxDuration, audioBuffer.duration)
+            loadedCount++
+
+            setState((prev) => ({ ...prev, stemsLoaded: loadedCount }))
+            console.log(`✓ Stem cargado desde URL: ${name} (${audioBuffer.duration.toFixed(2)}s)`)
+          } catch (err) {
+            console.warn(`⚠ No se pudo cargar stem desde URL: ${url}`, err)
+          }
+        })
+
+        await Promise.all(loadPromises)
+
+        if (stems.length === 0) {
+          throw new Error('No se pudo cargar ningún archivo de audio desde las URLs proporcionadas')
+        }
+
+        stemsRef.current = stems
+
+        setState({
+          isLoaded: true,
+          isPlaying: false,
+          isLoading: false,
+          duration: maxDuration,
+          error: null,
+          stemsLoaded: stems.length,
+        })
+
+        console.log(`✓ ${stems.length} stems cargados desde URLs. Duración total: ${maxDuration.toFixed(2)}s`)
+        return true
+      } catch (err) {
+        setState((prev) => ({
+          ...prev,
+          isLoaded: false,
+          isLoading: false,
+          error: `Error al cargar los stems desde URLs: ${err instanceof Error ? err.message : 'Error desconocido'}`,
+        }))
+        console.error('Error cargando stems desde URLs:', err)
+        return false
+      }
+    },
+    [getAudioContext]
+  )
+
+  /**
    * Carga múltiples archivos de audio (stems) y los mezcla
    */
   const loadAudioStems = useCallback(
@@ -394,6 +509,8 @@ export const useAudioPlayer = () => {
     // Funciones
     loadAudioFile,
     loadAudioStems,
+    loadAudioFromUrl,
+    loadStemsFromUrls,
     play,
     pause,
     resume,

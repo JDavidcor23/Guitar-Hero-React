@@ -284,6 +284,87 @@ export const useSongLoader = () => {
   }, [])
 
   /**
+   * Carga una canción desde URLs (para canciones precargadas)
+   */
+  const loadFromUrls = useCallback(
+    async (chartUrl: string, metadata?: Partial<SongMetadata>) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(chartUrl)
+        if (!response.ok) throw new Error('No se pudo descargar el archivo de la canción')
+
+        const extension = chartUrl.toLowerCase().split('.').pop()
+        
+        if (extension === 'chart' || chartUrl.endsWith('.txt')) {
+          const content = await response.text()
+          const parser = new ChartParser()
+          parser.parse(content)
+
+          parserRef.current = parser
+          metadataRef.current = metadata || {}
+          
+          const difficulties = parser.getAvailableDifficulties()
+          setAvailableDifficulties(difficulties)
+
+          if (difficulties.length === 0) {
+            throw new Error('No se encontraron notas en el archivo')
+          } else {
+            const defaultDifficulty = difficulties[difficulties.length - 1]
+            const songData = parser.convertToSongData(defaultDifficulty, metadata)
+            if (songData) {
+              setSong(songData)
+            } else {
+              throw new Error('Error al convertir las notas')
+            }
+          }
+        } else if (extension === 'mid' || extension === 'midi') {
+          const arrayBuffer = await response.arrayBuffer()
+          const parser = new MidiParser(arrayBuffer)
+          parser.parse()
+
+          parserRef.current = parser
+          metadataRef.current = metadata || {}
+
+          const instruments = parser.getAvailableInstruments()
+          setAvailableInstruments(instruments)
+
+          const defaultInstrument = instruments.find((i) => i.trackName === 'PART GUITAR')?.trackName ||
+            instruments[0]?.trackName ||
+            'PART GUITAR'
+          setCurrentInstrument(defaultInstrument)
+
+          const difficulties = parser.getAvailableDifficulties(defaultInstrument)
+          setAvailableDifficulties(difficulties)
+
+          if (difficulties.length === 0) {
+            throw new Error('No se encontraron notas jugables en el archivo MIDI')
+          } else {
+            const defaultDifficulty = difficulties[difficulties.length - 1]
+            const songData = parser.convertToSongData(defaultDifficulty, metadata, defaultInstrument)
+            if (songData) {
+              setSong(songData)
+            } else {
+              throw new Error('Error al convertir las notas MIDI')
+            }
+          }
+        } else {
+          throw new Error(`Formato no soportado: .${extension}`)
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+        setError(errorMessage)
+        console.error('Error cargando desde URL:', err)
+        setSong(null)
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    []
+  )
+
+  /**
    * Limpia la canción actual
    */
   const clearSong = useCallback(() => {
@@ -305,8 +386,10 @@ export const useSongLoader = () => {
     currentInstrument,
     loadFromFile,
     loadFromFolder,
+    loadFromUrls,
     changeDifficulty,
     changeInstrument,
     clearSong,
+    setSong,
   }
 }

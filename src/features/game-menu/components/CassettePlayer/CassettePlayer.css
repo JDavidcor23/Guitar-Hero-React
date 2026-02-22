@@ -1,0 +1,552 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+
+/* ─── Wrapper ─────────────────────────────────────────────── */
+
+.cp-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    user-select: none;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* ─── Cassette body ───────────────────────────────────────── */
+
+.cp-cassette {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 600 / 350;
+    background: radial-gradient(circle at 50% 30%, #5e3b68 0%, #2d1038 60%, #1a0524 100%);
+    border: 4px solid #bfa668;
+    border-radius: 15px;
+    position: relative;
+    box-shadow:
+        inset 0 0 20px rgba(255, 255, 255, 0.1),
+        inset 0 0 0 2px #7a5c2f,
+        0 15px 40px rgba(36, 11, 46, 0.6);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Diagonal shine overlay */
+.cp-cassette::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0) 45%,
+            rgba(255, 255, 255, 0.12) 50%,
+            rgba(255, 255, 255, 0) 55%);
+    transform: rotate(30deg);
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* ─── Corner screws ───────────────────────────────────────── */
+
+.cp-screw {
+    position: absolute;
+    width: 4.5%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #555 0%, #333 100%);
+    border-radius: 50%;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.cp-screw::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.6);
+    top: 50%;
+    left: 25%;
+    transform: translateY(-50%);
+}
+
+.cp-screw::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    left: 50%;
+    top: 25%;
+    transform: translateX(-50%);
+}
+
+.cp-screw-tl {
+    top: 4%;
+    left: 3%;
+}
+
+.cp-screw-tr {
+    top: 4%;
+    right: 3%;
+}
+
+.cp-screw-bl {
+    bottom: 4%;
+    left: 3%;
+}
+
+.cp-screw-br {
+    bottom: 4%;
+    right: 3%;
+}
+
+/* ─── Label area (song info) ──────────────────────────────── */
+
+.cp-label {
+    position: absolute;
+    top: 9%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 25%;
+    background: linear-gradient(180deg, #f5f0e8 0%, #e8dcc8 100%);
+    border-radius: 8px;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, 0.5),
+        0 2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 5%;
+    z-index: 5;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.cp-label-letter {
+    position: absolute;
+    left: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: clamp(0.7rem, 2.2vw, 1.6rem);
+    font-weight: bold;
+    color: #666;
+    font-family: Arial, sans-serif;
+    z-index: 2;
+}
+
+.cp-label-content {
+    flex: 1;
+    margin-left: 11%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    z-index: 2;
+    position: relative;
+}
+
+.cp-label-line {
+    width: 100%;
+    height: 1px;
+    background: #aaa;
+}
+
+.cp-label-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(0.5rem, 1.6vw, 0.8rem);
+    font-weight: 700;
+    color: #3d1060;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.cp-label-artist {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(0.4rem, 1.2vw, 0.6rem);
+    color: #7a5030;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Gold / tape section ─────────────────────────────────── */
+
+.cp-tape-section {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 37%;
+    background: linear-gradient(180deg, #bfa668 0%, #8c7335 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    z-index: 5;
+}
+
+/* Inner dark window */
+.cp-inner-window {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92%;
+    height: 75%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8%;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.8);
+    box-sizing: border-box;
+}
+
+/* ─── Reels ───────────────────────────────────────────────── */
+
+.cp-reel {
+    width: 26%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #f0f5f0 0%, #d8e5d8 100%);
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    animation: cp-spin 1.5s linear infinite;
+    animation-play-state: paused;
+}
+
+.cp-reel.cp-spinning {
+    animation-play-state: running;
+}
+
+.cp-reel::before {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    top: 15%;
+    left: 15%;
+    background: radial-gradient(circle, #e0ebe0 0%, #c8d8c8 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.cp-reel::after {
+    content: '';
+    position: absolute;
+    width: 28%;
+    height: 28%;
+    top: 36%;
+    left: 36%;
+    background: #2a2a2a;
+    border-radius: 50%;
+}
+
+.cp-reel-lines {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.cp-reel-line {
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.15);
+    top: 50%;
+    left: 0;
+    transform-origin: center;
+}
+
+.cp-reel-line:nth-child(1) {
+    transform: rotate(0deg);
+}
+
+.cp-reel-line:nth-child(2) {
+    transform: rotate(45deg);
+}
+
+.cp-reel-line:nth-child(3) {
+    transform: rotate(90deg);
+}
+
+.cp-reel-line:nth-child(4) {
+    transform: rotate(135deg);
+}
+
+@keyframes cp-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ─── Center: album cover ─────────────────────────────────── */
+
+.cp-center {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.cp-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* Fallback placeholder when no cover image */
+.cp-cover--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: rgba(45, 35, 60, 0.6);
+}
+
+/* ─── Bottom dots ─────────────────────────────────────────── */
+
+.cp-bottom {
+    position: absolute;
+    bottom: 9%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8%;
+    z-index: 5;
+}
+
+.cp-dot {
+    width: 4%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #f0f5f0 0%, #c8d8c8 100%);
+    border-radius: 50%;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.cp-center-screw {
+    width: 5%;
+    aspect-ratio: 1/1;
+    background: radial-gradient(circle, #555 0%, #333 100%);
+    border-radius: 50%;
+    position: relative;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.5),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.cp-center-screw::before {
+    content: '';
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.6);
+    top: 50%;
+    left: 25%;
+    transform: translateY(-50%);
+}
+
+.cp-center-screw::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    left: 50%;
+    top: 25%;
+    transform: translateX(-50%);
+}
+
+/* ─── Controls below cassette ─────────────────────────────── */
+
+.cp-controls {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    padding-top: 6px;
+}
+
+.cp-time-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cp-play-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: transparent;
+    border: 2px solid #bfa668;
+    color: #bfa668;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: box-shadow 0.15s, transform 0.1s;
+    padding: 0;
+    box-shadow: 0 0 8px rgba(191, 166, 104, 0.3);
+}
+
+.cp-play-btn:hover {
+    box-shadow: 0 0 16px rgba(191, 166, 104, 0.6);
+    transform: scale(1.06);
+}
+
+.cp-play-btn:active {
+    transform: scale(0.95);
+}
+
+.cp-progress-wrap {
+    flex: 1;
+    height: 4px;
+    background: #1a0524;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #7a5c2f;
+}
+
+.cp-progress-fill {
+    height: 100%;
+    background: #bfa668;
+    border-radius: 2px;
+    box-shadow: 0 0 6px #bfa668;
+    transition: width 0.25s linear;
+}
+
+.cp-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: #e8dcc8;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+    text-shadow: 0 0 6px rgba(191, 166, 104, 0.5);
+}
+
+/* ─── Waveform ────────────────────────────────────────────── */
+
+.cp-waveform {
+    height: 38px;
+    background: #1a0524;
+    border-radius: 19px;
+    border: 1px solid #7a5c2f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 0 12px;
+    overflow: hidden;
+}
+
+.cp-bar {
+    border-radius: 2px;
+    width: 4px;
+    flex-shrink: 0;
+    transition: height 0.1s ease, background 0.1s ease;
+}
+
+/* ─── Select song button ──────────────────────────────────── */
+
+.cp-select-btn {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid #bfa668;
+    border-radius: 8px;
+    color: #bfa668;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.cp-select-btn:hover {
+    background: rgba(191, 166, 104, 0.12);
+    box-shadow: 0 0 10px rgba(191, 166, 104, 0.3);
+}
+
+.cp-select-btn:active {
+    transform: scale(0.98);
+}
+
+/* ─── Toggle tab ──────────────────────────────────────────── */
+
+.cp-toggle-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 500px;
+    padding: 6px 0 2px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(191, 166, 104, 0.6);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+
+.cp-toggle-tab:hover {
+    color: rgba(191, 166, 104, 1);
+}
+
+.cp-toggle-arrow {
+    font-size: 9px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.cp-toggle-arrow.cp-open {
+    transform: rotate(180deg);
+}
+
+/* ─── Collapsible controls ────────────────────────────────── */
+
+.cp-collapse {
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.cp-collapse.cp-open {
+    max-height: 300px;
+    opacity: 1;
+    overflow: visible;
+}

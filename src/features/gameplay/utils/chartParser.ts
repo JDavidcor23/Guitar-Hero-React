@@ -1,4 +1,4 @@
-import type { SongData } from '../types/GuitarGame.types'
+import type { SongData, SongMetadata } from '../types/GuitarGame.types'
 
 interface BPMChange {
   beat: number
@@ -214,7 +214,7 @@ export class ChartParser {
   /**
    * Convierte una dificultad a formato SongData
    */
-  convertToSongData(difficulty: string): SongData | null {
+  convertToSongData(difficulty: string, metadata?: Partial<SongMetadata>): SongData | null {
     const notes = this.difficulties[difficulty]
 
     if (!notes || notes.length === 0) {
@@ -240,15 +240,16 @@ export class ChartParser {
 
     return {
       metadata: {
-        songName: this.metadata.songName,
-        artist: this.metadata.artist,
-        charter: this.metadata.charter,
+        songName: metadata?.songName || this.metadata.songName,
+        artist: metadata?.artist || this.metadata.artist,
+        charter: metadata?.charter || this.metadata.charter,
         duration: parseFloat(duration.toFixed(2)),
         totalNotes: songNotes.length,
         difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
-        chartDifficulty: this.metadata.chartDifficulty,
+        chartDifficulty: metadata?.chartDifficulty !== undefined ? metadata.chartDifficulty : this.metadata.chartDifficulty,
         averageNPS: npsStats.average,
         maxNPS: npsStats.max,
+        albumArt: metadata?.albumArt,
       },
       notes: songNotes,
     }

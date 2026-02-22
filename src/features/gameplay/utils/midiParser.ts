@@ -463,6 +463,7 @@ export class MidiParser {
         chartDifficulty: metadata?.chartDifficulty,
         averageNPS,
         maxNPS: this.calculateMaxNPS(songNotes, duration),
+        albumArt: metadata?.albumArt,
       },
       notes: songNotes,
     }

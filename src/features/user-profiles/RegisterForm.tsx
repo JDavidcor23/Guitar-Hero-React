@@ -59,20 +59,20 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
       )}
       <div className="register-form__container">
         <h2 className="register-form__title">
-          {isInitialSetup ? '¡Bienvenido!' : 'Nuevo Jugador'}
+          {isInitialSetup ? 'Welcome!' : 'New Player'}
         </h2>
 
         <form onSubmit={handleSubmit} className="register-form__form">
           {/* Input de nombre con Casete */}
           <div className="register-form__field">
-            <label className="register-form__label">Tu Nombre de Artista</label>
+            <label className="register-form__label">Your Artist Name</label>
             <CassetteInput
               value={name}
               onChange={(val) => {
                 setName(val);
                 setError('');
               }}
-              placeholder="Escribe tu nombre..."
+              placeholder="Write your name..."
               onEnter={() => handleSubmit()}
             />
             {error && <span className="register-form__error" style={{ textAlign: 'center' }}>{error}</span>}
@@ -89,7 +89,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
                   style={{ outline: 'none' }}
                   onClick={() => setSelectedAvatar(avatar)}
                   className={`register-form__avatar ${selectedAvatar === avatar ? 'register-form__avatar--selected' : ''}`}
-                  aria-label={`Seleccionar avatar ${avatar}`}
+                  aria-label={`Select avatar ${avatar}`}
                 >
                   <div className={`avatar-icon avatar-icon--${avatar}`} />
                 </button>
@@ -113,7 +113,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
               disabled={!name.trim() || !selectedAvatar}
               className="register-form__button register-form__button--submit"
             >
-              {isInitialSetup ? '¡Comenzar!' : 'Crear Perfil'}
+              {isInitialSetup ? ' ¡Start!' : 'Create Profile'}
             </button>
           </div>
         </form>

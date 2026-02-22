@@ -3,7 +3,7 @@ import { useGameplay } from './useGameplay.hook'
 import { useAudioPlayer } from './useAudioPlayer.hook'
 import { useSongLoader } from '../../game-menu'
 import { useUserProfiles } from '../../user-profiles'
-import type { GameState, GameStats } from '../types/GuitarGame.types'
+import type { GameState, GameStats, SongMetadata } from '../types/GuitarGame.types'
 
 const COUNTDOWN_INTERVAL = 1000
 const COUNTDOWN_START = 3
@@ -30,9 +30,11 @@ export const useGameplayManager = () => {
     currentInstrument,
     loadFromFile,
     loadFromFolder,
+    loadFromUrls,
     changeDifficulty,
     changeInstrument,
     clearSong,
+    setSong,
   } = useSongLoader()
 
   const {
@@ -81,6 +83,34 @@ export const useGameplayManager = () => {
       }
     },
     [loadFromFolder, audioPlayer]
+  )
+
+  const handlePreloadedSongSelect = useCallback(
+    async (config: {
+      chartUrl: string
+      audioUrl?: string
+      stemsUrls?: string[]
+      metadata?: Partial<SongMetadata>
+    }) => {
+      setIsAudioLoading(true)
+      
+      try {
+        // Cargar chart
+        await loadFromUrls(config.chartUrl, config.metadata)
+        
+        // Cargar audio (stems o archivo único)
+        if (config.stemsUrls && config.stemsUrls.length > 0) {
+          await audioPlayer.loadStemsFromUrls(config.stemsUrls)
+        } else if (config.audioUrl) {
+          await audioPlayer.loadAudioFromUrl(config.audioUrl)
+        }
+      } catch (err) {
+        console.error('Error cargando canción precargada:', err)
+      } finally {
+        setIsAudioLoading(false)
+      }
+    },
+    [loadFromUrls, audioPlayer]
   )
 
   // ==========================================
@@ -283,10 +313,13 @@ export const useGameplayManager = () => {
     handleBackToMenu,
     handleSaveScore,
     loadFromFile,
+    loadFromUrls,
+    handlePreloadedSongSelect,
     changeDifficulty,
     changeInstrument,
     registerUser,
     switchUser,
     deleteUser,
+    setSong,
   }
 }

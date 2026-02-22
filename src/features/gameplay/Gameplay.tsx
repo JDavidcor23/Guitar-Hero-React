@@ -48,11 +48,13 @@ export const Gameplay = () => {
     handleBackToMenu,
     handleSaveScore,
     loadFromFile,
+    handlePreloadedSongSelect,
     changeDifficulty,
     changeInstrument,
     registerUser,
     switchUser,
     deleteUser,
+    setSong,
   } = useGameplayManager()
 
   // Si no hay perfiles, mostrar formulario de registro inicial
@@ -94,9 +96,11 @@ export const Gameplay = () => {
           onChartFileSelect={loadFromFile}
           onAudioFileSelect={handleAudioFileSelect}
           onFolderSelect={handleFolderSelect}
+          onPreloadedSongSelect={handlePreloadedSongSelect}
           onDifficultyChange={changeDifficulty}
           onInstrumentChange={changeInstrument}
           onStartGame={handleStartGame}
+          onSongSelect={setSong}
         />
       )}
 

@@ -410,12 +410,12 @@ export const useGameplay = ({
     ctx.fillStyle = COLORS.white
     ctx.font = 'bold 64px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('PAUSA', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 - 20)
+    ctx.fillText('PAUSE', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 - 20)
 
     // Instrucción
     ctx.font = '24px Arial'
     ctx.fillStyle = '#AAAAAA'
-    ctx.fillText('Presiona ESPACIO para continuar', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 + 30)
+    ctx.fillText('Press SPACE to continue', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 + 30)
   }, [])
 
   // ==========================================

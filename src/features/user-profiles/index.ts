@@ -7,6 +7,5 @@ export type {
   UserData, 
   ScoreRecord, 
   ProfilesState,
-  AvatarEmoji 
 } from './types'
 export { AVAILABLE_AVATARS } from './types'

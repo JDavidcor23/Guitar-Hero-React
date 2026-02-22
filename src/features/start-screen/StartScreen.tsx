@@ -69,7 +69,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onComplete }) => {
           className="logo-image" 
           onError={(e) => (e.currentTarget.style.display = 'none')}
         />
-        <div className="press-start-text">Presiona Espacio</div>
+        <div className="press-start-text">Press Space</div>
       </div>
 
       {/* Video Overlay */}

@@ -6,6 +6,7 @@
   min-height: 100vh;
   background-color: #222;
   position: relative;
+  width: 100%;
 }
 
 /* Selector de perfil posicionado arriba a la derecha */

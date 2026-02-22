@@ -1,93 +1,100 @@
 # 🎸 Guitar Hero React
 
-Una implementación moderna de Guitar Hero construida con **React**, **TypeScript** y **Vite**, utilizando la **Web Audio API** y **HTML5 Canvas** para una experiencia fluida y precisa.
+A modern implementation of Guitar Hero built with **React**, **TypeScript**, and **Vite**, utilizing the **Web Audio API** and **HTML5 Canvas** for a smooth and accurate experience.
 
-![Guitar Hero React Preview](https://github.com/user-attachments/assets/c66e927f-5d66-4e55-9b2f-7633280fd29e) <!-- Reemplazar con una imagen real si está disponible -->
+![Guitar Hero React Preview](src/assets/game-preview/background_logo.png)
 
-## ✨ Características
+## ✨ Features
 
-- 🎯 **Sincronización Precisa**: Motor de juego basado en el tiempo del audio (`AudioContext.currentTime`) para una sincronización perfecta.
-- 🔊 **Soporte de Audio Multicanal (Stems)**: Capacidad para cargar archivos de audio separados (guitarra, bajo, batería, voz) que se silencian cuando fallas una nota.
-- 📊 **Carga de Canciones**: Soporte para archivos `.chart` (Clone Hero/Feedback) y archivos JSON personalizados.
-- 🎨 **Renderizado en Canvas**: Gráficos optimizados utilizando la API de Canvas 2D.
-- 🎛️ **Calibración en Tiempo Real**: Ajusta el offset de audio/video durante el juego.
-- 🎮 **Múltiples Dificultades e Instrumentos**: Soporte para Easy, Medium, Hard, Expert y diferentes instrumentos definidos en el archivo de la canción.
+- 🎯 **Precise Synchronization**: Game engine based on audio time (`AudioContext.currentTime`) for perfect synchronization.
+- 🔊 **Multi-channel Audio Support (Stems)**: Ability to load separate audio files (guitar, bass, drums, vocals) that mute when you miss a note.
+- 📊 **Song Loading**: Support for `.chart` files (Clone Hero/Feedback) and custom JSON files.
+- 🎨 **Canvas Rendering**: Optimized graphics using the Canvas 2D API.
+- 🎛️ **Real-time Calibration**: Adjust audio/video offset during gameplay.
+- 🎮 **Multiple Difficulties and Instruments**: Support for Easy, Medium, Hard, Expert, and different instruments defined in the song file.
 
-## 🛠️ Tecnologías
+## 🛠️ Technologies
 
 - **Framework**: [React 19](https://react.dev/)
-- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Audio**: [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
-- **Gráficos**: [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+- **Graphics**: [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
 
-## 🚀 Inicio Rápido
+## 🚀 Quick Start
 
-### Requisitos Previos
+### Prerequisites
 
-- [Node.js](https://nodejs.org/) (versión 18 o superior recomendada)
-- npm o yarn
+- [Node.js](https://nodejs.org/) (version 18 or higher recommended)
+- npm or yarn
 
-### Instalación
+### Installation
 
-1. Clona el repositorio:
+1. Clone the repository:
    ```bash
-   git clone https://github.com/tu-usuario/guitar-hero-react.git
+   git clone https://github.com/JDavidcor23/Guitar-Hero-React.git
    cd guitar-hero-react
    ```
 
-2. Instala las dependencias:
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Inicia el servidor de desarrollo:
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
-## 🎮 Cómo Jugar
+## 🎮 How to Play
 
-### Controles
+### Controls
 
-| Acción | Tecla |
+| Action | Key |
 | :--- | :--- |
-| **Carril 1 (Verde)** | `A` |
-| **Carril 2 (Rojo)** | `S` |
-| **Carril 3 (Amarillo)** | `D` |
-| **Carril 4 (Azul)** | `F` |
-| **Carril 5 (Naranja)** | `J` |
-| **Pausar / Reanudar** | `Espacio` |
-| **Subir Offset (+10ms)** | `+` o `=` |
-| **Bajar Offset (-10ms)** | `-` o `_` |
+| **Lane 1 (Green)** | `A` |
+| **Lane 2 (Red)** | `S` |
+| **Lane 3 (Yellow)** | `D` |
+| **Lane 4 (Blue)** | `F` |
+| **Lane 5 (Orange)** | `J` |
+| **Pause / Resume** | `Space` |
+| **Increase Offset (+10ms)** | `+` or `=` |
+| **Decrease Offset (-10ms)** | `-` or `_` |
 
-### Instrucciones
+### Instructions
 
-1. **Seleccionar Canción**: En el menú principal, carga un archivo `.chart` o selecciona una carpeta de canción que contenga el archivo de notas y los archivos de audio.
-2. **Configurar**: Elige el instrumento (Guitar, Bass, Drums, etc.) y la dificultad.
-3. **¡Jugar!**: Presiona las teclas correspondientes cuando las notas lleguen a la zona de impacto en la parte inferior.
-4. **Sustains**: Para las notas con "cola", mantén presionada la tecla hasta que la cola termine para obtener puntos extra.
+1. **Select Song**: In the main menu, load a `.chart` file or select a song folder containing the notes file and audio files.
+2. **Configure**: Choose the instrument (Guitar, Bass, Drums, etc.) and difficulty.
+3. **Play!**: Press the corresponding keys when the notes reach the impact zone at the bottom.
+4. **Sustains**: For notes with "tails", hold the key until the tail ends to get extra points.
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
-El proyecto está organizado siguiendo el **Principio de Proximidad**, con funcionalidades divididas en features autocontenidas:
+The project is organized following the **Proximity Principle**, with functionalities divided into self-contained features:
 
 ```text
 src/
 ├── features/
-│   ├── game-menu/           # Selección de canciones y carga de archivos
-│   ├── gameplay/            # Lógica central del juego, renderizado y audio
-│   ├── game-results/        # Pantalla de estadísticas finales
-│   └── user-profiles/       # Gestión de perfiles de usuario y puntuaciones (High Scores)
-├── components/              # Componentes globales y reutilizables
-├── hooks/                   # Hooks compartidos entre features
-├── assets/                  # Estilos globales, imágenes y fuentes
-└── App.tsx                  # Orquestador principal que maneja los estados del juego
+│   ├── start-screen/        # Landing page and initial interaction
+│   ├── game-menu/           # Song selection and file loading
+│   ├── gameplay/            # Core game logic, rendering, and audio
+│   ├── game-results/        # Final statistics screen
+│   └── user-profiles/       # User profile management and High Scores
+├── components/              # Global and reusable components
+├── hooks/                   # Shared hooks between features
+├── assets/                  # Global styles, images, and fonts
+└── App.tsx                  # Main orchestrator handling game states
 ```
 
-## 📝 Licencia
+## 🖼️ Gallery
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+![Game Interface](src/assets/game-preview/interface.png)
+![Song Selection](src/assets/game-preview/songs.png)
+![Song Selection](src/assets/game-preview/songs2.png)
+
+## 📝 License
+
+This project is under the MIT License. See the `LICENSE` file for more details.
 
 ---
-Hecho por [JDavidcor23](https://github.com/JDavidcor23)
+Made by [JDavidcor23](https://github.com/JDavidcor23)
