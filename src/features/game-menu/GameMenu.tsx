@@ -41,6 +41,7 @@ export const GameMenu = (props: GameMenuProps) => {
   const {
     userSongs,
     handleFolderChange,
+    handleDeleteSong,
     formatDuration,
     canStartGame,
   } = useGameMenu({
@@ -60,6 +61,7 @@ export const GameMenu = (props: GameMenuProps) => {
           userSongs={userSongs}
           onPreloadedSongSelect={onPreloadedSongSelect}
           onSongSelect={onSongSelect}
+          onDeleteSong={handleDeleteSong}
         />
 
         {onFolderSelect && (

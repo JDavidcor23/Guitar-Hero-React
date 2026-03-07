@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 
 /** Number of bars in the waveform visualizer */
 const BAR_COUNT = 40
@@ -85,9 +85,10 @@ export const useCassettePlayer = ({
     Array(BAR_COUNT).fill(false),
   )
 
-  const sources = audioSrc
-    ? Array.isArray(audioSrc) ? audioSrc : [audioSrc]
-    : []
+  const sources = useMemo(
+    () => audioSrc ? (Array.isArray(audioSrc) ? audioSrc : [audioSrc]) : [],
+    [audioSrc],
+  )
 
   // Keep audioRefs in sync with source count
   useEffect(() => {

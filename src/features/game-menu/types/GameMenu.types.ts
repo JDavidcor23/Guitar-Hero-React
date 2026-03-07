@@ -49,6 +49,8 @@ export interface GameMenuProps {
 /** A song manually loaded by the user via folder selection */
 export interface UserLoadedSong {
   id: string
+  /** IndexedDB key — present when the song has been persisted */
+  storedId?: string
   name: string
   artist: string
   /** Full song data to restore when re-selected */
@@ -57,6 +59,21 @@ export interface UserLoadedSong {
   coverImage?: string
   /** Audio source URL(s) */
   audioSrc?: string | string[]
+}
+
+/** Raw file stored in IndexedDB */
+export interface StoredFile {
+  name: string
+  data: ArrayBuffer
+  type: string
+}
+
+/** A song persisted in IndexedDB */
+export interface StoredSong {
+  id: string
+  name: string
+  artist: string
+  files: StoredFile[]
 }
 
 /** A preloaded song discovered from the assets folder */

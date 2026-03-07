@@ -3,6 +3,7 @@ import type { SongData } from '../../gameplay/types/GuitarGame.types'
 import type { UserLoadedSong } from '../types/GameMenu.types'
 import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, SECONDS_PER_MINUTE } from '../constants/gameMenu.constants'
 import { PRELOADED_SONGS } from '../utils/preloadedSongs'
+import { useSongStorage } from './useSongStorage.hook'
 
 interface UseGameMenuParams {
   /** Currently loaded song from the parent */
@@ -17,7 +18,7 @@ interface UseGameMenuParams {
 
 /**
  * Encapsulates all GameMenu business logic:
- * - Tracking user-loaded songs
+ * - Tracking user-loaded songs (in-memory + IndexedDB)
  * - Handling file/folder input changes
  * - Formatting helpers
  * - Derived state
@@ -31,8 +32,28 @@ export const useGameMenu = ({
   // Songs manually loaded by the user via folder selection
   const [userSongs, setUserSongs] = useState<UserLoadedSong[]>([])
 
+  // IndexedDB persistence
+  const { savedSongs, isLoading: isStorageLoading, saveSong, deleteSong } = useSongStorage()
+
   // Temporary storage for the assets discovered in the last folder upload
   const lastFolderAssets = useRef<{ coverImage?: string; audioSrc: string[] }>({ audioSrc: [] })
+
+  // Keep the raw FileList so we can persist it to IndexedDB
+  const lastFolderFiles = useRef<FileList | null>(null)
+
+  // Merge saved songs into userSongs on load
+  useEffect(() => {
+    if (isStorageLoading || savedSongs.length === 0) return
+    setUserSongs(prev => {
+      const normalize = (s: string) => s.toLowerCase().trim()
+      const newSaved = savedSongs.filter(
+        saved => !prev.some(
+          p => normalize(p.name) === normalize(saved.name) && normalize(p.artist) === normalize(saved.artist),
+        ),
+      )
+      return newSaved.length > 0 ? [...newSaved, ...prev] : prev
+    })
+  }, [savedSongs, isStorageLoading])
 
   // When a song is loaded manually, add it to the user songs list
   useEffect(() => {
@@ -59,10 +80,13 @@ export const useGameMenu = ({
     )
     if (alreadyExists) return
 
+    const newId = `user-${Date.now()}`
+
     setUserSongs(prev => [
       ...prev,
       {
-        id: `user-${Date.now()}`,
+        id: newId,
+        storedId: newId,
         name: songName,
         artist,
         songData: song,
@@ -73,6 +97,12 @@ export const useGameMenu = ({
             : lastFolderAssets.current.audioSrc[0] || '',
       },
     ])
+
+    // Persist to IndexedDB
+    if (lastFolderFiles.current) {
+      saveSong(newId, songName, artist, lastFolderFiles.current)
+      lastFolderFiles.current = null
+    }
 
     // Clear the ref after processing
     lastFolderAssets.current = { audioSrc: [] }
@@ -115,7 +145,14 @@ export const useGameMenu = ({
     }
 
     lastFolderAssets.current = assets
+    lastFolderFiles.current = files  // Save for IndexedDB persistence
     onFolderSelect?.(files)
+  }
+
+  /** Delete a user-loaded song (from state and IndexedDB) */
+  const handleDeleteSong = async (id: string) => {
+    setUserSongs(prev => prev.filter(s => s.id !== id))
+    await deleteSong(id)
   }
 
   /** Format a duration in seconds to "M:SS" */
@@ -133,6 +170,7 @@ export const useGameMenu = ({
     handleChartFileChange,
     handleAudioFileChange,
     handleFolderChange,
+    handleDeleteSong,
     formatDuration,
     canStartGame,
   }

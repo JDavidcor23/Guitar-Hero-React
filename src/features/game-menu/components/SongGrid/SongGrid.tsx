@@ -17,6 +17,8 @@ interface SongGridProps {
   }) => void
   /** Callback when a user-loaded song is re-selected */
   onSongSelect?: (song: SongData) => void
+  /** Callback to delete a user-loaded song */
+  onDeleteSong?: (id: string) => void
 }
 
 /** Cassette grid showing all available songs (preloaded + user-loaded) */
@@ -25,6 +27,7 @@ export const SongGrid = ({
   userSongs,
   onPreloadedSongSelect,
   onSongSelect,
+  onDeleteSong,
 }: SongGridProps) => (
   <div className="game-menu__preloaded-section">
     <h2 className="game-menu__section-title">
@@ -70,6 +73,18 @@ export const SongGrid = ({
           key={us.id}
           className={`game-menu__cassette-wrapper ${song?.metadata.songName === us.name ? 'game-menu__cassette-wrapper--active' : ''}`}
         >
+          {onDeleteSong && (
+            <button
+              className="game-menu__cassette-delete"
+              title="Eliminar canción guardada"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteSong(us.id)
+              }}
+            >
+              ✕
+            </button>
+          )}
           <CassettePlayer
             title={us.name}
             artist={us.artist}
