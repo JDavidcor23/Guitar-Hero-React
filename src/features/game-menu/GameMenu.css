@@ -554,185 +554,452 @@
    CONFIGURACIÓN DE LA CANCIÓN (post-selección)
    ========================================== */
 
+/* ==========================================
+   CONFIGURACIÓN DE LA CANCIÓN (post-selección)
+   ========================================== */
+
 .game-menu__song-config {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
-  gap: 20px;
-  animation: fadeInUp 0.4s ease-out;
+  animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes fadeInUp {
+@keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateX(30px) scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0) scale(1);
   }
 }
 
+/* Panel Principal (Glassmorphism) */
+.game-menu__config-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(20, 15, 30, 0.65);
+  border: 1px solid rgba(191, 166, 104, 0.15);
+  border-radius: 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 0 40px rgba(110, 69, 226, 0.1),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de luz superior en el panel */
+.game-menu__config-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(191, 166, 104, 0.4), transparent);
+}
+
 /* ==========================================
-   INFO DE LA CANCIÓN
+   CABECERA
    ========================================== */
 
-.game-menu__song-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px;
-  background: rgba(30, 25, 45, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  width: 100%;
-  backdrop-filter: blur(10px);
-  gap: 16px;
-}
-
 .game-menu__song-header {
-  text-align: center;
-}
-
-.game-menu__song-name {
-  font-size: 1.5rem;
-  color: #ffffff;
-  margin: 0 0 4px 0;
-  font-weight: 700;
-}
-
-.game-menu__song-artist {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
-
-.game-menu__song-charter {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.3);
-  margin: 4px 0 0 0;
-}
-
-/* Indicadores de dificultad */
-.game-menu__difficulty-indicators {
-  display: flex;
-  gap: 20px;
-  padding: 12px 20px;
-  background: rgba(10, 5, 16, 0.4);
-  border-radius: 12px;
-  width: 100%;
-  justify-content: center;
-}
-
-.game-menu__indicator {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   gap: 4px;
 }
 
-.game-menu__indicator-label {
+.game-menu__song-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(110, 69, 226, 0.5);
+  letter-spacing: 1px;
+}
+
+.game-menu__song-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  color: #bfa668;
+}
+
+.game-menu__meta-separator {
+  color: rgba(191, 166, 104, 0.3);
+}
+
+.game-menu__song-charter {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Divisor horizontal */
+.game-menu__panel-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin: 4px 0;
+}
+
+/* ==========================================
+   GRID DE ESTADÍSTICAS
+   ========================================== */
+
+.game-menu__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.game-menu__stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 16px;
+  background: rgba(10, 5, 20, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  gap: 6px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.game-menu__stat-card:hover {
+  background: rgba(110, 69, 226, 0.1);
+  transform: translateY(-2px);
+}
+
+.game-menu__stat-card--full {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.game-menu__stat-label {
+  font-family: 'Share Tech Mono', monospace;
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.game-menu__indicator-value {
-  font-size: 0.85rem;
-  color: #ffffff;
+.game-menu__stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
   font-weight: 600;
+  color: #fff;
 }
 
-/* Colores según dificultad del chart (0-6) */
-.game-menu__chart-diff-0 {
-  color: #00ff00 !important;
+.game-menu__stat-value--success {
+  color: #4CAF50;
+  text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
 
+.game-menu__stat-value--error {
+  color: #F44336;
+}
+
+.game-menu__stat-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Colores según dificultad del chart */
+.game-menu__chart-diff-0,
 .game-menu__chart-diff-1 {
-  color: #88ff00 !important;
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
 }
 
-.game-menu__chart-diff-2 {
-  color: #ffff00 !important;
-}
-
+.game-menu__chart-diff-2,
 .game-menu__chart-diff-3 {
-  color: #ffaa00 !important;
+  color: #ffff00;
+  background: rgba(255, 255, 0, 0.1);
 }
 
-.game-menu__chart-diff-4 {
-  color: #ff6600 !important;
-}
-
+.game-menu__chart-diff-4,
 .game-menu__chart-diff-5 {
-  color: #ff3300 !important;
+  color: #ff6600;
+  background: rgba(255, 102, 0, 0.1);
 }
 
 .game-menu__chart-diff-6 {
-  color: #ff0000 !important;
-}
-
-/* Detalles de la canción */
-.game-menu__song-details {
-  display: flex;
-  gap: 20px;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8rem;
-}
-
-.game-menu__detail--muted {
-  opacity: 0.4;
+  color: #ff0000;
+  background: rgba(255, 0, 0, 0.1);
 }
 
 /* ==========================================
-   BOTÓN DE EMPEZAR
+   CONTENEDOR DE SELECTORES
    ========================================== */
 
-.game-menu__btn-start {
+.game-menu__selectors-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.game-menu__selector-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-menu__selector-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: #bfa668;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ==========================================
+   PILLS DE DIFICULTAD
+   ========================================== */
+
+.game-menu__difficulties {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.game-menu__difficulty-pill {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.game-menu__difficulty-pill:hover:not(.game-menu__difficulty-pill--active) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.game-menu__difficulty-pill--active {
+  background: linear-gradient(135deg, #ffbc42, #e6a020);
+  color: #1a1000;
+  box-shadow: 0 0 15px rgba(255, 188, 66, 0.4);
+}
+
+/* ==========================================
+   BOTÓN DE INSTRUMENTO MEJORADO
+   ========================================== */
+
+.game-menu__instruments {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.game-menu__instrument-btn {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(30, 20, 45, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 350px;
-  padding: 16px 32px;
-  margin-top: 8px;
-  background: linear-gradient(135deg, #ffbc42, #e6a020);
-  color: #1a1000;
-  border: none;
-  border-radius: 14px;
-  font-size: 1rem;
-  font-weight: 900;
-  font-family: inherit;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  outline: none;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.game-menu__instrument-btn-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  transition: all 0.4s ease;
+}
+
+.game-menu__instrument-btn .avatar-icon {
+  width: 28px;
+  height: 28px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.game-menu__instrument-name {
+  position: absolute;
+  bottom: -24px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  box-shadow: 0 4px 20px rgba(255, 188, 66, 0.4);
+  transition: color 0.3s ease;
+  opacity: 0;
+  transform: translateY(-5px);
 }
 
-.game-menu__btn-start:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 30px rgba(255, 188, 66, 0.6);
-  background: linear-gradient(135deg, #ffc94d, #f0b030);
+.game-menu__instrument-btn:hover {
+  transform: translateY(-4px);
 }
 
-.game-menu__btn-start:active {
-  transform: translateY(-1px) scale(0.98);
+.game-menu__instrument-btn:hover .game-menu__instrument-btn-ring {
+  border-color: rgba(191, 166, 104, 0.4);
+  transform: scale(1.05);
 }
 
-.game-menu__btn-start:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
+.game-menu__instrument-btn:hover .avatar-icon {
+  background-color: #fff;
+}
+
+.game-menu__instrument-btn:hover .game-menu__instrument-name {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.game-menu__instrument-btn--active {
+  transform: translateY(-4px);
+  background: rgba(50, 25, 80, 0.9);
+}
+
+.game-menu__instrument-btn--active .game-menu__instrument-btn-ring {
+  border-color: #ffbc42;
+  box-shadow: 0 0 20px rgba(255, 188, 66, 0.3);
+  animation: pulseRing 2s infinite;
+}
+
+.game-menu__instrument-btn--active .avatar-icon {
+  background-color: #ffbc42;
+  filter: drop-shadow(0 0 5px rgba(255, 188, 66, 0.5));
+}
+
+.game-menu__instrument-btn--active .game-menu__instrument-name {
+  color: #ffbc42;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 188, 66, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(255, 188, 66, 0.6);
+    border-color: #ffd070;
+  }
+
+  100% {
+    box-shadow: 0 0 10px rgba(255, 188, 66, 0.2);
+  }
+}
+
+/* ==========================================
+   BOTÓN JUGAR (Call to Action)
+   ========================================== */
+
+.game-menu__btn-start-modern {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 18px 24px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, #ffbc42, #e68a00);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 20px rgba(230, 138, 0, 0.4);
+  outline: none;
+}
+
+.game-menu__btn-start-glow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  transition: 0.5s;
+}
+
+.game-menu__btn-start-modern:hover:not(:disabled) .game-menu__btn-start-glow {
+  left: 150%;
+  transition: 0.7s ease-in-out;
+}
+
+.game-menu__btn-start-modern:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(230, 138, 0, 0.6);
+}
+
+.game-menu__btn-start-modern:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.game-menu__btn-start-modern:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
   box-shadow: none;
+  cursor: not-allowed;
+}
+
+.game-menu__btn-start-modern--warning:not(:disabled) {
+  background: linear-gradient(135deg, #ff4c4c, #c92a2a);
+  box-shadow: 0 6px 20px rgba(255, 76, 76, 0.3);
 }
 
 .game-menu__btn-start-icon {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  z-index: 2;
+}
+
+.game-menu__btn-start-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a0a2e;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  z-index: 2;
+}
+
+.game-menu__btn-start-modern:disabled .game-menu__btn-start-text {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.game-menu__btn-start-modern--warning:not(:disabled) .game-menu__btn-start-text {
+  color: #fff;
 }
 
 /* ==========================================

@@ -346,6 +346,11 @@ export const useAudioPlayer = () => {
       return false
     }
 
+    // Si el contexto de audio estaba suspendido (ej. al salir de una pausa), reanudarlo
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch((err) => console.error('Error al reanudar AudioContext:', err))
+    }
+
     // Detener reproducción anterior si existe
     stopSources()
 

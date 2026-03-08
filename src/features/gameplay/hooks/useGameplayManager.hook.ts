@@ -113,6 +113,36 @@ export const useGameplayManager = () => {
     [loadFromUrls, audioPlayer]
   )
 
+  const handleUserSongSelect = useCallback(
+    async (userSong: import('../../game-menu/types/GameMenu.types').UserLoadedSong) => {
+      setIsAudioLoading(true)
+      
+      try {
+        // Restaurar chart
+        if (userSong.chartFile) {
+          // Al recargar el archivo original, permitimos que el usuario
+          // cambie de nuevo la dificultad y el instrumento
+          await loadFromFile(userSong.chartFile, userSong.iniFile)
+        } else {
+          // Fallback legacy por si el chartFile no existe
+          setSong(userSong.songData)
+        }
+        
+        // Cargar audio persistido (blobs)
+        if (Array.isArray(userSong.audioSrc) && userSong.audioSrc.length > 0) {
+          await audioPlayer.loadStemsFromUrls(userSong.audioSrc)
+        } else if (userSong.audioSrc && typeof userSong.audioSrc === 'string') {
+          await audioPlayer.loadAudioFromUrl(userSong.audioSrc)
+        }
+      } catch (err) {
+        console.error('Error restaurando audio de canción cargada:', err)
+      } finally {
+        setIsAudioLoading(false)
+      }
+    },
+    [setSong, audioPlayer, loadFromFile]
+  )
+
   // ==========================================
   // CUENTA REGRESIVA Y CONTROL DE JUEGO
   // ==========================================
@@ -335,6 +365,7 @@ export const useGameplayManager = () => {
     loadFromFile,
     loadFromUrls,
     handlePreloadedSongSelect,
+    handleUserSongSelect,
     changeDifficulty,
     changeInstrument,
     registerUser,

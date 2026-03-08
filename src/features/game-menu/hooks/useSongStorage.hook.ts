@@ -79,6 +79,10 @@ const restoreSong = (stored: StoredSong): UserLoadedSong | null => {
 
     if (!chartFile) return null
 
+    // Create File objects for the parser to use if needed again
+    const chartFileObj = new File([chartFile.data], chartFile.name, { type: chartFile.type || 'application/octet-stream' })
+    const iniFileObj = iniFile ? new File([iniFile.data], iniFile.name, { type: iniFile.type || 'text/plain' }) : undefined
+
     // Parse metadata from ini
     let metadata: Partial<SongMetadata> = {}
     if (iniFile) {
@@ -139,6 +143,8 @@ const restoreSong = (stored: StoredSong): UserLoadedSong | null => {
       songData,
       coverImage,
       audioSrc: audioSrcs.length > 1 ? audioSrcs : audioSrcs[0] || '',
+      chartFile: chartFileObj,
+      iniFile: iniFileObj,
     }
   } catch (err) {
     console.error(`Failed to restore song "${stored.name}":`, err)

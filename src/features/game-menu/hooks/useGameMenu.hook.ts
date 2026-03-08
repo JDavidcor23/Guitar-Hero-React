@@ -82,6 +82,21 @@ export const useGameMenu = ({
 
     const newId = `user-${Date.now()}`
 
+    let chartFileObj: File | undefined
+    let iniFileObj: File | undefined
+
+    if (lastFolderFiles.current) {
+      for (let i = 0; i < lastFolderFiles.current.length; i++) {
+        const file = lastFolderFiles.current[i]
+        const name = file.name.toLowerCase()
+        if (name === 'notes.mid' || name === 'notes.midi' || name === 'notes.chart') {
+          chartFileObj = file
+        } else if (name === 'song.ini') {
+          iniFileObj = file
+        }
+      }
+    }
+
     setUserSongs(prev => [
       ...prev,
       {
@@ -95,6 +110,8 @@ export const useGameMenu = ({
           lastFolderAssets.current.audioSrc.length > 1
             ? lastFolderAssets.current.audioSrc
             : lastFolderAssets.current.audioSrc[0] || '',
+        chartFile: chartFileObj,
+        iniFile: iniFileObj,
       },
     ])
 
@@ -107,6 +124,20 @@ export const useGameMenu = ({
     // Clear the ref after processing
     lastFolderAssets.current = { audioSrc: [] }
   }, [song])
+
+  // Enforce maximum of 5 user songs
+  useEffect(() => {
+    if (userSongs.length > 5) {
+      const excess = userSongs.length - 5
+      const songsToDelete = userSongs.slice(0, excess)
+      
+      songsToDelete.forEach(songToDelete => {
+        deleteSong(songToDelete.id)
+      })
+      
+      setUserSongs(prev => prev.slice(excess))
+    }
+  }, [userSongs, deleteSong])
 
   /** Handle chart file input change */
   const handleChartFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

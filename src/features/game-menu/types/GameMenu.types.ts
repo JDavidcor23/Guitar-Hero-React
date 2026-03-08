@@ -43,7 +43,7 @@ export interface GameMenuProps {
   /** Callback when the user wants to start the game */
   onStartGame: () => void
   /** Callback when the user re-selects an already-loaded song */
-  onSongSelect?: (song: SongData) => void
+  onSongSelect?: (song: UserLoadedSong) => void
 }
 
 /** A song manually loaded by the user via folder selection */
@@ -59,6 +59,10 @@ export interface UserLoadedSong {
   coverImage?: string
   /** Audio source URL(s) */
   audioSrc?: string | string[]
+  /** Original chart file to allow parsing difficulties and instruments when reloading */
+  chartFile?: File
+  /** Original metadata file */
+  iniFile?: File
 }
 
 /** Raw file stored in IndexedDB */

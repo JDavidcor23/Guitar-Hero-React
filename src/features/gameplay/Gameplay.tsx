@@ -57,7 +57,7 @@ export const Gameplay = () => {
     registerUser,
     switchUser,
     deleteUser,
-    setSong,
+    handleUserSongSelect,
   } = useGameplayManager()
 
   // Si no hay perfiles, mostrar formulario de registro inicial
@@ -103,7 +103,7 @@ export const Gameplay = () => {
           onDifficultyChange={changeDifficulty}
           onInstrumentChange={changeInstrument}
           onStartGame={handleStartGame}
-          onSongSelect={setSong}
+          onSongSelect={handleUserSongSelect}
         />
       )}
 

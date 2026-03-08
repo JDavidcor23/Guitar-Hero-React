@@ -16,7 +16,7 @@ interface SongGridProps {
     metadata?: Partial<SongMetadata>
   }) => void
   /** Callback when a user-loaded song is re-selected */
-  onSongSelect?: (song: SongData) => void
+  onSongSelect?: (song: UserLoadedSong) => void
   /** Callback to delete a user-loaded song */
   onDeleteSong?: (id: string) => void
 }
@@ -95,7 +95,7 @@ export const SongGrid = ({
             }
             onIconClick={(idx) => {
               if (idx === 1) {
-                onSongSelect?.(us.songData)
+                onSongSelect?.(us)
               }
             }}
           />
