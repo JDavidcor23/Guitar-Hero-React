@@ -45,7 +45,10 @@ export const Gameplay = () => {
     handleFolderSelect,
     handleStartGame,
     handlePlayAgain,
+    handleRestartSong,
+    handleExitDuringGame,
     handleBackToMenu,
+    handlePauseToggle,
     handleSaveScore,
     loadFromFile,
     handlePreloadedSongSelect,
@@ -123,6 +126,34 @@ export const Gameplay = () => {
             height={canvasHeight}
             className="game-canvas"
           />
+          {/* Overlay de pausa con botones interactivos */}
+          {gameState === 'paused' && (
+            <div className="game-pause-overlay">
+              <div className="game-pause-content">
+                <h1 className="game-pause-title">PAUSA</h1>
+                <div className="game-pause-buttons">
+                  <button
+                    className="game-pause-btn game-pause-btn--resume"
+                    onClick={handlePauseToggle}
+                  >
+                    ▶ CONTINUAR
+                  </button>
+                  <button
+                    className="game-pause-btn game-pause-btn--restart"
+                    onClick={handleRestartSong}
+                  >
+                    ↻ REPETIR CANCIÓN
+                  </button>
+                  <button
+                    className="game-pause-btn game-pause-btn--exit"
+                    onClick={handleExitDuringGame}
+                  >
+                    ✕ SALIR
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Indicador de offset (solo si hay audio) */}
           {audioPlayer.isLoaded && (
             <div className="game-calibration">

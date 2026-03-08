@@ -180,6 +180,24 @@ export const useGameplayManager = () => {
     startCountdown()
   }, [startCountdown])
 
+  const handleRestartSong = useCallback(() => {
+    if (audioPlayer.isLoaded) {
+      audioPlayer.stop()
+    }
+    setFinalStats(null)
+    startCountdown()
+  }, [audioPlayer, startCountdown])
+
+  const handleExitDuringGame = useCallback(() => {
+    if (audioPlayer.isLoaded) {
+      audioPlayer.stop()
+    }
+    setFinalStats(null)
+    clearSong()
+    audioPlayer.cleanup()
+    setGameState('menu')
+  }, [audioPlayer, clearSong])
+
   const handleBackToMenu = useCallback(() => {
     setFinalStats(null)
     clearSong()
@@ -310,6 +328,8 @@ export const useGameplayManager = () => {
     handleStartGame,
     handlePauseToggle,
     handlePlayAgain,
+    handleRestartSong,
+    handleExitDuringGame,
     handleBackToMenu,
     handleSaveScore,
     loadFromFile,

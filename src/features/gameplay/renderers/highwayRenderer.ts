@@ -2,7 +2,6 @@ import { getPerspective } from './perspective'
 import {
   GAME_CONFIG,
   LANES,
-  COLORS,
   SPAWN_Y,
   SPAWN_AHEAD_TIME,
 } from '../constants/game.constants'
@@ -25,8 +24,15 @@ export const drawHighway = (
   canvas: HTMLCanvasElement,
   gameTime: number
 ) => {
-  // Fondo total negro
-  ctx.fillStyle = COLORS.background
+  // Fondo total púrpura oscuro
+  const bgGrad = ctx.createRadialGradient(
+    canvas.width / 2, canvas.height * 0.6, 50,
+    canvas.width / 2, canvas.height * 0.5, canvas.width * 0.8
+  )
+  bgGrad.addColorStop(0, '#1a0a2e')
+  bgGrad.addColorStop(0.5, '#0d0015')
+  bgGrad.addColorStop(1, '#050008')
+  ctx.fillStyle = bgGrad
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   const abstractYBottom = GAME_CONFIG.hitZoneY + 150
@@ -37,10 +43,12 @@ export const drawHighway = (
   const pBottomLeft = getPerspective(LANES[0].x - GAME_CONFIG.laneWidth / 2, abstractYBottom)
   const pBottomRight = getPerspective(LANES[LANES.length - 1].x + GAME_CONFIG.laneWidth / 2, abstractYBottom)
 
-  // Highway Body (Gradient oscuro)
+  // Highway Body (Gradient púrpura oscuro con centro más claro)
   const gradient = ctx.createLinearGradient(0, pTopLeft.y, 0, pBottomLeft.y)
-  gradient.addColorStop(0, '#111116')
-  gradient.addColorStop(1, '#050508')
+  gradient.addColorStop(0, '#12081e')
+  gradient.addColorStop(0.4, '#1a0a2e')
+  gradient.addColorStop(0.7, '#150828')
+  gradient.addColorStop(1, '#0a0412')
 
   ctx.fillStyle = gradient
   ctx.beginPath()
@@ -50,9 +58,9 @@ export const drawHighway = (
   ctx.lineTo(pBottomLeft.x, pBottomLeft.y)
   ctx.fill()
 
-  // Highway Borders (bordes laterales)
-  ctx.strokeStyle = '#555555'
-  ctx.lineWidth = 4
+  // Highway Borders (bordes laterales púrpura sutil)
+  ctx.strokeStyle = 'rgba(138, 79, 255, 0.25)'
+  ctx.lineWidth = 2
   ctx.beginPath()
   ctx.moveTo(pTopLeft.x, pTopLeft.y)
   ctx.lineTo(pBottomLeft.x, pBottomLeft.y)
@@ -66,8 +74,8 @@ export const drawHighway = (
   const offset = (gameTime % beatInterval) * noteSpeed
   const fretSpacing = beatInterval * noteSpeed
 
-  ctx.strokeStyle = 'rgba(200, 200, 200, 0.4)'
-  ctx.lineWidth = 2
+  ctx.strokeStyle = 'rgba(160, 120, 255, 0.2)'
+  ctx.lineWidth = 1
 
   for (let i = 0; i < 20; i++) {
     const fretAbstractY = SPAWN_Y + offset + i * fretSpacing
@@ -86,8 +94,8 @@ export const drawHighway = (
   LANES.forEach((lane) => {
     const topCenter = getPerspective(lane.x, SPAWN_Y)
     const bottomCenter = getPerspective(lane.x, abstractYBottom)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
-    ctx.lineWidth = 2
+    ctx.strokeStyle = 'rgba(180, 140, 255, 0.12)'
+    ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(topCenter.x, topCenter.y)
     ctx.lineTo(bottomCenter.x, bottomCenter.y)

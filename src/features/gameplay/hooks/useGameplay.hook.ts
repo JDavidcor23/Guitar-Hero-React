@@ -23,7 +23,7 @@ import {
 // Módulos extraídos
 import { drawHighway } from '../renderers/highwayRenderer'
 import { drawNote, drawHitZone, drawSustainTail } from '../renderers/noteRenderer'
-import { drawHUD, drawPauseOverlay } from '../renderers/hudRenderer'
+import { drawHUD } from '../renderers/hudRenderer'
 import { getMultiplier, calculatePoints } from '../utils/scoring'
 
 // ==========================================
@@ -389,9 +389,7 @@ export const useGameplay = ({
       drawHitZone(ctx, laneFlashes, currentTime)
       drawHUD(ctx, stats, lastHit, currentTime, gameTime, song.metadata.duration, song.metadata.songName, getMultiplier)
 
-      if (isPaused) {
-        drawPauseOverlay(ctx)
-      }
+      // Pause overlay is now handled by HTML in Gameplay.tsx
 
       animationId = requestAnimationFrame(gameLoop)
     }

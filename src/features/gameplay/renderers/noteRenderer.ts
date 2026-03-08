@@ -4,14 +4,14 @@ import {
   GAME_CONFIG,
   LANES,
   HIT_ZONE_LINE,
-  SUSTAIN_CONFIG,
 } from '../constants/game.constants'
 
 /**
- * Dibuja la zona de hit inferior con anillos metálicos 3D.
+ * Dibuja la zona de hit inferior con estilo púrpura/dorado
+ * que coincide con la estética del menú de la app.
  *
- * Cada carril tiene un anillo ovalado (aplastado por perspectiva)
- * que se ilumina brevemente cuando el jugador presiona la tecla.
+ * Cada carril tiene un botón circular con borde dorado sutil,
+ * fondo púrpura oscuro y glow del color del carril al presionar.
  *
  * @param ctx - Contexto 2D del canvas
  * @param laneFlashes - Estado de flash por carril (timestamp de expiración)
@@ -25,9 +25,15 @@ export const drawHitZone = (
   const startP = getPerspective(HIT_ZONE_LINE.startX, GAME_CONFIG.hitZoneY)
   const endP = getPerspective(HIT_ZONE_LINE.endX, GAME_CONFIG.hitZoneY)
 
-  // Línea horizontal de la zona de hit
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'
-  ctx.lineWidth = 4
+  // Línea horizontal púrpura/dorada
+  const lineGrad = ctx.createLinearGradient(startP.x, startP.y, endP.x, endP.y)
+  lineGrad.addColorStop(0, 'rgba(138, 79, 255, 0.1)')
+  lineGrad.addColorStop(0.15, 'rgba(191, 166, 104, 0.8)')
+  lineGrad.addColorStop(0.5, 'rgba(191, 166, 104, 1.0)')
+  lineGrad.addColorStop(0.85, 'rgba(191, 166, 104, 0.8)')
+  lineGrad.addColorStop(1, 'rgba(138, 79, 255, 0.1)')
+  ctx.strokeStyle = lineGrad
+  ctx.lineWidth = 3
   ctx.beginPath()
   ctx.moveTo(startP.x, startP.y)
   ctx.lineTo(endP.x, endP.y)
@@ -38,43 +44,89 @@ export const drawHitZone = (
   LANES.forEach((lane, index) => {
     const p = getPerspective(lane.x, GAME_CONFIG.hitZoneY)
     const isFlashing = laneFlashes[index] && laneFlashes[index] > currentTime
-    const radius = isFlashing ? GAME_CONFIG.noteRadius * 1.1 : GAME_CONFIG.noteRadius
+    const radius = GAME_CONFIG.noteRadius
+    const scaledRadius = radius * p.scale
+
+    // Glow exterior cuando se presiona
+    if (isFlashing) {
+      ctx.save()
+      ctx.translate(p.x, p.y)
+      ctx.scale(1, 0.45)
+      const glowGrad = ctx.createRadialGradient(0, 0, scaledRadius * 0.5 / p.scale, 0, 0, scaledRadius * 2.0 / p.scale)
+      glowGrad.addColorStop(0, lane.color + '60')
+      glowGrad.addColorStop(0.5, lane.color + '20')
+      glowGrad.addColorStop(1, lane.color + '00')
+      ctx.fillStyle = glowGrad
+      ctx.beginPath()
+      ctx.arc(0, 0, scaledRadius * 2.0 / p.scale, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+    }
 
     ctx.save()
     ctx.translate(p.x, p.y)
     ctx.scale(1, 0.45) // Aplastamiento por perspectiva
 
-    // Anillo metálico exterior
-    ctx.strokeStyle = isFlashing ? '#ffffff' : '#888888'
-    ctx.lineWidth = 10 / 0.45
-    ctx.beginPath()
-    ctx.arc(0, 0, radius, 0, Math.PI * 2)
-    ctx.stroke()
+    const r = radius
 
-    // Anillo metálico interior
-    ctx.strokeStyle = '#444444'
-    ctx.lineWidth = 3 / 0.45
-    ctx.beginPath()
-    ctx.arc(0, 0, radius, 0, Math.PI * 2)
-    ctx.stroke()
-
-    // Relleno de color cuando se presiona
+    // Fondo del botón — púrpura oscuro
+    const bgGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r)
     if (isFlashing) {
-      ctx.fillStyle = lane.color + '88'
+      bgGrad.addColorStop(0, lane.color + '40')
+      bgGrad.addColorStop(0.6, lane.color + '18')
+      bgGrad.addColorStop(1, 'rgba(26, 10, 46, 0.9)')
+    } else {
+      bgGrad.addColorStop(0, 'rgba(50, 25, 80, 0.9)')
+      bgGrad.addColorStop(1, 'rgba(20, 5, 35, 0.95)')
+    }
+    ctx.fillStyle = bgGrad
+    ctx.beginPath()
+    ctx.arc(0, 0, r, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Borde dorado/púrpura
+    const borderColor = isFlashing
+      ? lane.color
+      : 'rgba(191, 166, 104, 0.7)'
+    ctx.strokeStyle = borderColor
+    ctx.lineWidth = isFlashing ? 3.5 / 0.45 : 2.5 / 0.45
+    ctx.beginPath()
+    ctx.arc(0, 0, r, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Anillo interior
+    ctx.strokeStyle = isFlashing
+      ? lane.color + '90'
+      : 'rgba(138, 79, 255, 0.35)'
+    ctx.lineWidth = 1.5 / 0.45
+    ctx.beginPath()
+    ctx.arc(0, 0, r * 0.65, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Punto central
+    if (isFlashing) {
+      ctx.fillStyle = lane.color + 'AA'
       ctx.beginPath()
-      ctx.arc(0, 0, radius - 2, 0, Math.PI * 2)
+      ctx.arc(0, 0, r * 0.2, 0, Math.PI * 2)
+      ctx.fill()
+    } else {
+      ctx.fillStyle = 'rgba(138, 79, 255, 0.45)'
+      ctx.beginPath()
+      ctx.arc(0, 0, r * 0.18, 0, Math.PI * 2)
       ctx.fill()
     }
+
     ctx.restore()
 
-    // Letra de la tecla debajo del anillo
-    ctx.fillStyle = isFlashing ? '#ffffff' : lane.color
-    const fontSize = Math.max(14, Math.round(18 * p.scale))
-    ctx.font = `bold ${fontSize}px Arial`
+    // Letra de la tecla debajo del botón
+    const fontSize = Math.max(12, Math.round(14 * p.scale))
+    ctx.font = `bold ${fontSize}px 'Orbitron', sans-serif`
     ctx.textAlign = 'center'
-    ctx.fillText(laneKeys[index], p.x, p.y + 30 * p.scale)
+    ctx.fillStyle = isFlashing ? lane.color : 'rgba(191, 166, 104, 0.85)'
+    ctx.fillText(laneKeys[index], p.x, p.y + 28 * p.scale)
   })
 }
+
 
 /**
  * Dibuja una nota como un cilindro 3D (puck) en perspectiva.
@@ -152,8 +204,8 @@ export const drawNote = (
 /**
  * Dibuja la cola de una nota sostenida (sustain) en perspectiva.
  *
- * La cola es un trapecio que conecta la cabeza de la nota (headY)
- * con el final de la cola (tailEndY), con un highlight central.
+ * La cola es un trapecio de color sólido con el extremo lejano
+ * redondeado (semicírculo), sin efectos 3D.
  *
  * @param ctx - Contexto 2D del canvas
  * @param lane - Índice del carril (0-4)
@@ -173,7 +225,7 @@ export const drawSustainTail = (
   isReleased: boolean
 ) => {
   const laneData = LANES[lane]
-  const width = SUSTAIN_CONFIG.tailWidth
+  const width = 30
 
   // No dibujar si la cola es muy corta
   if (tailEndY >= headY - 5) return
@@ -185,31 +237,53 @@ export const drawSustainTail = (
   const pTailRight = getPerspective(laneData.x + width / 2, tailEndY)
 
   // Determinar transparencia según estado
-  let alpha = SUSTAIN_CONFIG.tailAlpha
-  if (isReleased) alpha = SUSTAIN_CONFIG.releasedAlpha
-  else if (isComplete) alpha = SUSTAIN_CONFIG.completeAlpha
-  else if (isActive) alpha = SUSTAIN_CONFIG.activeAlpha
+  let alpha = '99'
+  if (isReleased) alpha = '40'
+  else if (isComplete) alpha = 'FF'
+  else if (isActive) alpha = 'CC'
 
-  // Cuerpo de la cola
+  // Cuerpo de la cola — color sólido con extremo redondeado
+  // En vez de un trapecio recto + círculo aparte, dibujamos una forma
+  // tipo cápsula: líneas rectas en los lados + curva suave arriba
+  const pTailCenter = getPerspective(laneData.x, tailEndY)
+  const tailHalfWidth = (pTailRight.x - pTailLeft.x) / 2
+  // Cuánto sube la curva — proporcional al ancho para un arco natural
+  const curveHeight = tailHalfWidth * 0.6
+
   ctx.fillStyle = laneData.color + alpha
   ctx.beginPath()
-  ctx.moveTo(pTailLeft.x, pTailLeft.y)
-  ctx.lineTo(pTailRight.x, pTailRight.y)
+  // Empezar en la esquina inferior izquierda (head)
+  ctx.moveTo(pHeadLeft.x, pHeadLeft.y)
+  // Subir por el lado izquierdo hasta el tail
+  ctx.lineTo(pTailLeft.x, pTailLeft.y)
+  // Curva suave de tailLeft a tailRight pasando por el centro (arriba)
+  ctx.quadraticCurveTo(
+    pTailCenter.x, pTailCenter.y - curveHeight,
+    pTailRight.x, pTailRight.y
+  )
+  // Bajar por el lado derecho hasta head
   ctx.lineTo(pHeadRight.x, pHeadRight.y)
-  ctx.lineTo(pHeadLeft.x, pHeadLeft.y)
+  ctx.closePath()
   ctx.fill()
 
-  // Highlight central
+  // Highlight central sutil
   const pHeadInnerLeft = getPerspective(laneData.x - width / 4, headY)
   const pHeadInnerRight = getPerspective(laneData.x + width / 4, headY)
   const pTailInnerLeft = getPerspective(laneData.x - width / 4, tailEndY)
   const pTailInnerRight = getPerspective(laneData.x + width / 4, tailEndY)
+  const pTailInnerCenter = getPerspective(laneData.x, tailEndY)
+  const innerHalfWidth = (pTailInnerRight.x - pTailInnerLeft.x) / 2
+  const innerCurveHeight = innerHalfWidth * 0.6
 
   ctx.fillStyle = 'rgba(255, 255, 255, ' + (isActive ? '0.3' : '0.1') + ')'
   ctx.beginPath()
-  ctx.moveTo(pTailInnerLeft.x, pTailInnerLeft.y)
-  ctx.lineTo(pTailInnerRight.x, pTailInnerRight.y)
+  ctx.moveTo(pHeadInnerLeft.x, pHeadInnerLeft.y)
+  ctx.lineTo(pTailInnerLeft.x, pTailInnerLeft.y)
+  ctx.quadraticCurveTo(
+    pTailInnerCenter.x, pTailInnerCenter.y - innerCurveHeight,
+    pTailInnerRight.x, pTailInnerRight.y
+  )
   ctx.lineTo(pHeadInnerRight.x, pHeadInnerRight.y)
-  ctx.lineTo(pHeadInnerLeft.x, pHeadInnerLeft.y)
+  ctx.closePath()
   ctx.fill()
 }

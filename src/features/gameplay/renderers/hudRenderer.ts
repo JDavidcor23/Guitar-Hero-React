@@ -48,23 +48,23 @@ export const drawHUD = (
 
   // Score (grande)
   ctx.fillStyle = COLORS.white
-  ctx.font = 'bold 28px Arial'
+  ctx.font = "bold 28px 'Orbitron', sans-serif"
   ctx.fillText(`${stats.score.toLocaleString()}`, 20, 35)
 
   // Combo
-  ctx.font = '20px Arial'
+  ctx.font = "18px 'Share Tech Mono', monospace"
   ctx.fillStyle = stats.combo > 0 ? multiplierColor : COLORS.white
   ctx.fillText(`Combo: ${stats.combo}`, 20, 60)
 
   // Max Combo
   ctx.fillStyle = '#888888'
-  ctx.font = '16px Arial'
+  ctx.font = "14px 'Share Tech Mono', monospace"
   ctx.fillText(`Max: ${stats.maxCombo}`, 20, 82)
 
   // Multiplicador (si es mayor a 1)
   if (multiplier > 1) {
     ctx.fillStyle = multiplierColor
-    ctx.font = 'bold 24px Arial'
+    ctx.font = "bold 22px 'Orbitron', sans-serif"
     ctx.fillText(`x${multiplier}`, 130, 60)
   }
 
@@ -73,11 +73,11 @@ export const drawHUD = (
   // ==========================================
   ctx.textAlign = 'center'
   ctx.fillStyle = COLORS.white
-  ctx.font = '16px Arial'
+  ctx.font = "14px 'Orbitron', sans-serif"
   ctx.fillText(songName, GAME_CONFIG.canvasWidth / 2, 20)
 
   // Tiempo transcurrido / duración total
-  ctx.font = '14px Arial'
+  ctx.font = "12px 'Share Tech Mono', monospace"
   ctx.fillStyle = '#AAAAAA'
   ctx.fillText(
     `${formatTime(gameTime)} / ${formatTime(songDuration)}`,
@@ -102,7 +102,7 @@ export const drawHUD = (
   // ESQUINA SUPERIOR DERECHA: Estadísticas
   // ==========================================
   ctx.textAlign = 'right'
-  ctx.font = '14px Arial'
+  ctx.font = "13px 'Share Tech Mono', monospace"
   const rightX = GAME_CONFIG.canvasWidth - 20
 
   ctx.fillStyle = '#00FF00'
@@ -137,13 +137,13 @@ export const drawHUD = (
 
     // Texto grande del resultado
     ctx.fillStyle = resultColors[lastHit.result] || COLORS.white
-    ctx.font = 'bold 48px Arial'
+    ctx.font = "bold 48px 'Orbitron', sans-serif"
     ctx.textAlign = 'center'
     ctx.fillText(resultText[lastHit.result] || '', GAME_CONFIG.canvasWidth / 2, 140)
 
     // Puntos ganados (si no es miss)
     if (lastHit.result !== 'miss' && lastHit.points > 0) {
-      ctx.font = 'bold 24px Arial'
+      ctx.font = "bold 22px 'Orbitron', sans-serif"
       ctx.fillText(`+${lastHit.points}`, GAME_CONFIG.canvasWidth / 2, 170)
     }
   }
@@ -162,12 +162,12 @@ export const drawPauseOverlay = (ctx: CanvasRenderingContext2D) => {
 
   // Texto PAUSA
   ctx.fillStyle = COLORS.white
-  ctx.font = 'bold 64px Arial'
+  ctx.font = "bold 64px 'Orbitron', sans-serif"
   ctx.textAlign = 'center'
   ctx.fillText('PAUSE', GAME_CONFIG.canvasWidth / 2, GAME_CONFIG.canvasHeight / 2 - 20)
 
   // Instrucción
-  ctx.font = '24px Arial'
+  ctx.font = "20px 'Share Tech Mono', monospace"
   ctx.fillStyle = '#AAAAAA'
   ctx.fillText(
     'Press SPACE to continue',
