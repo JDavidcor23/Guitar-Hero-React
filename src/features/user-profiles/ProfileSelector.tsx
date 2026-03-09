@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { useGamepadNavigation } from '../../hooks/useGamepadNavigation'
+import { useProfileSelector } from './hooks/useProfileSelector.hook'
 import type { UserProfile } from './types'
 import { RegisterForm } from './RegisterForm'
 import './ProfileSelector.css'
@@ -30,78 +29,32 @@ export const ProfileSelector = ({
   onRegisterUser,
   onDeleteUser
 }: ProfileSelectorProps) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [showRegisterForm, setShowRegisterForm] = useState(false)
-  const [userToDelete, setUserToDelete] = useState<string | null>(null)
+  if (!currentUser) return null
 
-  const handleProfileClick = (userId: string) => {
-    onSwitchUser(userId)
-    setIsOpen(false)
-  }
+  const {
+    isOpen,
+    setIsOpen,
+    showRegisterForm,
+    setShowRegisterForm,
+    userToDelete,
+    setUserToDelete,
+    focusedIndex,
+    handleProfileClick,
+    handleDeleteClick,
+    confirmDelete,
+    hasGamepad,
+  } = useProfileSelector({
+    profiles,
+    currentUser,
+    onSwitchUser,
+    onDeleteUser,
+  })
 
   const handleRegister = (name: string, avatar: string) => {
     onRegisterUser(name, avatar)
     setShowRegisterForm(false)
     setIsOpen(false)
   }
-
-  const handleDeleteClick = (e: React.MouseEvent, userId: string) => {
-    e.stopPropagation()
-    setUserToDelete(userId)
-  }
-
-  const confirmDelete = () => {
-    if (userToDelete && onDeleteUser) {
-      onDeleteUser(userToDelete)
-      setUserToDelete(null)
-    }
-  }
-
-  const [focusedIndex, setFocusedIndex] = useState(-1)
-  
-  useEffect(() => {
-    if (isOpen) {
-      const idx = profiles.findIndex(p => p.id === currentUser?.profile.id)
-      setFocusedIndex(idx >= 0 ? idx : 0)
-    } else {
-      setFocusedIndex(-1)
-    }
-  }, [isOpen, profiles, currentUser])
-
-  const { hasGamepad } = useGamepadNavigation({
-    enabled: true,
-    onY: () => {
-      if (!showRegisterForm && !userToDelete) {
-        setIsOpen(prev => !prev)
-      }
-    },
-    onConfirm: () => {
-      if (!isOpen || showRegisterForm || userToDelete) return
-      
-      if (focusedIndex >= 0 && focusedIndex < profiles.length) {
-        handleProfileClick(profiles[focusedIndex].id)
-      } else if (focusedIndex === profiles.length) {
-        setShowRegisterForm(true)
-      }
-    },
-    onCancel: () => {
-       if (isOpen && !showRegisterForm && !userToDelete) {
-         setIsOpen(false)
-       }
-    },
-    onUp: () => {
-      if (isOpen && !showRegisterForm && !userToDelete) {
-        setFocusedIndex(prev => Math.max(0, prev - 1))
-      }
-    },
-    onDown: () => {
-      if (isOpen && !showRegisterForm && !userToDelete) {
-        setFocusedIndex(prev => Math.min(profiles.length, prev + 1))
-      }
-    }
-  })
-
-  if (!currentUser) return null
 
   return (
     <>
@@ -114,15 +67,17 @@ export const ProfileSelector = ({
           aria-haspopup="listbox"
         >
           <div className="profile-selector__avatar">
-            <div className={`avatar-icon avatar-icon--${currentUser.profile.avatar}`} style={{ width: '20px', height: '20px' }} />
+            <div className={`avatar-icon avatar-icon--${currentUser.profile.avatar} profile-selector__avatar-icon`} />
           </div>
           <span className="profile-selector__name">{currentUser.profile.name}</span>
-          {hasGamepad && <span className="profile-selector__gamepad-hint" style={{fontSize: '0.7em', color: '#ffbc42', fontWeight: 'bold'}}>(Y)</span>}
+          {hasGamepad ? (
+            <span className="profile-selector__gamepad-hint">(Y)</span>
+          ) : null}
           <span className="profile-selector__arrow">{isOpen ? '▲' : '▼'}</span>
         </button>
 
         {/* Dropdown de perfiles */}
-        {isOpen && (
+        {isOpen ? (
           <div className="profile-selector__dropdown">
             <div className="profile-selector__list" role="listbox">
               {profiles.map((profile, index) => (
@@ -134,13 +89,13 @@ export const ProfileSelector = ({
                   aria-selected={profile.id === currentUser.profile.id}
                 >
                   <div className="profile-selector__item-avatar">
-                    <div className={`avatar-icon avatar-icon--${profile.avatar}`} style={{ width: '18px', height: '18px', backgroundColor: 'rgba(255,255,255,0.7)' }} />
+                    <div className={`avatar-icon avatar-icon--${profile.avatar} profile-selector__item-avatar-icon`} />
                   </div>
                   <span className="profile-selector__item-name">{profile.name}</span>
-                  {profile.id === currentUser.profile.id && (
+                  {profile.id === currentUser.profile.id ? (
                     <span className="profile-selector__item-check">✓</span>
-                  )}
-                  {onDeleteUser && profiles.length > 1 && profile.id !== currentUser.profile.id && (
+                  ) : null}
+                  {onDeleteUser && profiles.length > 1 && profile.id !== currentUser.profile.id ? (
                     <button
                       className="profile-selector__item-delete"
                       onClick={(e) => handleDeleteClick(e, profile.id)}
@@ -148,7 +103,7 @@ export const ProfileSelector = ({
                     >
                       ✕
                     </button>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -162,30 +117,30 @@ export const ProfileSelector = ({
               <span>Agregar Jugador</span>
             </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Overlay para cerrar el dropdown al hacer clic fuera */}
-      {isOpen && (
+      {isOpen ? (
         <div 
           className="profile-selector__overlay" 
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
-      )}
+      ) : null}
 
       {/* Modal de registro */}
-      {showRegisterForm && (
+      {showRegisterForm ? (
         <div className="profile-selector__modal-backdrop">
           <RegisterForm
             onRegister={handleRegister}
             onCancel={() => setShowRegisterForm(false)}
           />
         </div>
-      )}
+      ) : null}
 
       {/* Modal de confirmación de eliminación */}
-      {userToDelete && (
+      {userToDelete ? (
         <div className="profile-selector__modal-backdrop">
           <div className="profile-selector__confirm-modal">
             <h3>¿Eliminar perfil?</h3>
@@ -198,7 +153,8 @@ export const ProfileSelector = ({
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   )
 }
+

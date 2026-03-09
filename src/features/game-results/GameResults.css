@@ -120,6 +120,30 @@
   animation: rank-glow 2s ease-in-out infinite alternate;
 }
 
+.game-results__rank--s {
+  color: #FFD700;
+}
+
+.game-results__rank--a {
+  color: #00ff88;
+}
+
+.game-results__rank--b {
+  color: #88ff00;
+}
+
+.game-results__rank--c {
+  color: #ffcc00;
+}
+
+.game-results__rank--d {
+  color: #ff8844;
+}
+
+.game-results__rank--f {
+  color: #ff4466;
+}
+
 @keyframes rank-glow {
   from {
     filter: brightness(1) drop-shadow(0 0 10px currentColor);

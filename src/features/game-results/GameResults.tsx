@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { useGamepadNavigation } from '../../hooks/useGamepadNavigation'
 import type { GameStats, SongData } from '../gameplay/types/GuitarGame.types'
+import { useGameResults } from './hooks/useGameResults.hook'
 import './GameResults.css'
 
 // ==========================================
@@ -34,57 +33,11 @@ interface GameResultsProps {
  * - Botones para jugar de nuevo o volver al menú
  */
 export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScore, playerName }: GameResultsProps) => {
-  // Ref para evitar guardar la puntuación múltiples veces
-  const scoreSavedRef = useRef(false)
-  const [focusedIndex, setFocusedIndex] = useState(0)
-
-  // Guardar puntuación al montar el componente
-  useEffect(() => {
-    if (onSaveScore && !scoreSavedRef.current) {
-      scoreSavedRef.current = true
-      onSaveScore(stats)
-    }
-  }, [onSaveScore, stats])
-
-  /**
-   * Calcula el porcentaje de accuracy
-   * (Perfect + Good + OK) / Total notas * 100
-   */
-  const calculateAccuracy = (): number => {
-    const totalHits = stats.perfects + stats.goods + stats.oks
-    const totalNotes = totalHits + stats.misses
-    if (totalNotes === 0) return 0
-    return Math.round((totalHits / totalNotes) * 100)
-  }
-
-  /**
-   * Determina el "rango" basado en el accuracy
-   * Colores ajustados para verse bien con glow
-   */
-  const getRank = (accuracy: number): { letter: string; color: string } => {
-    if (accuracy >= 95) return { letter: 'S', color: '#FFD700' }
-    if (accuracy >= 90) return { letter: 'A', color: '#00ff88' }
-    if (accuracy >= 80) return { letter: 'B', color: '#88ff00' }
-    if (accuracy >= 70) return { letter: 'C', color: '#ffcc00' }
-    if (accuracy >= 60) return { letter: 'D', color: '#ff8844' }
-    return { letter: 'F', color: '#ff4466' }
-  }
-
-  const accuracy = calculateAccuracy()
-  const rank = getRank(accuracy)
-  const hasSustains = stats.sustainsHit > 0 || stats.sustainsComplete > 0 || stats.sustainsDropped > 0
-
-  const isProfileMenuOpen = () => document.querySelector('.profile-selector__dropdown') !== null
-
-  useGamepadNavigation({
-    enabled: true,
-    onLeft: () => !isProfileMenuOpen() && setFocusedIndex(0),
-    onRight: () => !isProfileMenuOpen() && setFocusedIndex(1),
-    onConfirm: () => {
-      if (isProfileMenuOpen()) return
-      if (focusedIndex === 0) onPlayAgain()
-      else if (focusedIndex === 1) onBackToMenu()
-    }
+  const { accuracy, rank, hasSustains, focusedIndex } = useGameResults({
+    stats,
+    onPlayAgain,
+    onBackToMenu,
+    onSaveScore,
   })
 
   return (
@@ -94,15 +47,15 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
 
       {/* Nombre de la canción */}
       <h2 className="game-results__song-name">{song.metadata.songName}</h2>
-      {song.metadata.artist && (
+      {song.metadata.artist ? (
         <p className="game-results__song-artist">{song.metadata.artist}</p>
-      )}
-      {playerName && (
+      ) : null}
+      {playerName ? (
         <p className="game-results__player-name">🎸 {playerName}</p>
-      )}
+      ) : null}
 
       {/* Rango */}
-      <div className="game-results__rank" style={{ color: rank.color }}>
+      <div className={`game-results__rank game-results__rank--${rank.letter.toLowerCase()}`}>
         {rank.letter}
       </div>
 
@@ -145,7 +98,7 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
       </div>
 
       {/* Stats de sustains (solo si hubo sustains) */}
-      {hasSustains && (
+      {hasSustains ? (
         <div className="game-results__sustain-stats">
           <div className="game-results__sustain-stat">
             <span className="game-results__sustain-value">{stats.sustainsHit}</span>
@@ -160,7 +113,7 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
             <span className="game-results__sustain-label">Soltados</span>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Botones */}
       <div className="game-results__buttons">
@@ -182,3 +135,4 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
     </div>
   )
 }
+

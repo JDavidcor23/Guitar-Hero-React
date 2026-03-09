@@ -50,6 +50,23 @@
   opacity: 0.6;
 }
 
+.profile-selector__avatar-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.profile-selector__item-avatar-icon {
+  width: 18px;
+  height: 18px;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.profile-selector__gamepad-hint {
+  font-size: 0.7em;
+  color: #ffbc42;
+  font-weight: bold;
+}
+
 .profile-selector__dropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -334,6 +351,7 @@
   margin: 0;
   background: linear-gradient(to bottom, #fff, #aaa);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -566,4 +584,8 @@
   padding: 8px;
   border-radius: 8px;
   border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+.register-form__error--center {
+  text-align: center;
 }

@@ -1,24 +1,18 @@
 import { useState, useCallback, useRef } from 'react'
 import type { SongData, SongMetadata } from '../../gameplay/types/GuitarGame.types'
-import { ChartParser } from '../../gameplay/utils/chartParser'
-import { MidiParser, parseSongIni } from '../../gameplay/utils/midiParser'
+import type {
+  InstrumentInfo,
+  ParserInterface,
+  ParseResult,
+} from '../services/songParser.service'
+import {
+  loadFromFileService,
+  loadFromFolderService,
+  loadFromUrlsService,
+} from '../services/songParser.service'
 
-/**
- * Información de un instrumento disponible
- */
-export interface InstrumentInfo {
-  trackName: string
-  displayName: string
-}
-
-/**
- * Interfaz común para los parsers
- */
-interface ParserInterface {
-  getAvailableDifficulties(trackName?: string): string[]
-  getAvailableInstruments?: () => InstrumentInfo[]
-  convertToSongData(difficulty: string, metadata?: Partial<SongMetadata>, trackName?: string): SongData | null
-}
+/** Re-export InstrumentInfo para compatibilidad con el resto de la app */
+export type { InstrumentInfo }
 
 /**
  * Hook para cargar canciones desde archivos .chart o .mid
@@ -35,213 +29,63 @@ export const useSongLoader = () => {
   const parserRef = useRef<ParserInterface | null>(null)
   const metadataRef = useRef<Partial<SongMetadata>>({})
 
-  /**
-   * Carga un archivo .chart
-   */
-  const loadChartFile = useCallback((file: File): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
+  const applyParseResult = (result: ParseResult) => {
+    parserRef.current = result.parser
+    metadataRef.current = result.metadata
+    setAvailableDifficulties(result.difficulties)
+    setAvailableInstruments(result.instruments)
+    setCurrentInstrument(result.currentInstrument)
+    setSong(result.songData)
+    setError(null)
+  }
 
-      reader.onload = (event) => {
-        try {
-          const content = event.target?.result as string
-
-          // Parsear archivo .chart
-          const parser = new ChartParser()
-          parser.parse(content)
-
-          // Guardar parser y dificultades disponibles
-          parserRef.current = parser
-          const difficulties = parser.getAvailableDifficulties()
-          setAvailableDifficulties(difficulties)
-
-          if (difficulties.length === 0) {
-            reject(new Error('No se encontraron notas en el archivo .chart'))
-          } else {
-            // Por defecto, cargar la dificultad más difícil disponible
-            const defaultDifficulty = difficulties[difficulties.length - 1]
-            const songData = parser.convertToSongData(defaultDifficulty)
-
-            if (songData) {
-              setSong(songData)
-              resolve()
-            } else {
-              reject(new Error('Error al convertir las notas'))
-            }
-          }
-        } catch (err) {
-          reject(err)
-        }
-      }
-
-      reader.onerror = () => reject(new Error('Error al leer el archivo'))
-      reader.readAsText(file)
-    })
+  const loadFromFile = useCallback(async (file: File, iniFile?: File) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await loadFromFileService(file, iniFile)
+      applyParseResult(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setSong(null)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
-  /**
-   * Carga un archivo .mid (MIDI)
-   */
-  const loadMidiFile = useCallback(
-    (file: File, metadata?: Partial<SongMetadata>): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
+  const loadFromFolder = useCallback(async (files: FileList) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await loadFromFolderService(files)
+      applyParseResult(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setSong(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
-        reader.onload = (event) => {
-          try {
-            const arrayBuffer = event.target?.result as ArrayBuffer
+  const loadFromUrls = useCallback(async (chartUrl: string, metadata?: Partial<SongMetadata>) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await loadFromUrlsService(chartUrl, metadata)
+      applyParseResult(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setSong(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
-            // Parsear archivo MIDI
-            const parser = new MidiParser(arrayBuffer)
-            parser.parse()
-
-            // Guardar parser y metadata
-            parserRef.current = parser
-            metadataRef.current = metadata || {}
-
-            // Obtener instrumentos disponibles
-            const instruments = parser.getAvailableInstruments()
-            setAvailableInstruments(instruments)
-
-            // Seleccionar el primer instrumento disponible (preferir guitarra)
-            const defaultInstrument = instruments.find((i) => i.trackName === 'PART GUITAR')?.trackName ||
-              instruments[0]?.trackName ||
-              'PART GUITAR'
-            setCurrentInstrument(defaultInstrument)
-
-            // Obtener dificultades disponibles para el instrumento seleccionado
-            const difficulties = parser.getAvailableDifficulties(defaultInstrument)
-            setAvailableDifficulties(difficulties)
-
-            if (difficulties.length === 0) {
-              reject(new Error('No se encontraron notas jugables en el archivo MIDI'))
-            } else {
-              // Por defecto, cargar la dificultad más difícil disponible
-              const defaultDifficulty = difficulties[difficulties.length - 1]
-              const songData = parser.convertToSongData(defaultDifficulty, metadata, defaultInstrument)
-
-              if (songData) {
-                setSong(songData)
-                resolve()
-              } else {
-                reject(new Error('Error al convertir las notas MIDI'))
-              }
-            }
-          } catch (err) {
-            reject(err)
-          }
-        }
-
-        reader.onerror = () => reject(new Error('Error al leer el archivo MIDI'))
-        reader.readAsArrayBuffer(file)
-      })
-    },
-    []
-  )
-
-  /**
-   * Carga un archivo de canción (detecta el tipo automáticamente)
-   */
-  const loadFromFile = useCallback(
-    async (file: File, iniFile?: File) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        // Parsear song.ini si se proporciona
-        let metadata: Partial<SongMetadata> = {}
-        if (iniFile) {
-          const iniContent = await iniFile.text()
-          metadata = parseSongIni(iniContent)
-        }
-
-        const extension = file.name.toLowerCase().split('.').pop()
-
-        if (extension === 'chart' || extension === 'txt') {
-          await loadChartFile(file)
-        } else if (extension === 'mid' || extension === 'midi') {
-          await loadMidiFile(file, metadata)
-        } else {
-          throw new Error(`Formato no soportado: .${extension}`)
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-        setError(errorMessage)
-        console.error('Error cargando archivo:', err)
-        setSong(null)
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [loadChartFile, loadMidiFile]
-  )
-
-  /**
-   * Carga una carpeta de canción (busca notes.mid/notes.chart y song.ini)
-   */
-  const loadFromFolder = useCallback(
-    async (files: FileList) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        // Buscar archivos relevantes
-        let chartFile: File | null = null
-        let iniFile: File | null = null
-
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i]
-          const name = file.name.toLowerCase()
-
-          if (name === 'notes.mid' || name === 'notes.midi') {
-            chartFile = file
-          } else if (name === 'notes.chart') {
-            // Preferir .chart sobre .mid si ambos existen
-            chartFile = file
-          } else if (name === 'song.ini') {
-            iniFile = file
-          }
-        }
-
-        if (!chartFile) {
-          throw new Error('No se encontró notes.mid o notes.chart en la carpeta')
-        }
-
-        // Parsear song.ini si existe
-        let metadata: Partial<SongMetadata> = {}
-        if (iniFile) {
-          const iniContent = await iniFile.text()
-          metadata = parseSongIni(iniContent)
-        }
-
-        const extension = chartFile.name.toLowerCase().split('.').pop()
-
-        if (extension === 'chart') {
-          await loadChartFile(chartFile)
-        } else {
-          await loadMidiFile(chartFile, metadata)
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-        setError(errorMessage)
-        console.error('Error cargando carpeta:', err)
-        setSong(null)
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [loadChartFile, loadMidiFile]
-  )
-
-  /**
-   * Cambia la dificultad de la canción actual
-   */
   const changeDifficulty = useCallback((difficulty: string) => {
     if (!parserRef.current) {
       setError('No hay canción cargada')
       return
     }
-
     const songData = parserRef.current.convertToSongData(difficulty, metadataRef.current, currentInstrument)
     if (songData) {
       setSong(songData)
@@ -251,18 +95,12 @@ export const useSongLoader = () => {
     }
   }, [currentInstrument])
 
-  /**
-   * Cambia el instrumento de la canción actual
-   */
   const changeInstrument = useCallback((trackName: string) => {
     if (!parserRef.current) {
       setError('No hay canción cargada')
       return
     }
-
     setCurrentInstrument(trackName)
-
-    // Obtener dificultades disponibles para el nuevo instrumento
     const difficulties = parserRef.current.getAvailableDifficulties(trackName)
     setAvailableDifficulties(difficulties)
 
@@ -271,10 +109,8 @@ export const useSongLoader = () => {
       return
     }
 
-    // Cargar la dificultad más difícil disponible
     const defaultDifficulty = difficulties[difficulties.length - 1]
     const songData = parserRef.current.convertToSongData(defaultDifficulty, metadataRef.current, trackName)
-
     if (songData) {
       setSong(songData)
       setError(null)
@@ -283,90 +119,6 @@ export const useSongLoader = () => {
     }
   }, [])
 
-  /**
-   * Carga una canción desde URLs (para canciones precargadas)
-   */
-  const loadFromUrls = useCallback(
-    async (chartUrl: string, metadata?: Partial<SongMetadata>) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const response = await fetch(chartUrl)
-        if (!response.ok) throw new Error('No se pudo descargar el archivo de la canción')
-
-        const extension = chartUrl.toLowerCase().split('.').pop()
-        
-        if (extension === 'chart' || chartUrl.endsWith('.txt')) {
-          const content = await response.text()
-          const parser = new ChartParser()
-          parser.parse(content)
-
-          parserRef.current = parser
-          metadataRef.current = metadata || {}
-          
-          const difficulties = parser.getAvailableDifficulties()
-          setAvailableDifficulties(difficulties)
-
-          if (difficulties.length === 0) {
-            throw new Error('No se encontraron notas en el archivo')
-          } else {
-            const defaultDifficulty = difficulties[difficulties.length - 1]
-            const songData = parser.convertToSongData(defaultDifficulty, metadata)
-            if (songData) {
-              setSong(songData)
-            } else {
-              throw new Error('Error al convertir las notas')
-            }
-          }
-        } else if (extension === 'mid' || extension === 'midi') {
-          const arrayBuffer = await response.arrayBuffer()
-          const parser = new MidiParser(arrayBuffer)
-          parser.parse()
-
-          parserRef.current = parser
-          metadataRef.current = metadata || {}
-
-          const instruments = parser.getAvailableInstruments()
-          setAvailableInstruments(instruments)
-
-          const defaultInstrument = instruments.find((i) => i.trackName === 'PART GUITAR')?.trackName ||
-            instruments[0]?.trackName ||
-            'PART GUITAR'
-          setCurrentInstrument(defaultInstrument)
-
-          const difficulties = parser.getAvailableDifficulties(defaultInstrument)
-          setAvailableDifficulties(difficulties)
-
-          if (difficulties.length === 0) {
-            throw new Error('No se encontraron notas jugables en el archivo MIDI')
-          } else {
-            const defaultDifficulty = difficulties[difficulties.length - 1]
-            const songData = parser.convertToSongData(defaultDifficulty, metadata, defaultInstrument)
-            if (songData) {
-              setSong(songData)
-            } else {
-              throw new Error('Error al convertir las notas MIDI')
-            }
-          }
-        } else {
-          throw new Error(`Formato no soportado: .${extension}`)
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-        setError(errorMessage)
-        console.error('Error cargando desde URL:', err)
-        setSong(null)
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    []
-  )
-
-  /**
-   * Limpia la canción actual
-   */
   const clearSong = useCallback(() => {
     setSong(null)
     setError(null)

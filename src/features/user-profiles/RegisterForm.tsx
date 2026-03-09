@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
 import { AVAILABLE_AVATARS } from './types'
+import { useRegisterForm } from './hooks/useRegisterForm.hook'
 import './ProfileSelector.css'
 import backgroundImage from '../../assets/user-profiles/background registry.webp'
 
@@ -21,42 +20,26 @@ interface RegisterFormProps {
  * Permite ingresar nombre y seleccionar un avatar (emoji)
  */
 export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: RegisterFormProps) => {
-  const [name, setName] = useState('')
-  const [selectedAvatar, setSelectedAvatar] = useState<string>('')
-  const [error, setError] = useState('')
-
-  const handleSubmit = (e?: FormEvent) => {
-    e?.preventDefault()
-    
-    const trimmedName = name.trim()
-    if (!trimmedName) {
-      setError('Por favor ingresa tu nombre')
-      return
-    }
-    
-    if (trimmedName.length < 2) {
-      setError('El nombre debe tener al menos 2 caracteres')
-      return
-    }
-    
-    if (trimmedName.length > 20) {
-      setError('El nombre no puede tener más de 20 caracteres')
-      return
-    }
-
-    onRegister(trimmedName, selectedAvatar)
-  }
+  const {
+    name,
+    setName,
+    selectedAvatar,
+    setSelectedAvatar,
+    error,
+    setError,
+    handleSubmit,
+  } = useRegisterForm({ onRegister })
 
   return (
     <div className={`register-form ${isInitialSetup ? 'register-form--initial' : 'register-form--modal'}`}>
-      {isInitialSetup && (
+      {isInitialSetup ? (
         <div 
           className="register-form__background"
           style={{ 
             backgroundImage: `url(${backgroundImage})`,
           }}
         />
-      )}
+      ) : null}
       <div className="register-form__container">
         <h2 className="register-form__title">
           {isInitialSetup ? 'Welcome!' : 'New Player'}
@@ -75,7 +58,9 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
               placeholder="Write your name..."
               onEnter={() => handleSubmit()}
             />
-            {error && <span className="register-form__error" style={{ textAlign: 'center' }}>{error}</span>}
+            {error ? (
+              <span className="register-form__error register-form__error--center">{error}</span>
+            ) : null}
           </div>
 
           {/* Selector de avatar */}
@@ -86,7 +71,6 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
                 <button
                   key={avatar}
                   type="button"
-                  style={{ outline: 'none' }}
                   onClick={() => setSelectedAvatar(avatar)}
                   className={`register-form__avatar ${selectedAvatar === avatar ? 'register-form__avatar--selected' : ''}`}
                   aria-label={`Select avatar ${avatar}`}
@@ -99,7 +83,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
 
           {/* Botones */}
           <div className="register-form__buttons">
-            {!isInitialSetup && onCancel && (
+            {!isInitialSetup && onCancel ? (
               <button 
                 type="button" 
                 onClick={onCancel}
@@ -107,7 +91,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
               >
                 Cancelar
               </button>
-            )}
+            ) : null}
             <button 
               type="submit" 
               disabled={!name.trim() || !selectedAvatar}
@@ -121,3 +105,4 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
     </div>
   )
 }
+

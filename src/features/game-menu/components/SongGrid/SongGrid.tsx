@@ -1,9 +1,8 @@
-import { useState } from 'react'
 import type { SongData, SongMetadata } from '../../../gameplay/types/GuitarGame.types'
 import type { PreloadedSong, UserLoadedSong } from '../../types/GameMenu.types'
 import { PRELOADED_SONGS } from '../../utils/preloadedSongs'
 import { CassettePlayer } from '../CassettePlayer/CassettePlayer'
-import { useGamepadNavigation } from '../../../../hooks/useGamepadNavigation'
+import { useSongGrid } from '../../hooks/useSongGrid.hook'
 
 interface SongGridProps {
   /** Currently loaded song (null if none) */
@@ -36,38 +35,13 @@ export const SongGrid = ({
   onSongSelect,
   onDeleteSong,
 }: SongGridProps) => {
-  const [focusedIndex, setFocusedIndex] = useState(0)
-  const totalSongs = PRELOADED_SONGS.length + userSongs.length
-
-  const handleSelect = (idx: number) => {
-    if (idx < PRELOADED_SONGS.length) {
-      const ps = PRELOADED_SONGS[idx]
-      if (ps.config.chartUrl) {
-        onPreloadedSongSelect?.(ps.config as {
-          chartUrl: string
-          audioUrl?: string
-          stemsUrls?: string[]
-          metadata?: Partial<SongMetadata>
-        })
-      }
-    } else {
-      const us = userSongs[idx - PRELOADED_SONGS.length]
-      onSongSelect?.(us)
-    }
-  }
-
-  useGamepadNavigation({
-    enabled: isFocused,
-    onLeft: () => setFocusedIndex(prev => Math.max(0, prev - 1)),
-    onRight: () => setFocusedIndex(prev => Math.min(Math.max(0, totalSongs - 1), prev + 1)),
-    onDown: () => {
-      // Si hay una canción seleccionada, permitir moverse al panel inferior
-      if (song) {
-        onFocusDown?.()
-      }
-    },
-    onUp: () => {}, // Disable going up out of the grid for now
-    onConfirm: () => handleSelect(focusedIndex)
+  const { focusedIndex } = useSongGrid({
+    song,
+    userSongs,
+    isFocused,
+    onFocusDown,
+    onPreloadedSongSelect,
+    onSongSelect,
   })
 
   return (
@@ -103,9 +77,9 @@ export const SongGrid = ({
               }
             }}
           />
-          {song?.metadata.songName === ps.name && (
+          {song?.metadata.songName === ps.name ? (
             <div className="game-menu__selection-badge">✓ SELECCIONADA</div>
-          )}
+          ) : null}
         </div>
       ))}
 
@@ -117,7 +91,7 @@ export const SongGrid = ({
           key={us.id}
           className={`game-menu__cassette-wrapper ${song?.metadata.songName === us.name ? 'game-menu__cassette-wrapper--active' : ''} ${isFocused && focusedIndex === index ? 'game-menu__cassette-wrapper--focused' : ''}`}
         >
-          {onDeleteSong && (
+          {onDeleteSong ? (
             <button
               className="game-menu__cassette-delete"
               title="Eliminar canción guardada"
@@ -128,7 +102,7 @@ export const SongGrid = ({
             >
               ✕
             </button>
-          )}
+          ) : null}
           <CassettePlayer
             title={us.name}
             artist={us.artist}
@@ -143,12 +117,13 @@ export const SongGrid = ({
               }
             }}
           />
-          {song?.metadata.songName === us.name && (
+          {song?.metadata.songName === us.name ? (
             <div className="game-menu__selection-badge">✓ SELECCIONADA</div>
-          )}
+          ) : null}
         </div>
       )})}
     </div>
   </div>
   )
 }
+

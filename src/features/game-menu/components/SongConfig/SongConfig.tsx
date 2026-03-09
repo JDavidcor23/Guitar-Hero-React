@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
 import type { SongData } from '../../../gameplay/types/GuitarGame.types'
 import type { InstrumentInfo } from '../../hooks/useSongLoader.hook'
 import { getInstrumentIconClass } from '../../utils/preloadedSongs'
 import { DIFFICULTY_STARS, MAX_CHART_DIFFICULTY } from '../../constants/gameMenu.constants'
-import { useGamepadNavigation } from '../../../../hooks/useGamepadNavigation'
+import { useSongConfig } from '../../hooks/useSongConfig.hook'
 
 interface SongConfigProps {
   /** The currently loaded song */
@@ -51,78 +50,17 @@ export const SongConfig = ({
   onFocusUp,
 }: SongConfigProps) => {
 
-  const hasInstruments = availableInstruments.length > 0 && onInstrumentChange !== undefined
-  const hasDifficulties = availableDifficulties.length > 1
-  
-  const getAvailableRows = () => {
-    const r = []
-    if (hasInstruments) r.push(0)
-    if (hasDifficulties) r.push(1)
-    r.push(2)
-    return r
-  }
-  const rows = getAvailableRows()
-
-  const [focusedRow, setFocusedRow] = useState(rows[0])
-
-  useEffect(() => {
-    if (!rows.includes(focusedRow)) {
-      setFocusedRow(rows[0])
-    }
-  }, [hasInstruments, hasDifficulties, focusedRow])
-
-  const handleUp = () => {
-    const currentIndex = rows.indexOf(focusedRow)
-    if (currentIndex > 0) {
-      setFocusedRow(rows[currentIndex - 1])
-    } else if (currentIndex === 0) {
-      onFocusUp?.()
-    }
-  }
-
-  const handleDown = () => {
-    const currentIndex = rows.indexOf(focusedRow)
-    if (currentIndex < rows.length - 1) {
-      setFocusedRow(rows[currentIndex + 1])
-    }
-  }
-
-  const handleLeft = () => {
-    if (focusedRow === 0 && hasInstruments && onInstrumentChange) {
-      const idx = availableInstruments.findIndex(i => i.trackName === currentInstrument)
-      if (idx > 0) onInstrumentChange(availableInstruments[idx - 1].trackName)
-    } else if (focusedRow === 1 && hasDifficulties) {
-      const diffStr = song.metadata.difficulty?.toLowerCase()
-      const idx = availableDifficulties.findIndex(d => d === diffStr)
-      if (idx > 0) onDifficultyChange(availableDifficulties[idx - 1])
-    }
-  }
-
-  const handleRight = () => {
-    if (focusedRow === 0 && hasInstruments && onInstrumentChange) {
-      const idx = availableInstruments.findIndex(i => i.trackName === currentInstrument)
-      if (idx >= 0 && idx < availableInstruments.length - 1) onInstrumentChange(availableInstruments[idx + 1].trackName)
-    } else if (focusedRow === 1 && hasDifficulties) {
-      const diffStr = song.metadata.difficulty?.toLowerCase()
-      const idx = availableDifficulties.findIndex(d => d === diffStr)
-      if (idx >= 0 && idx < availableDifficulties.length - 1) onDifficultyChange(availableDifficulties[idx + 1])
-    }
-  }
-
-  const handleConfirm = () => {
-    if (focusedRow === 2 && canStartGame) {
-      onStartGame()
-    }
-  }
-
-  useGamepadNavigation({
-    enabled: isFocused,
-    onUp: handleUp,
-    onDown: handleDown,
-    onLeft: handleLeft,
-    onRight: handleRight,
-    onConfirm: handleConfirm,
-    onCancel: () => onFocusUp?.()
+  const { focusedRow } = useSongConfig({
+    song,
+    availableDifficulties,
+    availableInstruments,
+    currentInstrument,
+    canStartGame,
+    onDifficultyChange,
+    onInstrumentChange,
+    onStartGame,
+    isFocused,
+    onFocusUp,
   })
 
   return (
@@ -134,15 +72,15 @@ export const SongConfig = ({
       <div className="game-menu__song-header">
         <h2 className="game-menu__song-name">{song.metadata.songName}</h2>
         <div className="game-menu__song-meta">
-          {song.metadata.artist && (
+          {song.metadata.artist ? (
             <span className="game-menu__song-artist">{song.metadata.artist}</span>
-          )}
-          {song.metadata.artist && song.metadata.charter && (
+          ) : null}
+          {song.metadata.artist && song.metadata.charter ? (
             <span className="game-menu__meta-separator">•</span>
-          )}
-          {song.metadata.charter && (
+          ) : null}
+          {song.metadata.charter ? (
             <span className="game-menu__song-charter">Charter: {song.metadata.charter}</span>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -150,21 +88,21 @@ export const SongConfig = ({
 
       {/* Stats Grid */}
       <div className="game-menu__stats-grid">
-        {(song.metadata.chartDifficulty !== undefined && song.metadata.chartDifficulty >= 0) && (
+        {(song.metadata.chartDifficulty !== undefined && song.metadata.chartDifficulty >= 0) ? (
           <div className="game-menu__stat-card">
             <span className="game-menu__stat-label">Dificultad</span>
             <div className={`game-menu__stat-badge game-menu__chart-diff-${Math.min(MAX_CHART_DIFFICULTY, song.metadata.chartDifficulty)}`}>
               {DIFFICULTY_STARS[Math.min(MAX_CHART_DIFFICULTY, song.metadata.chartDifficulty)] || 'N/A'}
             </div>
           </div>
-        )}
+        ) : null}
         
-        {song.metadata.averageNPS !== undefined && (
+        {song.metadata.averageNPS !== undefined ? (
           <div className="game-menu__stat-card">
             <span className="game-menu__stat-label">NPS Avg</span>
             <span className="game-menu__stat-value">{song.metadata.averageNPS.toFixed(1)}</span>
           </div>
-        )}
+        ) : null}
         
         <div className="game-menu__stat-card">
           <span className="game-menu__stat-label">Duración</span>
@@ -187,7 +125,7 @@ export const SongConfig = ({
       {/* Selectors Section */}
       <div className="game-menu__selectors-container">
         {/* Instrument Selector */}
-        {availableInstruments.length > 0 && onInstrumentChange && (
+        {availableInstruments.length > 0 && onInstrumentChange ? (
           <div className="game-menu__selector-group">
             <label className="game-menu__selector-label">Instrumento</label>
             <div className="game-menu__instruments">
@@ -210,10 +148,10 @@ export const SongConfig = ({
               })}
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Difficulty Selector */}
-        {availableDifficulties.length > 1 && (
+        {availableDifficulties.length > 1 ? (
           <div className="game-menu__selector-group">
             <label className="game-menu__selector-label">Nivel</label>
             <div className="game-menu__difficulties">
@@ -232,7 +170,7 @@ export const SongConfig = ({
               })}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Start Button */}
@@ -253,3 +191,4 @@ export const SongConfig = ({
   </div>
   )
 }
+
