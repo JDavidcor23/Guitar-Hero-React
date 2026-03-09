@@ -41,31 +41,35 @@ export const drawHUD = (
 ) => {
   const { multiplier, color: multiplierColor } = getMultiplierFn(stats.combo)
 
+  const pad = 30 // margen general desde los bordes
+  const W = GAME_CONFIG.canvasWidth
+  const centerX = W / 2
+
   // ==========================================
   // ESQUINA SUPERIOR IZQUIERDA: Score y Combo
   // ==========================================
   ctx.textAlign = 'left'
 
-  // Score (grande)
+  // Score (grande y prominente)
   ctx.fillStyle = COLORS.white
-  ctx.font = "bold 28px 'Orbitron', sans-serif"
-  ctx.fillText(`${stats.score.toLocaleString()}`, 20, 35)
+  ctx.font = "bold 36px 'Orbitron', sans-serif"
+  ctx.fillText(`${stats.score.toLocaleString('en-US')}`, pad, 45)
 
   // Combo
-  ctx.font = "18px 'Share Tech Mono', monospace"
+  ctx.font = "22px 'Share Tech Mono', monospace"
   ctx.fillStyle = stats.combo > 0 ? multiplierColor : COLORS.white
-  ctx.fillText(`Combo: ${stats.combo}`, 20, 60)
+  ctx.fillText(`Combo: ${stats.combo}`, pad, 78)
 
   // Max Combo
   ctx.fillStyle = '#888888'
-  ctx.font = "14px 'Share Tech Mono', monospace"
-  ctx.fillText(`Max: ${stats.maxCombo}`, 20, 82)
+  ctx.font = "16px 'Share Tech Mono', monospace"
+  ctx.fillText(`Max: ${stats.maxCombo}`, pad, 102)
 
   // Multiplicador (si es mayor a 1)
   if (multiplier > 1) {
     ctx.fillStyle = multiplierColor
-    ctx.font = "bold 22px 'Orbitron', sans-serif"
-    ctx.fillText(`x${multiplier}`, 130, 60)
+    ctx.font = "bold 26px 'Orbitron', sans-serif"
+    ctx.fillText(`x${multiplier}`, 180, 78)
   }
 
   // ==========================================
@@ -73,49 +77,55 @@ export const drawHUD = (
   // ==========================================
   ctx.textAlign = 'center'
   ctx.fillStyle = COLORS.white
-  ctx.font = "14px 'Orbitron', sans-serif"
-  ctx.fillText(songName, GAME_CONFIG.canvasWidth / 2, 20)
+  ctx.font = "16px 'Orbitron', sans-serif"
+  ctx.fillText(songName, centerX, 28)
 
   // Tiempo transcurrido / duración total
-  ctx.font = "12px 'Share Tech Mono', monospace"
+  ctx.font = "14px 'Share Tech Mono', monospace"
   ctx.fillStyle = '#AAAAAA'
   ctx.fillText(
     `${formatTime(gameTime)} / ${formatTime(songDuration)}`,
-    GAME_CONFIG.canvasWidth / 2,
-    40
+    centerX,
+    50
   )
 
   // Barra de progreso
-  const progressWidth = 200
-  const progressHeight = 6
-  const progressX = (GAME_CONFIG.canvasWidth - progressWidth) / 2
-  const progressY = 50
+  const progressWidth = 240
+  const progressHeight = 8
+  const progressX = (W - progressWidth) / 2
+  const progressY = 62
   const progress = Math.min(gameTime / songDuration, 1)
 
+  // Fondo de la barra
   ctx.fillStyle = '#333333'
-  ctx.fillRect(progressX, progressY, progressWidth, progressHeight)
+  ctx.beginPath()
+  ctx.roundRect(progressX, progressY, progressWidth, progressHeight, 4)
+  ctx.fill()
 
+  // Progreso
   ctx.fillStyle = '#00FF00'
-  ctx.fillRect(progressX, progressY, progressWidth * progress, progressHeight)
+  ctx.beginPath()
+  ctx.roundRect(progressX, progressY, progressWidth * progress, progressHeight, 4)
+  ctx.fill()
 
   // ==========================================
   // ESQUINA SUPERIOR DERECHA: Estadísticas
   // ==========================================
   ctx.textAlign = 'right'
-  ctx.font = "13px 'Share Tech Mono', monospace"
-  const rightX = GAME_CONFIG.canvasWidth - 20
+  ctx.font = "15px 'Share Tech Mono', monospace"
+  const rightX = W - pad
 
   ctx.fillStyle = '#00FF00'
-  ctx.fillText(`Perfect: ${stats.perfects}`, rightX, 25)
+  ctx.fillText(`Perfect: ${stats.perfects}`, rightX, 32)
 
   ctx.fillStyle = '#88FF00'
-  ctx.fillText(`Good: ${stats.goods}`, rightX, 42)
+  ctx.fillText(`Good: ${stats.goods}`, rightX, 54)
 
   ctx.fillStyle = '#FFFF00'
-  ctx.fillText(`OK: ${stats.oks}`, rightX, 59)
+  ctx.fillText(`OK: ${stats.oks}`, rightX, 76)
 
   ctx.fillStyle = '#FF0000'
-  ctx.fillText(`Miss: ${stats.misses}`, rightX, 76)
+  ctx.fillText(`Miss: ${stats.misses}`, rightX, 98)
 
   // ==========================================
   // CENTRO: Feedback del último hit
@@ -137,14 +147,14 @@ export const drawHUD = (
 
     // Texto grande del resultado
     ctx.fillStyle = resultColors[lastHit.result] || COLORS.white
-    ctx.font = "bold 48px 'Orbitron', sans-serif"
+    ctx.font = "bold 52px 'Orbitron', sans-serif"
     ctx.textAlign = 'center'
-    ctx.fillText(resultText[lastHit.result] || '', GAME_CONFIG.canvasWidth / 2, 140)
+    ctx.fillText(resultText[lastHit.result] || '', centerX, 160)
 
     // Puntos ganados (si no es miss)
     if (lastHit.result !== 'miss' && lastHit.points > 0) {
-      ctx.font = "bold 22px 'Orbitron', sans-serif"
-      ctx.fillText(`+${lastHit.points}`, GAME_CONFIG.canvasWidth / 2, 170)
+      ctx.font = "bold 24px 'Orbitron', sans-serif"
+      ctx.fillText(`+${lastHit.points}`, centerX, 192)
     }
   }
 }
