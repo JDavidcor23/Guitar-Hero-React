@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { useGameplayManager } from './hooks/useGameplayManager.hook'
 import { GameMenu } from '../game-menu'
 import { GameResults } from '../game-results'
 import { ProfileSelector, RegisterForm } from '../user-profiles'
+import { ControlsConfig } from './components/ControlsConfig/ControlsConfig'
 import './Gameplay.css'
 
 /**
@@ -44,6 +46,9 @@ export const Gameplay = () => {
     isGamepadConnected,
     gamepadName,
     
+    // Controls Config
+    controlsConfig,
+    
     // Handlers
     handleAudioFileSelect,
     handleFolderSelect,
@@ -63,6 +68,8 @@ export const Gameplay = () => {
     deleteUser,
     handleUserSongSelect,
   } = useGameplayManager()
+
+  const [showControlsConfig, setShowControlsConfig] = useState(false)
 
   // Si no hay perfiles, mostrar formulario de registro inicial
   if (!hasProfiles) {
@@ -141,27 +148,44 @@ export const Gameplay = () => {
           {gameState === 'paused' && (
             <div className="game-pause-overlay">
               <div className="game-pause-content">
-                <h1 className="game-pause-title">PAUSA</h1>
-                <div className="game-pause-buttons">
-                  <button
-                    className="game-pause-btn game-pause-btn--resume"
-                    onClick={handlePauseToggle}
-                  >
-                    ▶ CONTINUAR
-                  </button>
-                  <button
-                    className="game-pause-btn game-pause-btn--restart"
-                    onClick={handleRestartSong}
-                  >
-                    ↻ REPETIR CANCIÓN
-                  </button>
-                  <button
-                    className="game-pause-btn game-pause-btn--exit"
-                    onClick={handleExitDuringGame}
-                  >
-                    ✕ SALIR
-                  </button>
-                </div>
+                {showControlsConfig ? (
+                  <ControlsConfig
+                    controlsConfig={controlsConfig}
+                    isGamepadConnected={isGamepadConnected}
+                    gamepadName={gamepadName}
+                    onBack={() => setShowControlsConfig(false)}
+                  />
+                ) : (
+                  <>
+                    <h1 className="game-pause-title">PAUSA</h1>
+                    <div className="game-pause-buttons">
+                      <button
+                        className="game-pause-btn game-pause-btn--resume"
+                        onClick={handlePauseToggle}
+                      >
+                        ▶ CONTINUAR
+                      </button>
+                      <button
+                        className="game-pause-btn game-pause-btn--controls"
+                        onClick={() => setShowControlsConfig(true)}
+                      >
+                        ⚙ CONTROLES
+                      </button>
+                      <button
+                        className="game-pause-btn game-pause-btn--restart"
+                        onClick={handleRestartSong}
+                      >
+                        ↻ REPETIR CANCIÓN
+                      </button>
+                      <button
+                        className="game-pause-btn game-pause-btn--exit"
+                        onClick={handleExitDuringGame}
+                      >
+                        ✕ SALIR
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}

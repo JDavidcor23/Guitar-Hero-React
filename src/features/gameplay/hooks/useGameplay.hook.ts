@@ -11,6 +11,8 @@ import type {
 import {
   GAME_CONFIG,
   KEY_TO_LANE,
+  GAMEPAD_BUTTON_TO_LANE,
+  GAMEPAD_PAUSE_BUTTON,
   HIT_WINDOWS,
   FEEDBACK_DURATION,
   SPAWN_AHEAD_TIME,
@@ -46,6 +48,12 @@ interface UseGameplayParams {
   getAudioTime?: () => number
   /** Offset de calibración en milisegundos */
   calibrationOffset?: number
+  /** Mapeo dinámico de teclas a carriles */
+  keyToLane?: Record<string, number>
+  /** Mapeo dinámico de botones de gamepad a carriles */
+  gamepadButtonToLane?: Record<number, number>
+  /** Botón de pausa del gamepad */
+  gamepadPauseButton?: number
 }
 
 /**
@@ -65,7 +73,15 @@ export const useGameplay = ({
   onStatsChange,
   getAudioTime,
   calibrationOffset = 0,
+  keyToLane: customKeyToLane,
+  gamepadButtonToLane: customGamepadButtonToLane,
+  gamepadPauseButton: customGamepadPauseButton,
 }: UseGameplayParams) => {
+  // Mapeos activos (custom o defaults)
+  const activeKeyToLane = customKeyToLane ?? KEY_TO_LANE
+  const activeGamepadButtonToLane = customGamepadButtonToLane ?? GAMEPAD_BUTTON_TO_LANE
+  const activeGamepadPauseButton = customGamepadPauseButton ?? GAMEPAD_PAUSE_BUTTON
+  const keyToLaneRef = useRef(activeKeyToLane)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // ==========================================
@@ -87,11 +103,18 @@ export const useGameplay = ({
     handleSustainReleaseRef.current(lane)
   }, [])
 
+  // Mantener ref de keyToLane sincronizado
+  useEffect(() => {
+    keyToLaneRef.current = activeKeyToLane
+  }, [activeKeyToLane])
+
   const { isGamepadConnected, gamepadName } = useGamepad({
     onButtonDown: handleGamepadButtonDown,
     onButtonUp: handleGamepadButtonUp,
     onPause: onPauseToggle,
     enabled: gameState === 'playing' || gameState === 'paused',
+    buttonToLane: activeGamepadButtonToLane,
+    pauseButton: activeGamepadPauseButton,
   })
 
   // ==========================================
@@ -305,7 +328,7 @@ export const useGameplay = ({
       if (isPaused) return
 
       const key = event.key.toLowerCase()
-      const lane = KEY_TO_LANE[key]
+      const lane = keyToLaneRef.current[key]
       if (lane === undefined) return
       if (event.repeat) return
 
@@ -314,7 +337,7 @@ export const useGameplay = ({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase()
-      const lane = KEY_TO_LANE[key]
+      const lane = keyToLaneRef.current[key]
       if (lane === undefined) return
 
       handleSustainRelease(lane)

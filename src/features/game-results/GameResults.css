@@ -1,195 +1,387 @@
 /* ==========================================
    GAME RESULTS - Pantalla de resultados
+   Tema: Purple / Gold / Glow — consistente con el juego
    ========================================== */
 
 .game-results {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px;
-  background-color: #1a1a1a;
-  border-radius: 12px;
-  min-width: 600px;
-  max-width: 800px;
+  padding: 50px 60px;
+  min-width: 520px;
+  max-width: 680px;
+  border: 1px solid rgba(191, 166, 104, 0.25);
+  border-radius: 18px;
+  background: radial-gradient(ellipse at center 30%,
+      rgba(30, 12, 55, 0.85) 0%,
+      rgba(13, 0, 21, 0.95) 60%,
+      rgba(5, 0, 8, 1) 100%);
+  box-shadow:
+    0 0 60px rgba(138, 79, 255, 0.15),
+    0 0 120px rgba(138, 79, 255, 0.06),
+    inset 0 0 40px rgba(138, 79, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+  animation: results-appear 0.5s ease-out;
 }
 
-/* Título */
+/* Leve brillo superior decorativo */
+.game-results::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(191, 166, 104, 0.6) 50%,
+      transparent 100%);
+}
+
+@keyframes results-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ==========================================
+   TÍTULO
+   ========================================== */
+
 .game-results__title {
-  font-size: 36px;
-  color: #00ff00;
-  margin: 0 0 20px 0;
-  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  margin: 0 0 24px 0;
+  background: linear-gradient(135deg, #bfa668 0%, #e8d5a3 45%, #bfa668 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(191, 166, 104, 0.4));
+  text-align: center;
 }
 
-/* Nombre de la canción */
+/* ==========================================
+   INFO CANCIÓN
+   ========================================== */
+
 .game-results__song-name {
-  font-size: 32px;
-  color: #ffffff;
-  margin: 0 0 4px 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px 0;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+  text-align: center;
+  letter-spacing: 1px;
 }
 
 .game-results__song-artist {
-  font-size: 16px;
-  color: #aaaaaa;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: rgba(180, 140, 255, 0.7);
   margin: 0 0 8px 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 .game-results__player-name {
-  font-size: 14px;
-  color: #ffc864;
-  margin: 0 0 20px 0;
-  padding: 4px 12px;
-  background: rgba(255, 200, 100, 0.15);
-  border-radius: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: rgba(191, 166, 104, 0.9);
+  margin: 0 0 16px 0;
+  padding: 4px 14px;
+  background: rgba(191, 166, 104, 0.1);
+  border: 1px solid rgba(191, 166, 104, 0.25);
+  border-radius: 20px;
+  letter-spacing: 1px;
 }
 
-/* Rango */
+/* ==========================================
+   RANGO (S, A, B, C, D, F)
+   ========================================== */
+
 .game-results__rank {
-  font-size: 80px;
-  font-weight: bold;
-  text-shadow: 0 0 20px currentColor;
-  margin: 10px 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 90px;
+  font-weight: 900;
+  text-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+  margin: 8px 0;
+  line-height: 1;
+  animation: rank-glow 2s ease-in-out infinite alternate;
 }
 
-/* Puntuación */
+@keyframes rank-glow {
+  from {
+    filter: brightness(1) drop-shadow(0 0 10px currentColor);
+  }
+
+  to {
+    filter: brightness(1.2) drop-shadow(0 0 25px currentColor);
+  }
+}
+
+/* ==========================================
+   PUNTUACIÓN
+   ========================================== */
+
 .game-results__score {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px 0;
+  margin: 16px 0 8px;
 }
 
 .game-results__score-value {
-  font-size: 48px;
-  font-weight: bold;
-  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
 .game-results__score-label {
-  font-size: 14px;
-  color: #888888;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: rgba(191, 166, 104, 0.5);
   text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-top: 4px;
 }
 
-/* Stats principales */
+/* ==========================================
+   STATS PRINCIPALES (Accuracy + Max Combo)
+   ========================================== */
+
 .game-results__main-stats {
   display: flex;
-  gap: 40px;
-  margin: 20px 0;
+  gap: 50px;
+  margin: 18px 0;
+  padding: 18px 40px;
+  border-top: 1px solid rgba(191, 166, 104, 0.12);
+  border-bottom: 1px solid rgba(191, 166, 104, 0.12);
 }
 
 .game-results__stat {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 4px;
 }
 
 .game-results__stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: rgba(191, 166, 104, 0.95);
+  text-shadow: 0 0 10px rgba(191, 166, 104, 0.25);
 }
 
 .game-results__stat-label {
-  font-size: 12px;
-  color: #888888;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
   text-transform: uppercase;
+  letter-spacing: 3px;
 }
 
-/* Desglose de hits */
+/* ==========================================
+   DESGLOSE DE HITS
+   ========================================== */
+
 .game-results__breakdown {
   display: flex;
-  gap: 20px;
-  margin: 20px 0;
-  padding: 20px;
-  background-color: #252525;
-  border-radius: 8px;
+  gap: 6px;
+  margin: 18px 0;
+  width: 100%;
 }
 
 .game-results__hit {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 60px;
+  gap: 6px;
+  flex: 1;
+  padding: 14px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.2s ease;
+}
+
+.game-results__hit:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .game-results__hit-count {
-  font-size: 24px;
-  font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
 .game-results__hit-label {
-  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
   text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
+/* Colores por tipo de hit */
 .game-results__hit--perfect .game-results__hit-count {
-  color: #00ff00;
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
 }
 
 .game-results__hit--perfect .game-results__hit-label {
-  color: #00cc00;
+  color: rgba(0, 255, 136, 0.6);
+}
+
+.game-results__hit--perfect {
+  border-color: rgba(0, 255, 136, 0.12);
 }
 
 .game-results__hit--good .game-results__hit-count {
   color: #88ff00;
+  text-shadow: 0 0 10px rgba(136, 255, 0, 0.3);
 }
 
 .game-results__hit--good .game-results__hit-label {
-  color: #66cc00;
+  color: rgba(136, 255, 0, 0.6);
+}
+
+.game-results__hit--good {
+  border-color: rgba(136, 255, 0, 0.12);
 }
 
 .game-results__hit--ok .game-results__hit-count {
-  color: #ffff00;
+  color: #ffcc00;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
 }
 
 .game-results__hit--ok .game-results__hit-label {
-  color: #cccc00;
+  color: rgba(255, 204, 0, 0.6);
+}
+
+.game-results__hit--ok {
+  border-color: rgba(255, 204, 0, 0.12);
 }
 
 .game-results__hit--miss .game-results__hit-count {
-  color: #ff0000;
+  color: #ff4466;
+  text-shadow: 0 0 10px rgba(255, 68, 102, 0.3);
 }
 
 .game-results__hit--miss .game-results__hit-label {
-  color: #cc0000;
+  color: rgba(255, 68, 102, 0.6);
 }
 
-/* Botones */
+.game-results__hit--miss {
+  border-color: rgba(255, 68, 102, 0.12);
+}
+
+/* ==========================================
+   SUSTAIN STATS
+   ========================================== */
+
+.game-results__sustain-stats {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.game-results__sustain-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 8px;
+  background: rgba(138, 79, 255, 0.04);
+  border: 1px solid rgba(138, 79, 255, 0.1);
+}
+
+.game-results__sustain-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(180, 140, 255, 0.9);
+}
+
+.game-results__sustain-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: rgba(180, 140, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* ==========================================
+   BOTONES
+   ========================================== */
+
 .game-results__buttons {
   display: flex;
-  gap: 16px;
-  margin-top: 30px;
+  gap: 12px;
+  margin-top: 24px;
+  width: 100%;
 }
 
 .game-results__button {
-  padding: 14px 28px;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
   cursor: pointer;
   transition: all 0.2s ease;
+  border: 1.5px solid transparent;
+  text-transform: uppercase;
 }
 
+.game-results__button:active {
+  transform: scale(0.97);
+}
+
+/* Jugar de Nuevo — dorado resaltado */
 .game-results__button--play-again {
-  background-color: #00cc00;
-  color: white;
+  background: rgba(191, 166, 104, 0.15);
+  border-color: rgba(191, 166, 104, 0.5);
+  color: #bfa668;
 }
 
 .game-results__button--play-again:hover {
-  background-color: #00ff00;
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+  background: rgba(191, 166, 104, 0.25);
+  border-color: rgba(191, 166, 104, 0.8);
+  box-shadow: 0 0 20px rgba(191, 166, 104, 0.2);
+  transform: scale(1.02);
 }
 
+/* Cambiar Canción — sutil */
 .game-results__button--menu {
-  background-color: #333333;
-  color: #cccccc;
-  border: 1px solid #555555;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .game-results__button--menu:hover {
-  background-color: #444444;
-  color: white;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.02);
 }

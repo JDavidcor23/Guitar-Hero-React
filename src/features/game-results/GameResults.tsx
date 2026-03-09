@@ -57,23 +57,25 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
 
   /**
    * Determina el "rango" basado en el accuracy
+   * Colores ajustados para verse bien con glow
    */
   const getRank = (accuracy: number): { letter: string; color: string } => {
-    if (accuracy >= 95) return { letter: 'S', color: '#FFD700' } // Oro
-    if (accuracy >= 90) return { letter: 'A', color: '#00FF00' } // Verde
-    if (accuracy >= 80) return { letter: 'B', color: '#88FF00' } // Verde-amarillo
-    if (accuracy >= 70) return { letter: 'C', color: '#FFFF00' } // Amarillo
-    if (accuracy >= 60) return { letter: 'D', color: '#FF8800' } // Naranja
-    return { letter: 'F', color: '#FF0000' } // Rojo
+    if (accuracy >= 95) return { letter: 'S', color: '#FFD700' }
+    if (accuracy >= 90) return { letter: 'A', color: '#00ff88' }
+    if (accuracy >= 80) return { letter: 'B', color: '#88ff00' }
+    if (accuracy >= 70) return { letter: 'C', color: '#ffcc00' }
+    if (accuracy >= 60) return { letter: 'D', color: '#ff8844' }
+    return { letter: 'F', color: '#ff4466' }
   }
 
   const accuracy = calculateAccuracy()
   const rank = getRank(accuracy)
+  const hasSustains = stats.sustainsHit > 0 || stats.sustainsComplete > 0 || stats.sustainsDropped > 0
 
   return (
     <div className="game-results">
       {/* Título */}
-      <h1 className="game-results__title">CANCION COMPLETADA</h1>
+      <h1 className="game-results__title">CANCIÓN COMPLETADA</h1>
 
       {/* Nombre de la canción */}
       <h2 className="game-results__song-name">{song.metadata.songName}</h2>
@@ -81,7 +83,7 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
         <p className="game-results__song-artist">{song.metadata.artist}</p>
       )}
       {playerName && (
-        <p className="game-results__player-name">Jugador: {playerName}</p>
+        <p className="game-results__player-name">🎸 {playerName}</p>
       )}
 
       {/* Rango */}
@@ -92,14 +94,14 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
       {/* Puntuación */}
       <div className="game-results__score">
         <span className="game-results__score-value">{stats.score.toLocaleString()}</span>
-        <span className="game-results__score-label">Puntuacion</span>
+        <span className="game-results__score-label">Puntuación</span>
       </div>
 
       {/* Stats principales */}
       <div className="game-results__main-stats">
         <div className="game-results__stat">
           <span className="game-results__stat-value">{accuracy}%</span>
-          <span className="game-results__stat-label">Accuracy</span>
+          <span className="game-results__stat-label">Precisión</span>
         </div>
         <div className="game-results__stat">
           <span className="game-results__stat-value">x{stats.maxCombo}</span>
@@ -127,6 +129,24 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
         </div>
       </div>
 
+      {/* Stats de sustains (solo si hubo sustains) */}
+      {hasSustains && (
+        <div className="game-results__sustain-stats">
+          <div className="game-results__sustain-stat">
+            <span className="game-results__sustain-value">{stats.sustainsHit}</span>
+            <span className="game-results__sustain-label">Sustains</span>
+          </div>
+          <div className="game-results__sustain-stat">
+            <span className="game-results__sustain-value">{stats.sustainsComplete}</span>
+            <span className="game-results__sustain-label">Completos</span>
+          </div>
+          <div className="game-results__sustain-stat">
+            <span className="game-results__sustain-value">{stats.sustainsDropped}</span>
+            <span className="game-results__sustain-label">Soltados</span>
+          </div>
+        </div>
+      )}
+
       {/* Botones */}
       <div className="game-results__buttons">
         <button
@@ -134,14 +154,14 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
           onClick={onPlayAgain}
           className="game-results__button game-results__button--play-again"
         >
-          Jugar de Nuevo
+          ▶ Jugar de Nuevo
         </button>
         <button
           type="button"
           onClick={onBackToMenu}
           className="game-results__button game-results__button--menu"
         >
-          Cambiar Cancion
+          ♫ Cambiar Canción
         </button>
       </div>
     </div>

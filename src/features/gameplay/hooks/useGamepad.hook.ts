@@ -18,6 +18,10 @@ interface UseGamepadParams {
   onPause?: () => void
   /** Si el polling está activo (false para desactivar, ej: en menú) */
   enabled?: boolean
+  /** Mapeo dinámico de botones a carriles (si no se pasa, usa el default) */
+  buttonToLane?: Record<number, number>
+  /** Botón de pausa dinámico (si no se pasa, usa el default) */
+  pauseButton?: number
 }
 
 interface GamepadState {
@@ -61,7 +65,12 @@ export const useGamepad = ({
   onButtonUp,
   onPause,
   enabled = true,
+  buttonToLane,
+  pauseButton,
 }: UseGamepadParams = {}) => {
+  // Usar mapeos dinámicos o defaults
+  const activeButtonToLane = buttonToLane ?? GAMEPAD_BUTTON_TO_LANE
+  const activePauseButton = pauseButton ?? GAMEPAD_PAUSE_BUTTON
   const [gamepadState, setGamepadState] = useState<GamepadState>({
     isConnected: false,
     gamepadName: null,
@@ -73,6 +82,8 @@ export const useGamepad = ({
   const onButtonUpRef = useRef(onButtonUp)
   const onPauseRef = useRef(onPause)
   const enabledRef = useRef(enabled)
+  const buttonToLaneRef = useRef(activeButtonToLane)
+  const pauseButtonRef = useRef(activePauseButton)
 
   // Estado de botones del frame anterior (para detectar edges)
   const prevButtonStates = useRef<boolean[]>([])
@@ -96,6 +107,14 @@ export const useGamepad = ({
   useEffect(() => {
     enabledRef.current = enabled
   }, [enabled])
+
+  useEffect(() => {
+    buttonToLaneRef.current = activeButtonToLane
+  }, [activeButtonToLane])
+
+  useEffect(() => {
+    pauseButtonRef.current = activePauseButton
+  }, [activePauseButton])
 
   // ==========================================
   // DETECCIÓN DE CONEXIÓN/DESCONEXIÓN
@@ -173,17 +192,17 @@ export const useGamepad = ({
 
       if (currentlyPressed && !wasPressed) {
         // ── BOTÓN PRESIONADO (edge: released → pressed) ──
-        if (i === GAMEPAD_PAUSE_BUTTON) {
+        if (i === pauseButtonRef.current) {
           onPauseRef.current?.()
         } else {
-          const lane = GAMEPAD_BUTTON_TO_LANE[i]
+          const lane = buttonToLaneRef.current[i]
           if (lane !== undefined) {
             onButtonDownRef.current?.(lane)
           }
         }
       } else if (!currentlyPressed && wasPressed) {
         // ── BOTÓN SOLTADO (edge: pressed → released) ──
-        const lane = GAMEPAD_BUTTON_TO_LANE[i]
+        const lane = buttonToLaneRef.current[i]
         if (lane !== undefined) {
           onButtonUpRef.current?.(lane)
         }

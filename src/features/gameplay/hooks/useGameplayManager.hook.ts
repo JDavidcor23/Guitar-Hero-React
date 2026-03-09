@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useGameplay } from './useGameplay.hook'
 import { useAudioPlayer } from './useAudioPlayer.hook'
+import { useControlsConfig } from './useControlsConfig.hook'
 import { useSongLoader } from '../../game-menu'
 import { useUserProfiles } from '../../user-profiles'
 import type { GameState, GameStats, SongMetadata } from '../types/GuitarGame.types'
@@ -49,6 +50,7 @@ export const useGameplayManager = () => {
   } = useUserProfiles()
 
   const audioPlayer = useAudioPlayer()
+  const controlsConfig = useControlsConfig()
 
   // ==========================================
   // LÓGICA DE AUDIO
@@ -316,6 +318,9 @@ export const useGameplayManager = () => {
     onPauseToggle: handlePauseToggle,
     getAudioTime: audioPlayer.isLoaded ? getGameTime : undefined,
     calibrationOffset: audioPlayer.getCalibrationOffset(),
+    keyToLane: controlsConfig.keyToLane,
+    gamepadButtonToLane: controlsConfig.gamepadButtonToLane,
+    gamepadPauseButton: controlsConfig.gamepadPauseButton,
   })
 
   return {
@@ -355,6 +360,9 @@ export const useGameplayManager = () => {
     // Gamepad
     isGamepadConnected,
     gamepadName,
+    
+    // Controls Config
+    controlsConfig,
     
     // Handlers
     handleAudioFileSelect,
