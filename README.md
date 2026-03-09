@@ -78,9 +78,13 @@ src/
 │   ├── start-screen/        # Landing page and initial interaction
 │   ├── game-menu/           # Song selection and file loading
 │   ├── gameplay/            # Core game logic, rendering, and audio
+│   │   ├── components/      # Specific components for gameplay
+│   │   ├── hooks/           # Isolated logic (scoring, flow, audio)
+│   │   ├── renderers/       # Canvas 2D renderers (notes, highway, HUD)
+│   │   ├── services/        # AudioEngine, GameplayEngine
+│   │   └── utils/           # Perspective math and helpers
 │   ├── game-results/        # Final statistics screen
 │   └── user-profiles/       # User profile management and High Scores
-├── components/              # Global and reusable components
 ├── hooks/                   # Shared hooks between features
 ├── assets/                  # Global styles, images, and fonts
 └── App.tsx                  # Main orchestrator handling game states
