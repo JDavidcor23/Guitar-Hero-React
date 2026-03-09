@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import type {
   HitResult,
   LaneFlashState,
@@ -19,6 +19,7 @@ import {
   SUSTAIN_CONFIG,
   SUSTAIN_SCORING,
 } from '../constants/game.constants'
+import { useGamepad } from './useGamepad.hook'
 
 // Módulos extraídos
 import { drawHighway } from '../renderers/highwayRenderer'
@@ -66,6 +67,32 @@ export const useGameplay = ({
   calibrationOffset = 0,
 }: UseGameplayParams) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // ==========================================
+  // REFS COMPARTIDOS (Keyboard + Gamepad)
+  // ==========================================
+  // Estos refs permiten que tanto el teclado (dentro del useEffect)
+  // como el gamepad hook (fuera del useEffect) llamen a la misma lógica.
+  const checkHitRef = useRef<(lane: number, currentTime: number) => void>(() => {})
+  const handleSustainReleaseRef = useRef<(lane: number) => void>(() => {})
+
+  // ==========================================
+  // GAMEPAD HOOK
+  // ==========================================
+  const handleGamepadButtonDown = useCallback((lane: number) => {
+    checkHitRef.current(lane, performance.now())
+  }, [])
+
+  const handleGamepadButtonUp = useCallback((lane: number) => {
+    handleSustainReleaseRef.current(lane)
+  }, [])
+
+  const { isGamepadConnected, gamepadName } = useGamepad({
+    onButtonDown: handleGamepadButtonDown,
+    onButtonUp: handleGamepadButtonUp,
+    onPause: onPauseToggle,
+    enabled: gameState === 'playing' || gameState === 'paused',
+  })
 
   // ==========================================
   // useEffect principal - Lógica del juego
@@ -233,31 +260,8 @@ export const useGameplay = ({
       }
     }
 
-    // ==========================================
-    // INPUT HANDLING
-    // ==========================================
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === PAUSE_KEY) {
-        event.preventDefault()
-        onPauseToggle()
-        return
-      }
-      if (isPaused) return
-
-      const key = event.key.toLowerCase()
-      const lane = KEY_TO_LANE[key]
-      if (lane === undefined) return
-      if (event.repeat) return
-
-      checkHit(lane, performance.now())
-    }
-
-    const handleKeyUp = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase()
-      const lane = KEY_TO_LANE[key]
-      if (lane === undefined) return
-
+    /** Lógica de release para sustains (compartida entre teclado y gamepad) */
+    const handleSustainRelease = (lane: number) => {
       const noteIndex = activeSustains.get(lane)
       if (noteIndex !== undefined) {
         const note = gameNotes[noteIndex]
@@ -282,6 +286,38 @@ export const useGameplay = ({
         activeSustains.delete(lane)
         onStatsChange?.(stats)
       }
+    }
+
+    // Exponer las funciones via refs para que el gamepad hook las use
+    checkHitRef.current = checkHit
+    handleSustainReleaseRef.current = handleSustainRelease
+
+    // ==========================================
+    // INPUT HANDLING (TECLADO)
+    // ==========================================
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === PAUSE_KEY) {
+        event.preventDefault()
+        onPauseToggle()
+        return
+      }
+      if (isPaused) return
+
+      const key = event.key.toLowerCase()
+      const lane = KEY_TO_LANE[key]
+      if (lane === undefined) return
+      if (event.repeat) return
+
+      checkHit(lane, performance.now())
+    }
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      const lane = KEY_TO_LANE[key]
+      if (lane === undefined) return
+
+      handleSustainRelease(lane)
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -410,5 +446,7 @@ export const useGameplay = ({
     canvasRef,
     canvasWidth: GAME_CONFIG.canvasWidth,
     canvasHeight: GAME_CONFIG.canvasHeight,
+    isGamepadConnected,
+    gamepadName,
   }
 }

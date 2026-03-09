@@ -309,7 +309,7 @@ export const useGameplayManager = () => {
     return -1
   }, [audioPlayer])
 
-  const { canvasRef, canvasWidth, canvasHeight } = useGameplay({
+  const { canvasRef, canvasWidth, canvasHeight, isGamepadConnected, gamepadName } = useGameplay({
     song,
     gameState,
     onGameEnd: handleGameEnd,
@@ -351,6 +351,10 @@ export const useGameplayManager = () => {
     canvasRef,
     canvasWidth,
     canvasHeight,
+    
+    // Gamepad
+    isGamepadConnected,
+    gamepadName,
     
     // Handlers
     handleAudioFileSelect,

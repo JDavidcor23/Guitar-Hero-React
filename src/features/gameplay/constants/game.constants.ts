@@ -195,3 +195,35 @@ export const SUSTAIN_SCORING = {
   /** Porcentaje mínimo para no romper el combo (0.5 = 50%) */
   minHoldPercent: 0.5,
 }
+
+// ==========================================
+// CONFIGURACIÓN DE GAMEPAD / CONTROL
+// ==========================================
+
+/**
+ * Mapeo de botones del gamepad a carriles.
+ * Usa el layout estándar (Xbox-style):
+ *   Botón 0 (A)  → Carril 0 (Verde)
+ *   Botón 1 (B)  → Carril 1 (Rojo)
+ *   Botón 2 (X)  → Carril 2 (Amarillo)
+ *   Botón 3 (Y)  → Carril 3 (Azul)
+ *   Botón 5 (RB) → Carril 4 (Naranja)
+ */
+export const GAMEPAD_BUTTON_TO_LANE: Record<number, number> = {
+  0: 0, // A → Verde
+  1: 1, // B → Rojo
+  2: 2, // X → Amarillo
+  3: 3, // Y → Azul
+  5: 4, // RB → Naranja
+}
+
+/**
+ * Botón del gamepad para pausar (Start = botón 9)
+ */
+export const GAMEPAD_PAUSE_BUTTON = 9
+
+/**
+ * Umbral para considerar un botón como presionado
+ * (algunos controles reportan valores analógicos 0.0 a 1.0)
+ */
+export const GAMEPAD_BUTTON_THRESHOLD = 0.5

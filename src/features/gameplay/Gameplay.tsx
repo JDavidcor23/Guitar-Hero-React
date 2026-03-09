@@ -40,6 +40,10 @@ export const Gameplay = () => {
     canvasWidth,
     canvasHeight,
     
+    // Gamepad
+    isGamepadConnected,
+    gamepadName,
+    
     // Handlers
     handleAudioFileSelect,
     handleFolderSelect,
@@ -70,6 +74,13 @@ export const Gameplay = () => {
 
   return (
     <div className="game-container">
+      {/* Indicador de gamepad conectado */}
+      {isGamepadConnected && (
+        <div className="game-gamepad-indicator" title={gamepadName || 'Gamepad'}>
+          🎮 Conectado
+        </div>
+      )}
+
       {/* Selector de perfil (visible en menú y resultados) */}
       {(gameState === 'menu' || gameState === 'finished') && hasActiveUser && (
         <div className="game-profile-selector">

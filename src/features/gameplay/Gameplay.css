@@ -9,6 +9,43 @@
   width: 100%;
 }
 
+/* ==========================================
+   GAMEPAD INDICATOR
+   ========================================== */
+
+.game-gamepad-indicator {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  padding: 8px 16px;
+  background: rgba(0, 255, 100, 0.1);
+  border: 1px solid rgba(0, 255, 100, 0.4);
+  border-radius: 20px;
+  color: #00ff64;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 12px rgba(0, 255, 100, 0.15);
+  animation: gamepad-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+@keyframes gamepad-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(0, 255, 100, 0.15);
+    border-color: rgba(0, 255, 100, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(0, 255, 100, 0.3);
+    border-color: rgba(0, 255, 100, 0.6);
+  }
+}
+
 /* Selector de perfil posicionado arriba a la derecha */
 .game-profile-selector {
   position: absolute;
