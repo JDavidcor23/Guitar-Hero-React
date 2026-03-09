@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useGamepadNavigation } from '../../hooks/useGamepadNavigation'
 import type { GameStats, SongData } from '../gameplay/types/GuitarGame.types'
 import './GameResults.css'
 
@@ -35,6 +36,7 @@ interface GameResultsProps {
 export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScore, playerName }: GameResultsProps) => {
   // Ref para evitar guardar la puntuación múltiples veces
   const scoreSavedRef = useRef(false)
+  const [focusedIndex, setFocusedIndex] = useState(0)
 
   // Guardar puntuación al montar el componente
   useEffect(() => {
@@ -71,6 +73,19 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
   const accuracy = calculateAccuracy()
   const rank = getRank(accuracy)
   const hasSustains = stats.sustainsHit > 0 || stats.sustainsComplete > 0 || stats.sustainsDropped > 0
+
+  const isProfileMenuOpen = () => document.querySelector('.profile-selector__dropdown') !== null
+
+  useGamepadNavigation({
+    enabled: true,
+    onLeft: () => !isProfileMenuOpen() && setFocusedIndex(0),
+    onRight: () => !isProfileMenuOpen() && setFocusedIndex(1),
+    onConfirm: () => {
+      if (isProfileMenuOpen()) return
+      if (focusedIndex === 0) onPlayAgain()
+      else if (focusedIndex === 1) onBackToMenu()
+    }
+  })
 
   return (
     <div className="game-results">
@@ -152,14 +167,14 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
         <button
           type="button"
           onClick={onPlayAgain}
-          className="game-results__button game-results__button--play-again"
+          className={`game-results__button game-results__button--play-again ${focusedIndex === 0 ? 'game-results__button--focused' : ''}`}
         >
           ▶ Jugar de Nuevo
         </button>
         <button
           type="button"
           onClick={onBackToMenu}
-          className="game-results__button game-results__button--menu"
+          className={`game-results__button game-results__button--menu ${focusedIndex === 1 ? 'game-results__button--focused' : ''}`}
         >
           ♫ Cambiar Canción
         </button>

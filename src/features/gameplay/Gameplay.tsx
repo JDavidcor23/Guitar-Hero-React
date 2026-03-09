@@ -4,6 +4,7 @@ import { GameMenu } from '../game-menu'
 import { GameResults } from '../game-results'
 import { ProfileSelector, RegisterForm } from '../user-profiles'
 import { ControlsConfig } from './components/ControlsConfig/ControlsConfig'
+import { PauseOverlay } from './components/PauseOverlay/PauseOverlay'
 import './Gameplay.css'
 
 /**
@@ -156,35 +157,12 @@ export const Gameplay = () => {
                     onBack={() => setShowControlsConfig(false)}
                   />
                 ) : (
-                  <>
-                    <h1 className="game-pause-title">PAUSA</h1>
-                    <div className="game-pause-buttons">
-                      <button
-                        className="game-pause-btn game-pause-btn--resume"
-                        onClick={handlePauseToggle}
-                      >
-                        ▶ CONTINUAR
-                      </button>
-                      <button
-                        className="game-pause-btn game-pause-btn--controls"
-                        onClick={() => setShowControlsConfig(true)}
-                      >
-                        ⚙ CONTROLES
-                      </button>
-                      <button
-                        className="game-pause-btn game-pause-btn--restart"
-                        onClick={handleRestartSong}
-                      >
-                        ↻ REPETIR CANCIÓN
-                      </button>
-                      <button
-                        className="game-pause-btn game-pause-btn--exit"
-                        onClick={handleExitDuringGame}
-                      >
-                        ✕ SALIR
-                      </button>
-                    </div>
-                  </>
+                  <PauseOverlay
+                    onResume={handlePauseToggle}
+                    onControls={() => setShowControlsConfig(true)}
+                    onRestart={handleRestartSong}
+                    onExit={handleExitDuringGame}
+                  />
                 )}
               </div>
             </div>

@@ -103,6 +103,13 @@
   background: rgba(110, 69, 226, 0.2);
 }
 
+.profile-selector__item--focused,
+.profile-selector__add--focused {
+  outline: 2px solid #ffbc42;
+  outline-offset: -2px;
+  background: rgba(255, 188, 66, 0.15);
+}
+
 .profile-selector__item-avatar {
   width: 28px;
   height: 28px;

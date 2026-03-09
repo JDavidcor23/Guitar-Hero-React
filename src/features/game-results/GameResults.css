@@ -358,6 +358,13 @@
   transform: scale(0.97);
 }
 
+.game-results__button--focused {
+  outline: 3px solid #ffbc42;
+  box-shadow: 0 0 20px rgba(255, 188, 66, 0.5);
+  transform: scale(1.05);
+  border-color: #ffbc42;
+}
+
 /* Jugar de Nuevo — dorado resaltado */
 .game-results__button--play-again {
   background: rgba(191, 166, 104, 0.15);

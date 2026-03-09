@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react'
 import type { SongData } from '../../../gameplay/types/GuitarGame.types'
 import type { InstrumentInfo } from '../../hooks/useSongLoader.hook'
 import { getInstrumentIconClass } from '../../utils/preloadedSongs'
 import { DIFFICULTY_STARS, MAX_CHART_DIFFICULTY } from '../../constants/gameMenu.constants'
+import { useGamepadNavigation } from '../../../../hooks/useGamepadNavigation'
 
 interface SongConfigProps {
   /** The currently loaded song */
@@ -26,6 +28,10 @@ interface SongConfigProps {
   onInstrumentChange?: (trackName: string) => void
   /** Callback when the user clicks "Start" */
   onStartGame: () => void
+  /** Whether the config panel has gamepad focus */
+  isFocused?: boolean
+  /** Request focus to shift back up (to grid) */
+  onFocusUp?: () => void
 }
 
 /** Song configuration panel: info, instrument/difficulty selectors, and start button */
@@ -41,7 +47,85 @@ export const SongConfig = ({
   onDifficultyChange,
   onInstrumentChange,
   onStartGame,
-}: SongConfigProps) => (
+  isFocused = false,
+  onFocusUp,
+}: SongConfigProps) => {
+
+  const hasInstruments = availableInstruments.length > 0 && onInstrumentChange !== undefined
+  const hasDifficulties = availableDifficulties.length > 1
+  
+  const getAvailableRows = () => {
+    const r = []
+    if (hasInstruments) r.push(0)
+    if (hasDifficulties) r.push(1)
+    r.push(2)
+    return r
+  }
+  const rows = getAvailableRows()
+
+  const [focusedRow, setFocusedRow] = useState(rows[0])
+
+  useEffect(() => {
+    if (!rows.includes(focusedRow)) {
+      setFocusedRow(rows[0])
+    }
+  }, [hasInstruments, hasDifficulties, focusedRow])
+
+  const handleUp = () => {
+    const currentIndex = rows.indexOf(focusedRow)
+    if (currentIndex > 0) {
+      setFocusedRow(rows[currentIndex - 1])
+    } else if (currentIndex === 0) {
+      onFocusUp?.()
+    }
+  }
+
+  const handleDown = () => {
+    const currentIndex = rows.indexOf(focusedRow)
+    if (currentIndex < rows.length - 1) {
+      setFocusedRow(rows[currentIndex + 1])
+    }
+  }
+
+  const handleLeft = () => {
+    if (focusedRow === 0 && hasInstruments && onInstrumentChange) {
+      const idx = availableInstruments.findIndex(i => i.trackName === currentInstrument)
+      if (idx > 0) onInstrumentChange(availableInstruments[idx - 1].trackName)
+    } else if (focusedRow === 1 && hasDifficulties) {
+      const diffStr = song.metadata.difficulty?.toLowerCase()
+      const idx = availableDifficulties.findIndex(d => d === diffStr)
+      if (idx > 0) onDifficultyChange(availableDifficulties[idx - 1])
+    }
+  }
+
+  const handleRight = () => {
+    if (focusedRow === 0 && hasInstruments && onInstrumentChange) {
+      const idx = availableInstruments.findIndex(i => i.trackName === currentInstrument)
+      if (idx >= 0 && idx < availableInstruments.length - 1) onInstrumentChange(availableInstruments[idx + 1].trackName)
+    } else if (focusedRow === 1 && hasDifficulties) {
+      const diffStr = song.metadata.difficulty?.toLowerCase()
+      const idx = availableDifficulties.findIndex(d => d === diffStr)
+      if (idx >= 0 && idx < availableDifficulties.length - 1) onDifficultyChange(availableDifficulties[idx + 1])
+    }
+  }
+
+  const handleConfirm = () => {
+    if (focusedRow === 2 && canStartGame) {
+      onStartGame()
+    }
+  }
+
+  useGamepadNavigation({
+    enabled: isFocused,
+    onUp: handleUp,
+    onDown: handleDown,
+    onLeft: handleLeft,
+    onRight: handleRight,
+    onConfirm: handleConfirm,
+    onCancel: () => onFocusUp?.()
+  })
+
+  return (
   <div className="game-menu__song-config">
     {/* Main Glass Panel */}
     <div className="game-menu__config-panel">
@@ -114,7 +198,7 @@ export const SongConfig = ({
                   <button
                     key={inst.trackName}
                     type="button"
-                    className={`game-menu__instrument-btn ${isActive ? 'game-menu__instrument-btn--active' : ''}`}
+                    className={`game-menu__instrument-btn ${isActive ? 'game-menu__instrument-btn--active' : ''} ${isFocused && focusedRow === 0 && isActive ? 'game-menu__instrument-btn--focused' : ''}`}
                     onClick={() => onInstrumentChange(inst.trackName)}
                     title={inst.displayName}
                   >
@@ -139,7 +223,7 @@ export const SongConfig = ({
                   <button
                     key={diff}
                     type="button"
-                    className={`game-menu__difficulty-pill ${isActive ? 'game-menu__difficulty-pill--active' : ''}`}
+                    className={`game-menu__difficulty-pill ${isActive ? 'game-menu__difficulty-pill--active' : ''} ${isFocused && focusedRow === 1 && isActive ? 'game-menu__difficulty-pill--focused' : ''}`}
                     onClick={() => onDifficultyChange(diff)}
                   >
                     {diff.charAt(0).toUpperCase() + diff.slice(1)}
@@ -156,7 +240,7 @@ export const SongConfig = ({
         type="button"
         onClick={onStartGame}
         disabled={!canStartGame}
-        className={`game-menu__btn-start-modern ${!isAudioLoaded ? 'game-menu__btn-start-modern--warning' : ''}`}
+        className={`game-menu__btn-start-modern ${!isAudioLoaded ? 'game-menu__btn-start-modern--warning' : ''} ${isFocused && focusedRow === 2 ? 'game-menu__btn-start-modern--focused' : ''}`}
       >
         <span className="game-menu__btn-start-glow"></span>
         <span className="game-menu__btn-start-icon">⚡</span>
@@ -167,4 +251,5 @@ export const SongConfig = ({
 
     </div>
   </div>
-)
+  )
+}

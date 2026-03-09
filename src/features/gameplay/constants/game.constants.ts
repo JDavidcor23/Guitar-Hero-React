@@ -69,10 +69,10 @@ export const KEY_TO_LANE: Record<string, number> = {
  * Mientras más cerca, mejor el resultado
  */
 export const HIT_WINDOWS = {
-  perfect: 30, // ±30 pixels = PERFECT
-  good: 60, // ±60 pixels = GOOD
-  ok: 100, // ±100 pixels = OK
-  // Fuera de 100 = MISS
+  perfect: 15, // ±15 pixels = PERFECT (aprox ±66ms)
+  good: 30, // ±30 pixels = GOOD (aprox ±133ms)
+  ok: 50, // ±50 pixels = OK (aprox ±220ms)
+  // Fuera de 50 = MISS
 }
 
 /**

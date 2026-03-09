@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { GameMenuProps } from './types/GameMenu.types'
 import { useGameMenu } from './hooks/useGameMenu.hook'
 import { HeroSection } from './components/HeroSection/HeroSection'
@@ -51,6 +52,16 @@ export const GameMenu = (props: GameMenuProps) => {
     onFolderSelect,
   })
 
+  // Controla qué panel tiene el "foco" del control (Gamepad)
+  const [focusedPanel, setFocusedPanel] = useState<'grid' | 'config'>('grid')
+
+  // Si no hay canción, forzar foco en grid
+  useEffect(() => {
+    if (!song) {
+      setFocusedPanel('grid')
+    }
+  }, [song])
+
   return (
     <div className="game-menu">
       <HeroSection />
@@ -59,8 +70,16 @@ export const GameMenu = (props: GameMenuProps) => {
         <SongGrid
           song={song}
           userSongs={userSongs}
-          onPreloadedSongSelect={onPreloadedSongSelect}
-          onSongSelect={onSongSelect}
+          isFocused={focusedPanel === 'grid'}
+          onFocusDown={() => song && setFocusedPanel('config')}
+          onPreloadedSongSelect={(config) => {
+            onPreloadedSongSelect?.(config)
+            setFocusedPanel('config')
+          }}
+          onSongSelect={(us) => {
+            onSongSelect?.(us)
+            setFocusedPanel('config')
+          }}
           onDeleteSong={handleDeleteSong}
         />
 
@@ -92,6 +111,8 @@ export const GameMenu = (props: GameMenuProps) => {
             currentInstrument={currentInstrument}
             canStartGame={canStartGame}
             formatDuration={formatDuration}
+            isFocused={focusedPanel === 'config'}
+            onFocusUp={() => setFocusedPanel('grid')}
             onDifficultyChange={onDifficultyChange}
             onInstrumentChange={onInstrumentChange}
             onStartGame={onStartGame}

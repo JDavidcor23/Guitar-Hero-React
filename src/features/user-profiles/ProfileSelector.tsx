@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useGamepadNavigation } from '../../hooks/useGamepadNavigation'
 import type { UserProfile } from './types'
 import { RegisterForm } from './RegisterForm'
 import './ProfileSelector.css'
@@ -56,6 +57,50 @@ export const ProfileSelector = ({
     }
   }
 
+  const [focusedIndex, setFocusedIndex] = useState(-1)
+  
+  useEffect(() => {
+    if (isOpen) {
+      const idx = profiles.findIndex(p => p.id === currentUser?.profile.id)
+      setFocusedIndex(idx >= 0 ? idx : 0)
+    } else {
+      setFocusedIndex(-1)
+    }
+  }, [isOpen, profiles, currentUser])
+
+  const { hasGamepad } = useGamepadNavigation({
+    enabled: true,
+    onY: () => {
+      if (!showRegisterForm && !userToDelete) {
+        setIsOpen(prev => !prev)
+      }
+    },
+    onConfirm: () => {
+      if (!isOpen || showRegisterForm || userToDelete) return
+      
+      if (focusedIndex >= 0 && focusedIndex < profiles.length) {
+        handleProfileClick(profiles[focusedIndex].id)
+      } else if (focusedIndex === profiles.length) {
+        setShowRegisterForm(true)
+      }
+    },
+    onCancel: () => {
+       if (isOpen && !showRegisterForm && !userToDelete) {
+         setIsOpen(false)
+       }
+    },
+    onUp: () => {
+      if (isOpen && !showRegisterForm && !userToDelete) {
+        setFocusedIndex(prev => Math.max(0, prev - 1))
+      }
+    },
+    onDown: () => {
+      if (isOpen && !showRegisterForm && !userToDelete) {
+        setFocusedIndex(prev => Math.min(profiles.length, prev + 1))
+      }
+    }
+  })
+
   if (!currentUser) return null
 
   return (
@@ -72,6 +117,7 @@ export const ProfileSelector = ({
             <div className={`avatar-icon avatar-icon--${currentUser.profile.avatar}`} style={{ width: '20px', height: '20px' }} />
           </div>
           <span className="profile-selector__name">{currentUser.profile.name}</span>
+          {hasGamepad && <span className="profile-selector__gamepad-hint" style={{fontSize: '0.7em', color: '#ffbc42', fontWeight: 'bold'}}>(Y)</span>}
           <span className="profile-selector__arrow">{isOpen ? '▲' : '▼'}</span>
         </button>
 
@@ -79,10 +125,10 @@ export const ProfileSelector = ({
         {isOpen && (
           <div className="profile-selector__dropdown">
             <div className="profile-selector__list" role="listbox">
-              {profiles.map((profile) => (
+              {profiles.map((profile, index) => (
                 <div
                   key={profile.id}
-                  className={`profile-selector__item ${profile.id === currentUser.profile.id ? 'profile-selector__item--active' : ''}`}
+                  className={`profile-selector__item ${profile.id === currentUser.profile.id ? 'profile-selector__item--active' : ''} ${focusedIndex === index ? 'profile-selector__item--focused' : ''}`}
                   onClick={() => handleProfileClick(profile.id)}
                   role="option"
                   aria-selected={profile.id === currentUser.profile.id}
@@ -109,7 +155,7 @@ export const ProfileSelector = ({
             
             {/* Botón agregar nuevo */}
             <button
-              className="profile-selector__add"
+              className={`profile-selector__add ${focusedIndex === profiles.length ? 'profile-selector__add--focused' : ''}`}
               onClick={() => setShowRegisterForm(true)}
             >
               <span className="profile-selector__add-icon">+</span>

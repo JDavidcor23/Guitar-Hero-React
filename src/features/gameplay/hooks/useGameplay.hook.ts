@@ -226,6 +226,8 @@ export const useGameplay = ({
     // ==========================================
 
     const checkHit = (lane: number, currentTime: number) => {
+      if (isPaused) return
+
       laneFlashes[lane] = currentTime + FEEDBACK_DURATION.flash
 
       let closestNote: GameNote | null = null
@@ -285,6 +287,8 @@ export const useGameplay = ({
 
     /** Lógica de release para sustains (compartida entre teclado y gamepad) */
     const handleSustainRelease = (lane: number) => {
+      if (isPaused) return
+
       const noteIndex = activeSustains.get(lane)
       if (noteIndex !== undefined) {
         const note = gameNotes[noteIndex]

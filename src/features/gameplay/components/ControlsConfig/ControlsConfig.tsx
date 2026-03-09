@@ -5,6 +5,7 @@ import {
   GAMEPAD_BUTTON_NAMES,
 } from '../../hooks/useControlsConfig.hook'
 import type { UseControlsConfigReturn } from '../../hooks/useControlsConfig.hook'
+import { useGamepadNavigation } from '../../../../hooks/useGamepadNavigation'
 
 // ==========================================
 // TIPOS
@@ -16,11 +17,6 @@ interface ControlsConfigProps {
   gamepadName: string | null
   onBack: () => void
 }
-
-type RemapTarget =
-  | { type: 'keyboard'; lane: number }
-  | { type: 'gamepad'; lane: number }
-  | null
 
 // ==========================================
 // COMPONENTE
@@ -36,7 +32,6 @@ export const ControlsConfig = ({
   gamepadName,
   onBack,
 }: ControlsConfigProps) => {
-  const [remapTarget, setRemapTarget] = useState<RemapTarget>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -47,37 +42,38 @@ export const ControlsConfig = ({
     getButtonForLane,
   } = controlsConfig
 
-  // ==========================================
-  // ESCUCHA DE INPUT PARA REMAPEO
-  // ==========================================
+  const rowCount = LANE_NAMES.length // 5 cariles
 
-  /** Escuchar teclas cuando estamos remapeando teclado */
+  // row: 0 a 4 son carriles, 5 y 6 son acciones.
+  const [focusedRow, setFocusedRow] = useState(0)
+
+  // ==========================================
+  // RAPID INPUT MAPPING (KEYBOARD)
+  // ==========================================
   useEffect(() => {
-    if (!remapTarget || remapTarget.type !== 'keyboard') return
+    // Only map if a lane row is focused
+    if (focusedRow >= rowCount) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore navigation and special keys
+      if (['Escape', 'Tab', 'Alt', 'Control', 'Shift', 'Meta', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
+        return
+      }
       e.preventDefault()
       e.stopPropagation()
 
-      // Ignorar teclas especiales
-      if (['Escape', 'Tab', 'Alt', 'Control', 'Shift', 'Meta'].includes(e.key)) {
-        if (e.key === 'Escape') {
-          setRemapTarget(null)
-        }
-        return
-      }
-
-      remapKey(remapTarget.lane, e.key.toLowerCase())
-      setRemapTarget(null)
+      remapKey(focusedRow, e.key.toLowerCase())
     }
 
     window.addEventListener('keydown', handleKeyDown, { capture: true })
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true })
-  }, [remapTarget, remapKey])
+  }, [focusedRow, rowCount, remapKey])
 
-  /** Escuchar botones del gamepad cuando estamos remapeando gamepad */
+  // ==========================================
+  // RAPID INPUT MAPPING (GAMEPAD)
+  // ==========================================
   useEffect(() => {
-    if (!remapTarget || remapTarget.type !== 'gamepad') return
+    if (focusedRow >= rowCount || !isGamepadConnected) return
 
     let animFrame: number
     let prevStates: boolean[] = []
@@ -87,7 +83,6 @@ export const ControlsConfig = ({
       for (const gp of gamepads) {
         if (!gp) continue
 
-        // Inicializar estados previos
         if (prevStates.length !== gp.buttons.length) {
           prevStates = gp.buttons.map((b) => b.pressed)
           animFrame = requestAnimationFrame(poll)
@@ -98,64 +93,60 @@ export const ControlsConfig = ({
           const pressed = gp.buttons[i].pressed
           const wasPressed = prevStates[i]
 
-          // Detectar botón recién presionado (edge)
           if (pressed && !wasPressed) {
-            remapGamepadButton(remapTarget.lane, i)
-            setRemapTarget(null)
-            return
+            // Ignore D-pad (12-15) to preserve Gamepad navigation features
+            // Ignore Start(9) and Select(8) as safe actions
+            if ((i >= 12 && i <= 15) || i === 8 || i === 9) {
+              continue
+            }
+            remapGamepadButton(focusedRow, i)
           }
 
           prevStates[i] = pressed
         }
-        break // Solo usar el primer gamepad
+        break // Only first
       }
 
       animFrame = requestAnimationFrame(poll)
     }
 
     animFrame = requestAnimationFrame(poll)
+    return () => cancelAnimationFrame(animFrame)
+  }, [focusedRow, rowCount, isGamepadConnected, remapGamepadButton])
 
-    // Escapar con teclado
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        setRemapTarget(null)
-      }
-    }
-    window.addEventListener('keydown', handleEscape, { capture: true })
+  // ==========================================
+  // BUTTON FORMATTERS & HANDLERS
+  // ==========================================
 
-    return () => {
-      cancelAnimationFrame(animFrame)
-      window.removeEventListener('keydown', handleEscape, { capture: true })
-    }
-  }, [remapTarget, remapGamepadButton])
-
-  /** Iniciar remapeo de teclado */
-  const startKeyRemap = useCallback((lane: number) => {
-    setRemapTarget({ type: 'keyboard', lane })
-  }, [])
-
-  /** Iniciar remapeo de gamepad */
-  const startGamepadRemap = useCallback((lane: number) => {
-    setRemapTarget({ type: 'gamepad', lane })
-  }, [])
-
-  /** Formatear nombre de tecla para mostrar */
   const formatKeyName = (key: string): string => {
     if (key === ' ') return 'ESPACIO'
     if (key.length === 1) return key.toUpperCase()
     return key.toUpperCase()
   }
 
-  /** Obtener nombre de botón de gamepad */
   const getButtonName = (button: number): string => {
     return GAMEPAD_BUTTON_NAMES[button] || `Btn ${button}`
   }
 
   const handleReset = useCallback(() => {
     resetDefaults()
-    setRemapTarget(null)
   }, [resetDefaults])
+
+  useGamepadNavigation({
+    enabled: true,
+    onUp: () => setFocusedRow(r => Math.max(0, r - 1)),
+    onDown: () => setFocusedRow(r => Math.min(rowCount + 1, r + 1)), // +1 for Reset, +1 for Back
+    onConfirm: () => {
+      if (focusedRow === rowCount) {
+        handleReset()
+      } else if (focusedRow === rowCount + 1) {
+        onBack()
+      }
+    },
+    onCancel: () => {
+      onBack()
+    }
+  })
 
   return (
     <div className="game-controls-config" ref={containerRef}>
@@ -183,11 +174,14 @@ export const ControlsConfig = ({
         {LANE_NAMES.map((name, lane) => {
           const currentKey = getKeyForLane(lane)
           const currentButton = getButtonForLane(lane)
-          const isRemappingKey = remapTarget?.type === 'keyboard' && remapTarget.lane === lane
-          const isRemappingBtn = remapTarget?.type === 'gamepad' && remapTarget.lane === lane
+          const isFocused = focusedRow === lane
 
           return (
-            <div key={lane} className="game-controls-config__row">
+            <div 
+              key={lane} 
+              className={`game-controls-config__row ${isFocused ? 'game-controls-config__row--focused' : ''}`}
+              onMouseEnter={() => setFocusedRow(lane)}
+            >
               {/* Color + Nombre del carril */}
               <span className="game-controls-config__lane">
                 <span
@@ -198,59 +192,43 @@ export const ControlsConfig = ({
               </span>
 
               {/* Tecla de teclado */}
-              <button
-                className={`game-controls-config__key-btn ${isRemappingKey ? 'game-controls-config__key-btn--listening' : ''}`}
-                onClick={() => startKeyRemap(lane)}
-                title="Click para cambiar tecla"
+              <div
+                className="game-controls-config__key-badge"
               >
-                {isRemappingKey
-                  ? '...'
-                  : currentKey
-                    ? formatKeyName(currentKey)
-                    : '—'}
-              </button>
+                {currentKey ? formatKeyName(currentKey) : '—'}
+              </div>
 
               {/* Botón de gamepad (solo si hay gamepad) */}
               {isGamepadConnected && (
-                <button
-                  className={`game-controls-config__key-btn game-controls-config__key-btn--gamepad ${isRemappingBtn ? 'game-controls-config__key-btn--listening' : ''}`}
-                  onClick={() => startGamepadRemap(lane)}
-                  title="Click y presiona un botón del control"
+                <div
+                  className="game-controls-config__key-badge game-controls-config__key-badge--gamepad"
                 >
-                  {isRemappingBtn
-                    ? '...'
-                    : currentButton !== undefined
-                      ? getButtonName(currentButton)
-                      : '—'}
-                </button>
+                  {currentButton !== undefined ? getButtonName(currentButton) : '—'}
+                </div>
               )}
             </div>
           )
         })}
       </div>
 
-      {/* Indicación cuando está en modo escucha */}
-      {remapTarget && (
-        <div className="game-controls-config__listening-hint">
-          {remapTarget.type === 'keyboard'
-            ? '⌨ Presiona una tecla...'
-            : '🎮 Presiona un botón del control...'}
-          <br />
-          <small>ESC para cancelar</small>
-        </div>
-      )}
+      <div className="game-controls-config__listening-hint">
+        💡 <strong>Selecciona una fila</strong> y presiona<br/>
+        cualquier tecla o botón para reasignarlo.
+      </div>
 
       {/* Botones de acción */}
       <div className="game-controls-config__actions">
         <button
-          className="game-pause-btn game-controls-config__reset-btn"
+          className={`game-pause-btn game-controls-config__reset-btn ${focusedRow === rowCount ? 'game-pause-btn--focused' : ''}`}
           onClick={handleReset}
+          onMouseEnter={() => setFocusedRow(rowCount)}
         >
           ↺ RESTAURAR DEFAULTS
         </button>
         <button
-          className="game-pause-btn game-pause-btn--resume"
+          className={`game-pause-btn game-pause-btn--resume ${focusedRow === rowCount + 1 ? 'game-pause-btn--focused' : ''}`}
           onClick={onBack}
+          onMouseEnter={() => setFocusedRow(rowCount + 1)}
         >
           ← VOLVER
         </button>

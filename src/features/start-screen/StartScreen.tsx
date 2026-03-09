@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
 import './StartScreen.css';
 
 // Import assets from src/assets/start-screen/
@@ -24,6 +25,15 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onComplete }) => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [phase]);
+
+  const { hasGamepad } = useGamepadNavigation({
+    onConfirm: () => {
+      if (phase === 'idle') {
+        startTransition();
+      }
+    },
+    enabled: phase === 'idle',
+  });
 
   const startTransition = () => {
     setPhase('transitioning');
@@ -69,7 +79,9 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onComplete }) => {
           className="logo-image" 
           onError={(e) => (e.currentTarget.style.display = 'none')}
         />
-        <div className="press-start-text">Press Space</div>
+        <div className="press-start-text">
+          {hasGamepad ? 'Press Space or A' : 'Press Space'}
+        </div>
       </div>
 
       {/* Video Overlay */}
