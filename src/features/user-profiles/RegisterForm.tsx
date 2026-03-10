@@ -1,7 +1,7 @@
 import { AVAILABLE_AVATARS } from './types'
 import { useRegisterForm } from './hooks/useRegisterForm.hook'
 import './ProfileSelector.css'
-import backgroundImage from '../../assets/user-profiles/background registry.webp'
+const backgroundImage = 'https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773103011/guitarhero/laguwhrvfte7zmnyttag.webp';
 
 import { CassetteInput } from './components/CassetteInput/CassetteInput'
 

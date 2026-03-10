@@ -46,24 +46,28 @@ export const PauseOverlay = ({
         <button
           className={`game-pause-btn game-pause-btn--resume ${focusedIndex === 0 ? 'game-pause-btn--focused' : ''}`}
           onClick={onResume}
+          onMouseEnter={() => setFocusedIndex(0)}
         >
           ▶ CONTINUAR
         </button>
         <button
           className={`game-pause-btn game-pause-btn--controls ${focusedIndex === 1 ? 'game-pause-btn--focused' : ''}`}
           onClick={onControls}
+          onMouseEnter={() => setFocusedIndex(1)}
         >
           ⚙ Controls
         </button>
         <button
           className={`game-pause-btn game-pause-btn--restart ${focusedIndex === 2 ? 'game-pause-btn--focused' : ''}`}
           onClick={onRestart}
+          onMouseEnter={() => setFocusedIndex(2)}
         >
           ↻ REPETIR CANCIÓN
         </button>
         <button
           className={`game-pause-btn game-pause-btn--exit ${focusedIndex === 3 ? 'game-pause-btn--focused' : ''}`}
           onClick={onExit}
+          onMouseEnter={() => setFocusedIndex(3)}
         >
           ✕ SALIR
         </button>

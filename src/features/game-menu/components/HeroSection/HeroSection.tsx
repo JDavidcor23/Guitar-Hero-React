@@ -1,4 +1,4 @@
-import guitaristBg from '../../../../assets/game-menu/guy_gutar_background.png'
+const guitaristBg = 'https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773102981/guitarhero/ymvmwbbtathdfdvbcwfo.png';
 
 /** Hero banner with guitarist background image */
 export const HeroSection = () => (

@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGamepadNavigation } from '../../hooks/useGamepadNavigation';
 import './StartScreen.css';
 
-// Import assets from src/assets/start-screen/
-import backgroundPath from '../../assets/start-screen/background.png';
-import logoPath from '../../assets/start-screen/logo.png';
-import videoPath from '../../assets/start-screen/intro.mp4';
+// Use Cloudinary assets
+const backgroundPath = 'https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773103006/guitarhero/rusuyvjo0lu5uvd1ysme.png';
+const logoPath = 'https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773103002/guitarhero/k1updbenae8ula1pdene.png';
+const videoPath = 'https://res.cloudinary.com/dhu6ga6hl/video/upload/v1773103007/guitarhero/intixhsnddzk0l7jh5pj.mp4';
 
 interface StartScreenProps {
   onComplete: () => void;

@@ -65,6 +65,7 @@ export const useAudioPlayer = () => {
     getCalibrationOffset: useCallback(() => getEngine().getCalibrationOffset(), [getEngine]),
     setVolume: useCallback((v: number) => getEngine().setVolume(v), [getEngine]),
     cleanup: useCallback(() => getEngine().cleanup(), [getEngine]),
+    unlock: useCallback(() => getEngine().unlock(), [getEngine]),
   }
 }
 

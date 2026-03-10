@@ -45,10 +45,13 @@ export const useGameFlow = ({ song, audioPlayer, clearSong }: UseGameFlowParams)
 
   const handleStartGame = useCallback(() => {
     if (song) {
+      if (audioPlayer.isLoaded && audioPlayer.unlock) {
+        audioPlayer.unlock()
+      }
       setFinalStats(null)
       startCountdown()
     }
-  }, [song, startCountdown])
+  }, [song, startCountdown, audioPlayer])
 
   const handlePauseToggle = useCallback(async () => {
     if (gameState === 'playing') {
@@ -76,13 +79,19 @@ export const useGameFlow = ({ song, audioPlayer, clearSong }: UseGameFlowParams)
   )
 
   const handlePlayAgain = useCallback(() => {
+    if (audioPlayer.isLoaded && audioPlayer.unlock) {
+      audioPlayer.unlock()
+    }
     setFinalStats(null)
     startCountdown()
-  }, [startCountdown])
+  }, [startCountdown, audioPlayer])
 
   const handleRestartSong = useCallback(() => {
     if (audioPlayer.isLoaded) {
       audioPlayer.stop()
+      if (audioPlayer.unlock) {
+        audioPlayer.unlock()
+      }
     }
     setFinalStats(null)
     startCountdown()

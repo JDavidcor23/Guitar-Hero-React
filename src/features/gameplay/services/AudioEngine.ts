@@ -60,6 +60,9 @@ export class AudioEngine {
     try {
       this.updateState({ error: null, isLoaded: false, isLoading: true })
       const ctx = this.getAudioContext()
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {})
+      }
       const arrayBuffer = await file.arrayBuffer()
       const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
 
@@ -83,6 +86,9 @@ export class AudioEngine {
     try {
       this.updateState({ error: null, isLoaded: false, isLoading: true })
       const ctx = this.getAudioContext()
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {})
+      }
       const response = await fetch(url)
       const arrayBuffer = await response.arrayBuffer()
       const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
@@ -109,6 +115,9 @@ export class AudioEngine {
     try {
       this.updateState({ error: null, isLoaded: false, isLoading: true, stemsLoaded: 0 })
       const ctx = this.getAudioContext()
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {})
+      }
       const newStems: AudioStem[] = []
       let maxDuration = 0
       let loadedCount = 0
@@ -151,6 +160,9 @@ export class AudioEngine {
     try {
       this.updateState({ error: null, isLoaded: false, isLoading: true, stemsLoaded: 0 })
       const ctx = this.getAudioContext()
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {})
+      }
       const newStems: AudioStem[] = []
       let maxDuration = 0
       let loadedCount = 0
@@ -277,11 +289,10 @@ export class AudioEngine {
   public cleanup(): void {
     this.stop()
     this.stems = []
-    if (this.audioContext) {
-      this.audioContext.close()
-      this.audioContext = null
+    // Si estaba suspendido por pausa, lo reanudamos para evitar bloqueos
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(() => {})
     }
-    this.masterGain = null
     this.updateState({
       isLoaded: false,
       isPlaying: false,
@@ -290,6 +301,12 @@ export class AudioEngine {
       error: null,
       stemsLoaded: 0,
     })
+  }
+
+  public unlock(): void {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      this.audioContext.resume().catch(e => console.warn('Could not unlock AudioContext:', e))
+    }
   }
 
   public get isPlaying(): boolean {

@@ -175,6 +175,12 @@ export const useGameMenu = ({
       }
     }
 
+    // Revoke old URLs to prevent memory leaks
+    if (lastFolderAssets.current.coverImage) {
+      URL.revokeObjectURL(lastFolderAssets.current.coverImage)
+    }
+    lastFolderAssets.current.audioSrc.forEach(url => URL.revokeObjectURL(url))
+
     lastFolderAssets.current = assets
     lastFolderFiles.current = files  // Save for IndexedDB persistence
     onFolderSelect?.(files)
