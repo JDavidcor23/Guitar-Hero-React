@@ -46,17 +46,17 @@ export interface GameConfig {
  * Estado del score y estadísticas del juego
  */
 export interface GameStats {
-  score: number // Puntuación total
+  score: number // Score total
   combo: number // Combo actual
   maxCombo: number // Mejor combo de la partida
   perfects: number // Contador de PERFECT
   goods: number // Contador de GOOD
   oks: number // Contador de OK
   misses: number // Contador de MISS
-  // Estadísticas de notas sostenidas
+  // Estadísticas de Notes sostenidas
   sustainsHit: number // Sustains iniciados correctamente
   sustainsComplete: number // Sustains completados (100%)
-  sustainsDropped: number // Sustains soltados antes de tiempo
+  sustainsDropped: number // Sustains Released antes de tiempo
 }
 
 /**
@@ -77,7 +77,7 @@ export interface LastHitInfo {
  * - menu: Pantalla de selección de canción
  * - countdown: Cuenta regresiva antes de empezar (3, 2, 1, GO!)
  * - playing: Jugando la canción
- * - paused: Juego pausado (ESPACIO)
+ * - paused: Juego pausado (SPACE)
  * - finished: Canción terminada, mostrando resultados
  */
 export type GameState = 'menu' | 'countdown' | 'playing' | 'paused' | 'finished'
@@ -89,7 +89,7 @@ export type GameState = 'menu' | 'countdown' | 'playing' | 'paused' | 'finished'
 export interface SongNote {
   segundo: number // Momento exacto en segundos cuando debe golpearse
   carril: number // 0-4 (verde, rojo, amarillo, azul, naranja)
-  duracion?: number // Duración en segundos para notas sostenidas (0 o undefined = nota normal)
+  duracion?: number // Duración en segundos para Notes sostenidas (0 o undefined = nota normal)
 }
 
 /**
@@ -100,7 +100,7 @@ export interface SongMetadata {
   artist?: string // Artista (opcional)
   charter?: string // Quién creó el chart
   duration: number // Duración total en segundos
-  totalNotes: number // Cantidad total de notas
+  totalNotes: number // Cantidad total de Notes
   difficulty?: string // easy, medium, hard, expert (opcional)
   chartDifficulty?: number // Dificultad general (0-6)
   averageNPS?: number // NPS promedio
@@ -127,7 +127,7 @@ export interface GameNote {
   spawned: boolean // Ya apareció en pantalla
   hit: boolean // El jugador la golpeó
   missed: boolean // El jugador la falló (pasó sin golpear)
-  // Propiedades para notas sostenidas
+  // Propiedades para Notes sostenidas
   duracion: number // Duración en segundos (0 = nota normal)
   sustainActive?: boolean // El jugador está sosteniendo esta nota
   sustainComplete?: boolean // El jugador completó el sustain

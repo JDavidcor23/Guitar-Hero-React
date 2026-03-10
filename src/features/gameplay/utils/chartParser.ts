@@ -102,7 +102,7 @@ export class ChartParser {
   }
 
   /**
-   * Parsea notas [EasySingle], [MediumSingle], etc.
+   * Parsea Notes [EasySingle], [MediumSingle], etc.
    * Formato: 12864 = N 0 480 (beat, carril, sustainBeats)
    * sustainBeats > 0 significa que es una nota sostenida
    */
@@ -145,7 +145,7 @@ export class ChartParser {
 
   /**
    * Convierte una duración en beats a segundos
-   * Usado para calcular la duración de notas sostenidas
+   * Usado para calcular la duración de Notes sostenidas
    */
   private beatsDurationToSeconds(startBeat: number, durationBeats: number): number {
     if (durationBeats === 0) return 0
@@ -168,7 +168,7 @@ export class ChartParser {
   }
 
   /**
-   * Calcula NPS (Notas Por Segundo) de un array de notas
+   * Calcula NPS (Notes Por Segundo) de un array de Notes
    */
   private calculateNPS(notes: ChartNote[], duration: number): { average: number; max: number } {
     if (notes.length === 0 || duration === 0) {
@@ -221,7 +221,7 @@ export class ChartParser {
       return null
     }
 
-    // Convertir notas a formato del juego (incluyendo duración de sustains)
+    // Convertir Notes a formato del juego (incluyendo duración de sustains)
     const songNotes = notes.map((note) => ({
       segundo: this.beatsToSeconds(note.beat),
       carril: note.carril,

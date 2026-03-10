@@ -64,7 +64,7 @@ export const SongGrid = ({
             coverImage={ps.art}
             audioSrc={ps.config.stemsUrls.length > 0 ? ps.config.stemsUrls : (ps.config.audioUrl || '')}
             icon1={
-              <span title="Seleccionar para jugar" className="game-menu__icon-play">🎸</span>
+              <span title="Select to play" className="game-menu__icon-play">🎸</span>
             }
             onIconClick={(idx) => {
               if (idx === 1 && ps.config.chartUrl) {
@@ -78,7 +78,7 @@ export const SongGrid = ({
             }}
           />
           {song?.metadata.songName === ps.name ? (
-            <div className="game-menu__selection-badge">✓ SELECCIONADA</div>
+            <div className="game-menu__selection-badge">✓ SELECTED</div>
           ) : null}
         </div>
       ))}
@@ -94,7 +94,7 @@ export const SongGrid = ({
           {onDeleteSong ? (
             <button
               className="game-menu__cassette-delete"
-              title="Eliminar canción guardada"
+              title="Delete saved song"
               onClick={(e) => {
                 e.stopPropagation()
                 onDeleteSong(us.id)
@@ -109,7 +109,7 @@ export const SongGrid = ({
             coverImage={us.coverImage}
             audioSrc={us.audioSrc}
             icon1={
-              <span title="Seleccionar para jugar" className="game-menu__icon-play">📂</span>
+              <span title="Select to play" className="game-menu__icon-play">📂</span>
             }
             onIconClick={(idx) => {
               if (idx === 1) {
@@ -118,7 +118,7 @@ export const SongGrid = ({
             }}
           />
           {song?.metadata.songName === us.name ? (
-            <div className="game-menu__selection-badge">✓ SELECCIONADA</div>
+            <div className="game-menu__selection-badge">✓ SELECTED</div>
           ) : null}
         </div>
       )})}

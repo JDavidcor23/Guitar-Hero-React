@@ -1,8 +1,8 @@
 import type { SongData, SongMetadata } from '../types/GuitarGame.types'
 
 /**
- * Mapeo de notas MIDI a carriles del juego
- * Rock Band/Clone Hero usa estos rangos para guitarra/bajo:
+ * Mapping of MIDI Notes to game lanes
+ * Rock Band/Clone Hero uses these ranges for guitar/bass:
  * - Easy: 60-64
  * - Medium: 72-76
  * - Hard: 84-88
@@ -16,12 +16,12 @@ const GUITAR_NOTE_MAP: Record<string, Record<number, number>> = {
 }
 
 /**
- * Mapeo de notas MIDI para batería (drums)
+ * MIDI Note mapping for drums
  * - Easy: 60-64 (kick, snare, hi-hat, etc.)
  * - Medium: 72-76
  * - Hard: 84-88
  * - Expert: 96-100
- * Nota: En drums se usa el mismo rango pero con diferente interpretación
+ * Note: Drums use the same range but with different interpretation
  */
 const DRUMS_NOTE_MAP: Record<string, Record<number, number>> = {
   easy: { 60: 0, 61: 1, 62: 2, 63: 3, 64: 4 },
@@ -31,31 +31,31 @@ const DRUMS_NOTE_MAP: Record<string, Record<number, number>> = {
 }
 
 /**
- * Mapeo de tracks MIDI a nombres de instrumentos legibles
+ * Mapping of MIDI tracks to readable instrument names
  */
 const INSTRUMENT_NAMES: Record<string, string> = {
-  'PART GUITAR': 'Guitarra',
-  'PART BASS': 'Bajo',
-  'PART DRUMS': 'Batería',
-  'PART VOCALS': 'Voz',
-  'PART KEYS': 'Teclado',
-  'PART RHYTHM': 'Guitarra Rítmica',
-  'PART GUITAR COOP': 'Guitarra Coop',
+  'PART GUITAR': 'Guitar',
+  'PART BASS': 'Bass',
+  'PART DRUMS': 'Drums',
+  'PART VOCALS': 'Vocals',
+  'PART KEYS': 'Keys',
+  'PART RHYTHM': 'Rhythm Guitar',
+  'PART GUITAR COOP': 'Co-op Guitar',
 }
 
 /**
- * Instrumentos que usan el mapeo de guitarra (5 carriles)
+ * Instruments that use guitar-style mapping (5 lanes)
  */
 const GUITAR_LIKE_INSTRUMENTS = ['PART GUITAR', 'PART BASS', 'PART KEYS', 'PART RHYTHM', 'PART GUITAR COOP']
 
 /**
- * Instrumentos que usan el mapeo de batería
+ * Instruments that use drum-style mapping
  */
 const DRUM_LIKE_INSTRUMENTS = ['PART DRUMS']
 
 interface TempoEvent {
   tick: number
-  tempo: number // microsegundos por beat
+  tempo: number // microseconds per beat
 }
 
 interface NoteEvent {
@@ -67,18 +67,18 @@ interface NoteEvent {
 
 interface ParsedNote {
   tick: number
-  carril: number
-  duration: number // en ticks
+  lane: number
+  duration: number // in ticks
 }
 
 /**
- * Parser de archivos MIDI para Rock Band/Clone Hero
+ * MIDI file parser for Rock Band/Clone Hero
  */
 export class MidiParser {
   private data: DataView
   private pos: number = 0
   private trackCount: number = 0
-  private resolution: number = 480 // ticks por beat (PPQ)
+  private resolution: number = 480 // ticks per beat (PPQ)
   private tempoTrack: TempoEvent[] = []
   private tracks: Map<string, NoteEvent[]> = new Map()
 
@@ -87,7 +87,7 @@ export class MidiParser {
   }
 
   /**
-   * Parsea el archivo MIDI completo
+   * Parses the entire MIDI file
    */
   parse(): this {
     this.parseHeader()
@@ -100,44 +100,44 @@ export class MidiParser {
   }
 
   /**
-   * Parsea el header MIDI (MThd)
+   * Parses the MIDI header (MThd)
    */
   private parseHeader(): void {
     // Verificar "MThd"
     const magic = this.readString(4)
     if (magic !== 'MThd') {
-      throw new Error('No es un archivo MIDI válido')
+      throw new Error('Not a valid MIDI file')
     }
 
     // Tamaño del header (siempre 6)
     const headerLength = this.readUint32()
     if (headerLength !== 6) {
-      throw new Error('Header MIDI inválido')
+      throw new Error('Invalid MIDI header')
     }
 
-    // Formato (0, 1, o 2) - lo leemos pero no lo usamos
+    // Format (0, 1, or 2) - read but not used
     this.readUint16()
 
-    // Número de tracks
+    // Number of tracks
     this.trackCount = this.readUint16()
 
-    // División de tiempo (ticks por beat)
+    // Time division (ticks per beat)
     this.resolution = this.readUint16()
 
-    // Si el bit más alto está activo, es SMPTE timing (no soportado)
+    // If highest bit is active, it's SMPTE timing (not supported)
     if (this.resolution & 0x8000) {
-      throw new Error('SMPTE timing no soportado')
+      throw new Error('SMPTE timing not supported')
     }
   }
 
   /**
-   * Parsea un track MIDI (MTrk)
+   * Parses a MIDI track (MTrk)
    */
   private parseTrack(): void {
     // Verificar "MTrk"
     const magic = this.readString(4)
     if (magic !== 'MTrk') {
-      throw new Error('Track MIDI inválido')
+      throw new Error('Invalid MIDI track')
     }
 
     const trackLength = this.readUint32()
@@ -149,30 +149,30 @@ export class MidiParser {
     let lastStatus = 0
 
     while (this.pos < trackEnd) {
-      // Leer delta time (variable length)
+      // Read delta time (variable length)
       const deltaTime = this.readVariableLength()
       currentTick += deltaTime
 
-      // Leer byte de status
+      // Read status byte
       let status = this.readUint8()
 
-      // Soporte para Running Status
-      // Si el byte más significativo no está activo, es un byte de datos y usamos el status anterior
+      // Running Status support
+      // If most significant bit is not set, it's a data byte and we use the previous status
       if (status < 0x80) {
         if (lastStatus === 0) {
-          // Esto no debería pasar en un MIDI válido, pero lo manejamos
-          this.pos-- // Retroceder para saltar este byte de datos
+          // This should not happen in valid MIDI, but we handle it
+          this.pos-- // Go back to skip this data byte
           continue
         }
         status = lastStatus
-        this.pos-- // El byte que leímos era el primer byte de datos, retroceder para leerlo bien
+        this.pos-- // The byte we read was the first data byte, back up to read it correctly
       } else if (status < 0xF0) {
-        // Solo guardar como running status si no es un system message (>= 0xF0)
+        // Only save as running status if it's not a system message (>= 0xF0)
         lastStatus = status
       }
 
       if (status === 0xff) {
-        // Meta evento (no tiene running status)
+        // Meta event (no running status)
         const metaType = this.readUint8()
         const metaLength = this.readVariableLength()
 
@@ -190,9 +190,9 @@ export class MidiParser {
           // Saltar otros meta eventos
           this.pos += metaLength
         }
-        // Los meta-eventos resetean el running status en algunas implementaciones
+        // Meta-events reset running status in some implementations
       } else if (status === 0xf0 || status === 0xf7) {
-        // SysEx evento - saltar (no tiene running status)
+        // SysEx event - skip (no running status)
         const sysexLength = this.readVariableLength()
         this.pos += sysexLength
       } else if ((status & 0xf0) === 0x90) {
@@ -216,37 +216,37 @@ export class MidiParser {
           isOn: false,
         })
       } else if ((status & 0xf0) === 0xc0 || (status & 0xf0) === 0xd0) {
-        // Program Change o Channel Pressure (1 byte de datos)
+        // Program Change or Channel Pressure (1 data byte)
         this.pos += 1
       } else if ((status & 0xf0) >= 0x80) {
-        // Otros eventos de canal (2 bytes de datos: Control Change, Pitch Bend, etc.)
+        // Other channel events (2 data bytes: Control Change, Pitch Bend, etc.)
         this.pos += 2
       }
     }
 
-    // Asegurar que estamos al final del track
+    // Ensure we are at the end of the track
     this.pos = trackEnd
 
     if (trackName) {
       this.tracks.set(trackName, events)
     } else if (events.length > 0) {
-      // Si no tiene nombre pero tiene notas, darle un nombre genérico
+      // If it doesn't have a name but has notes, give it a generic name
       this.tracks.set(`TRACK_${this.tracks.size}`, events)
     }
   }
 
   /**
-   * Obtiene los instrumentos disponibles en el MIDI
+   * Gets the instruments available in the MIDI
    */
   getAvailableInstruments(): Array<{ trackName: string; displayName: string }> {
     const instruments: Array<{ trackName: string; displayName: string }> = []
 
     for (const trackName of this.tracks.keys()) {
-      // Solo incluir tracks que son instrumentos conocidos y tienen notas jugables
+      // Only include tracks that are known instruments and have playable notes
       if (INSTRUMENT_NAMES[trackName]) {
         const events = this.tracks.get(trackName)
         if (events && events.length > 0) {
-          // Verificar si tiene notas en alguna dificultad
+          // Check if it has notes in any difficulty
           const noteMap = GUITAR_LIKE_INSTRUMENTS.includes(trackName) ? GUITAR_NOTE_MAP : DRUMS_NOTE_MAP
           const noteNumbers = new Set(events.map((e) => e.note))
 
@@ -268,10 +268,10 @@ export class MidiParser {
   }
 
   /**
-   * Obtiene las dificultades disponibles para un instrumento específico
+   * Gets available difficulties for a specific instrument
    */
   getAvailableDifficulties(trackName: string = 'PART GUITAR'): string[] {
-    // Intentar con el track especificado, o fallback a PART GUITAR / PART BASS
+    // Try with the specified track, or fallback to PART GUITAR / PART BASS
     let events = this.tracks.get(trackName)
     if (!events) {
       events = this.tracks.get('PART GUITAR') || this.tracks.get('PART BASS')
@@ -281,10 +281,10 @@ export class MidiParser {
     const available: string[] = []
     const noteNumbers = new Set(events.map((e) => e.note))
 
-    // Seleccionar el mapeo correcto según el instrumento
+    // Select the correct mapping based on instrument
     const noteMap = DRUM_LIKE_INSTRUMENTS.includes(trackName) ? DRUMS_NOTE_MAP : GUITAR_NOTE_MAP
 
-    // Verificar qué dificultades tienen notas
+    // Check which difficulties have notes
     for (const [difficulty, diffNoteMap] of Object.entries(noteMap)) {
       const hasNotes = Object.keys(diffNoteMap).some((n) => noteNumbers.has(parseInt(n)))
       if (hasNotes) {
@@ -296,18 +296,18 @@ export class MidiParser {
   }
 
   /**
-   * Obtiene los nombres de tracks disponibles
+   * Gets available track names
    */
   getAvailableTracks(): string[] {
     return Array.from(this.tracks.keys())
   }
 
   /**
-   * Convierte ticks a segundos usando el tempo track
+   * Converts ticks to seconds using the tempo track
    */
   private ticksToSeconds(tick: number): number {
     if (this.tempoTrack.length === 0) {
-      // Tempo default: 120 BPM = 500000 microsegundos por beat
+      // Default tempo: 120 BPM = 500000 microseconds per beat
       return (tick / this.resolution) * 0.5
     }
 
@@ -318,7 +318,7 @@ export class MidiParser {
     for (const tempoEvent of this.tempoTrack) {
       if (tempoEvent.tick > tick) break
 
-      // Calcular tiempo desde el último cambio de tempo
+      // Compute time since last tempo change
       const deltaTicks = tempoEvent.tick - lastTick
       const deltaBeats = deltaTicks / this.resolution
       const deltaSeconds = deltaBeats * (currentTempo / 1000000)
@@ -328,7 +328,7 @@ export class MidiParser {
       currentTempo = tempoEvent.tempo
     }
 
-    // Calcular tiempo restante con el tempo actual
+    // Compute remaining time with current tempo
     const remainingTicks = tick - lastTick
     const remainingBeats = remainingTicks / this.resolution
     const remainingSeconds = remainingBeats * (currentTempo / 1000000)
@@ -338,7 +338,7 @@ export class MidiParser {
   }
 
   /**
-   * Convierte una duración en ticks a segundos
+   * Converts a duration in ticks to seconds
    */
   private ticksDurationToSeconds(startTick: number, durationTicks: number): number {
     const endTick = startTick + durationTicks
@@ -346,17 +346,17 @@ export class MidiParser {
   }
 
   /**
-   * Extrae las notas de una dificultad específica
+   * Extracts notes for a specific difficulty
    */
   private extractNotes(difficulty: string, trackName: string = 'PART GUITAR'): ParsedNote[] {
-    // Intentar con el track especificado, o fallback a PART GUITAR / PART BASS
+    // Try with the specified track, or fallback to PART GUITAR / PART BASS
     let events = this.tracks.get(trackName)
     if (!events) {
       events = this.tracks.get('PART GUITAR') || this.tracks.get('PART BASS')
     }
     if (!events) return []
 
-    // Seleccionar el mapeo correcto según el instrumento
+    // Select correct mapping based on instrument
     const instrumentNoteMap = DRUM_LIKE_INSTRUMENTS.includes(trackName) ? DRUMS_NOTE_MAP : GUITAR_NOTE_MAP
     const noteMap = instrumentNoteMap[difficulty]
     if (!noteMap) return []
@@ -365,39 +365,39 @@ export class MidiParser {
     const activeNotes: Map<number, number> = new Map() // note -> startTick
 
     for (const event of events) {
-      const carril = noteMap[event.note]
-      if (carril === undefined) continue
+      const lane = noteMap[event.note]
+      if (lane === undefined) continue
 
       if (event.isOn) {
-        // Note On - Si ya estaba activa, cerrarla primero (evitar notas infinitas)
+        // Note On - If already active, close it first (avoid infinite notes)
         if (activeNotes.has(event.note)) {
           const prevStartTick = activeNotes.get(event.note)!
-          // Si es el mismo tick, ignorar (nota duplicada)
+          // If it's the same tick, ignore (duplicate note)
           if (prevStartTick < event.tick) {
             notes.push({
               tick: prevStartTick,
-              carril,
+              lane,
               duration: event.tick - prevStartTick,
             })
           }
         }
         activeNotes.set(event.note, event.tick)
       } else {
-        // Note Off - calcular duración
+        // Note Off - compute duration
         const startTick = activeNotes.get(event.note)
         if (startTick !== undefined) {
-          // Solo agregar si la duración es positiva
+          // Only add if duration is positive
           if (event.tick > startTick) {
             notes.push({
               tick: startTick,
-              carril,
+              lane,
               duration: event.tick - startTick,
             })
           } else if (event.tick === startTick) {
-            // Nota de duración cero, darle una duración mínima (1/32 de beat aprox)
+            // Zero duration note, give it a minimum duration (~1/32 of a beat)
             notes.push({
               tick: startTick,
-              carril,
+              lane,
               duration: Math.max(1, Math.floor(this.resolution / 8)),
             })
           }
@@ -406,15 +406,15 @@ export class MidiParser {
       }
     }
 
-    // Cerrar notas que quedaron abiertas al final del track
+    // Close notes that remained open at the end of the track
     if (activeNotes.size > 0 && events.length > 0) {
       const lastTick = events[events.length - 1].tick
       for (const [note, startTick] of activeNotes.entries()) {
-        const carril = noteMap[note]
-        if (carril !== undefined) {
+        const lane = noteMap[note]
+        if (lane !== undefined) {
           notes.push({
             tick: startTick,
-            carril: carril,
+            lane: lane,
             duration: Math.max(1, lastTick - startTick),
           })
         }
@@ -425,7 +425,7 @@ export class MidiParser {
   }
 
   /**
-   * Convierte a formato SongData del juego
+   * Converts to the game's SongData format
    */
   convertToSongData(
     difficulty: string,
@@ -438,18 +438,18 @@ export class MidiParser {
       return null
     }
 
-    // Convertir notas a formato del juego
+    // Convert notes into game format
     const songNotes = notes.map((note) => ({
       segundo: this.ticksToSeconds(note.tick),
-      carril: note.carril,
+      carril: note.lane,
       duracion: this.ticksDurationToSeconds(note.tick, note.duration),
     }))
 
-    // Calcular duración total
+    // Compute total duration
     const lastNote = notes[notes.length - 1]
     const duration = this.ticksToSeconds(lastNote.tick + lastNote.duration) + 5
 
-    // Calcular NPS
+    // Compute NPS
     const averageNPS = parseFloat((songNotes.length / duration).toFixed(2))
 
     return {
@@ -470,7 +470,7 @@ export class MidiParser {
   }
 
   /**
-   * Calcula el NPS máximo en ventanas de 1 segundo
+   * Computes max NPS in 1-second windows
    */
   private calculateMaxNPS(
     notes: Array<{ segundo: number; carril: number; duracion: number }>,
@@ -487,7 +487,7 @@ export class MidiParser {
   }
 
   // ==========================================
-  // Funciones auxiliares de lectura
+  // Helper reading functions
   // ==========================================
 
   private readUint8(): number {
@@ -530,7 +530,7 @@ export class MidiParser {
 }
 
 /**
- * Parsea un archivo song.ini para obtener metadata
+ * Parses a song.ini file to get metadata
  */
 export function parseSongIni(content: string): Partial<SongMetadata> {
   const metadata: Partial<SongMetadata> = {}
@@ -557,7 +557,7 @@ export function parseSongIni(content: string): Partial<SongMetadata> {
         metadata.chartDifficulty = parseInt(trimmedValue)
         break
       case 'song_length':
-        metadata.duration = parseInt(trimmedValue) / 1000 // ms a segundos
+        metadata.duration = parseInt(trimmedValue) / 1000 // ms to seconds
         break
     }
   }

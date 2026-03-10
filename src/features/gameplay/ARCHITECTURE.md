@@ -52,11 +52,11 @@ El corazón del juego. Contiene el `useEffect` principal con:
 
 - **Game Loop** (`requestAnimationFrame`) — ciclo de 60fps
 - **Sistema de tiempo** — sincroniza con audio o usa `performance.now()`
-- **Spawning de notas** — aparece notas según el tiempo de la canción
-- **Movimiento de notas** — actualiza posición Y cada frame
+- **Spawning de Notes** — aparece Notes según el tiempo de la canción
+- **Movimiento de Notes** — actualiza posición Y cada frame
 - **Detección de hits** — compara posición de nota vs hit zone al presionar tecla
 - **Input handling** — escucha `keydown`/`keyup` para teclas A, S, D, F, J
-- **Sustain tracking** — rastrea notas sostenidas y calcula puntos por segundo
+- **Sustain tracking** — rastrea Notes sostenidas y calcula puntos por segundo
 - **Orquestación de render** — llama a los renderers en el orden correcto
 
 ---
@@ -80,7 +80,7 @@ Convierte coordenadas 2D abstractas a coordenadas de pantalla con perspectiva.
 ### `renderers/highwayRenderer.ts` — Fondo del Highway
 > **~95 líneas** | Función pura
 
-Dibuja el "pasillo" por donde bajan las notas.
+Dibuja el "pasillo" por donde bajan las Notes.
 
 | Función | Descripción |
 |---------|-------------|
@@ -94,10 +94,10 @@ Dibuja el "pasillo" por donde bajan las notas.
 
 ---
 
-### `renderers/noteRenderer.ts` — Notas y Hit Zone
+### `renderers/noteRenderer.ts` — Notes y Hit Zone
 > **~195 líneas** | Funciones puras
 
-Dibuja las notas (pucks 3D), las colas de sustain y los anillos de la zona de hit.
+Dibuja las Notes (pucks 3D), las colas de sustain y los anillos de la zona de hit.
 
 | Función | Descripción |
 |---------|-------------|
@@ -132,7 +132,7 @@ Dibuja toda la información en pantalla durante el gameplay.
 
 ---
 
-### `utils/scoring.ts` — Puntuación
+### `utils/scoring.ts` — Score
 > **~50 líneas** | Funciones puras
 
 Calcula multiplicadores y puntos.
@@ -172,7 +172,7 @@ Interfaces y tipos: `GameNote`, `GameStats`, `SongData`, `HitResult`, `LaneFlash
 ```mermaid
 graph TD
     A["1. drawHighway<br/><i>Fondo, trastes, cuerdas</i>"] --> B
-    B["2. drawSustainTail<br/><i>Colas de notas sostenidas</i>"] --> C
+    B["2. drawSustainTail<br/><i>Colas de Notes sostenidas</i>"] --> C
     C["3. drawNote<br/><i>Pucks 3D (back→front)</i>"] --> D
     D["4. drawHitZone<br/><i>Anillos metálicos</i>"] --> E
     E["5. drawHUD<br/><i>Score, combo, feedback</i>"] --> F

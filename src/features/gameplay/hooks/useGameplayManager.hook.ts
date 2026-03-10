@@ -48,7 +48,7 @@ export const useGameplayManager = () => {
     setSong: songLoader.setSong,
   })
 
-  // 3. Sistema de puntuación
+  // 3. Sistema de Score
   const { handleSaveScore } = useGameScoring({
     song: songLoader.song,
     hasActiveUser: profilesHook.hasActiveUser,

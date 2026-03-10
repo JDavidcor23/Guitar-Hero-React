@@ -90,7 +90,7 @@ export const SongConfig = ({
       <div className="game-menu__stats-grid">
         {(song.metadata.chartDifficulty !== undefined && song.metadata.chartDifficulty >= 0) ? (
           <div className="game-menu__stat-card">
-            <span className="game-menu__stat-label">Dificultad</span>
+            <span className="game-menu__stat-label">Difficulty</span>
             <div className={`game-menu__stat-badge game-menu__chart-diff-${Math.min(MAX_CHART_DIFFICULTY, song.metadata.chartDifficulty)}`}>
               {DIFFICULTY_STARS[Math.min(MAX_CHART_DIFFICULTY, song.metadata.chartDifficulty)] || 'N/A'}
             </div>
@@ -105,19 +105,19 @@ export const SongConfig = ({
         ) : null}
         
         <div className="game-menu__stat-card">
-          <span className="game-menu__stat-label">Duración</span>
+          <span className="game-menu__stat-label">Duration</span>
           <span className="game-menu__stat-value">{formatDuration(song.metadata.duration)}</span>
         </div>
 
         <div className="game-menu__stat-card">
-          <span className="game-menu__stat-label">Notas</span>
+          <span className="game-menu__stat-label">Notes</span>
           <span className="game-menu__stat-value">{song.metadata.totalNotes}</span>
         </div>
         
         <div className="game-menu__stat-card game-menu__stat-card--full">
           <span className="game-menu__stat-label">Audio</span>
           <span className={`game-menu__stat-value ${!isAudioLoaded ? 'game-menu__stat-value--error' : 'game-menu__stat-value--success'}`}>
-            {isAudioLoaded ? (stemsLoaded > 1 ? `✅ Multitrack (${stemsLoaded})` : '✅ Master') : '❌ Sin audio'}
+            {isAudioLoaded ? (stemsLoaded > 1 ? `✅ Multitrack (${stemsLoaded})` : '✅ Master') : '❌ No audio'}
           </span>
         </div>
       </div>
@@ -127,7 +127,7 @@ export const SongConfig = ({
         {/* Instrument Selector */}
         {availableInstruments.length > 0 && onInstrumentChange ? (
           <div className="game-menu__selector-group">
-            <label className="game-menu__selector-label">Instrumento</label>
+            <label className="game-menu__selector-label">Instrument</label>
             <div className="game-menu__instruments">
               {availableInstruments.map((inst) => {
                 const iconClass = getInstrumentIconClass(inst.trackName)
@@ -153,7 +153,7 @@ export const SongConfig = ({
         {/* Difficulty Selector */}
         {availableDifficulties.length > 1 ? (
           <div className="game-menu__selector-group">
-            <label className="game-menu__selector-label">Nivel</label>
+            <label className="game-menu__selector-label">Level</label>
             <div className="game-menu__difficulties">
               {availableDifficulties.map((diff) => {
                 const isActive = diff === song.metadata.difficulty?.toLowerCase()
@@ -183,7 +183,7 @@ export const SongConfig = ({
         <span className="game-menu__btn-start-glow"></span>
         <span className="game-menu__btn-start-icon">⚡</span>
         <span className="game-menu__btn-start-text">
-          {isAudioLoaded ? 'INICIAR ROCK' : 'JUGAR SIN AUDIO'}
+          {isAudioLoaded ? 'START ROCK' : 'PLAY WITHOUT AUDIO'}
         </span>
       </button>
 

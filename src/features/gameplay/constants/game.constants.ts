@@ -116,7 +116,7 @@ export const MULTIPLIER_COLORS = {
 }
 
 /**
- * Cantidad de notas de prueba para el juego
+ * Cantidad de Notes de prueba para el juego
  */
 export const TEST_NOTES_COUNT = 12
 
@@ -134,13 +134,13 @@ export const TEST_NOTES_COUNT = 12
 export const SPAWN_AHEAD_TIME = 3 // segundos
 
 /**
- * Posición Y donde aparecen las notas (arriba de la pantalla)
+ * Posición Y donde aparecen las Notes (arriba de la pantalla)
  * Valor negativo porque están fuera del canvas visible
  */
 export const SPAWN_Y = -50
 
 /**
- * Velocidad calculada para que las notas lleguen a HIT_ZONE exactamente a tiempo
+ * Velocidad calculada para que las Notes lleguen a HIT_ZONE exactamente a tiempo
  *
  * CÁLCULO:
  * - Distancia a recorrer = HIT_ZONE_Y - SPAWN_Y = 500 - (-50) = 550 pixels
@@ -158,16 +158,16 @@ export const CALCULATED_NOTE_SPEED = (GAME_CONFIG.hitZoneY - SPAWN_Y) / SPAWN_AH
 export const INITIAL_GAME_STATE = 'menu' as const
 
 /**
- * Tecla para pausar el juego
+ * Tecla para Pause el juego
  */
-export const PAUSE_KEY = ' ' // Espacio
+export const PAUSE_KEY = ' ' // SPACE
 
 // ==========================================
-// CONFIGURACIÓN DE NOTAS SOSTENIDAS (SUSTAINS)
+// CONFIGURACIÓN DE Notes SOSTENIDAS (SUSTAINS)
 // ==========================================
 
 /**
- * Configuración visual de las notas sostenidas
+ * Configuración visual de las Notes sostenidas
  */
 export const SUSTAIN_CONFIG = {
   /** Ancho de la cola del sustain en pixels */
@@ -185,7 +185,7 @@ export const SUSTAIN_CONFIG = {
 }
 
 /**
- * Configuración de puntuación para notas sostenidas
+ * Configuración de Score para Notes sostenidas
  */
 export const SUSTAIN_SCORING = {
   /** Puntos por segundo sostenido */
@@ -218,12 +218,12 @@ export const GAMEPAD_BUTTON_TO_LANE: Record<number, number> = {
 }
 
 /**
- * Botón del gamepad para pausar (Start = botón 9)
+ * Botón del gamepad para Pause (Start = botón 9)
  */
 export const GAMEPAD_PAUSE_BUTTON = 9
 
 /**
  * Umbral para considerar un botón como presionado
- * (algunos controles reportan valores analógicos 0.0 a 1.0)
+ * (algunos Controls reportan valores analógicos 0.0 a 1.0)
  */
 export const GAMEPAD_BUTTON_THRESHOLD = 0.5

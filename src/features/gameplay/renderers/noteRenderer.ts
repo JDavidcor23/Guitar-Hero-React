@@ -150,7 +150,7 @@ export const drawNote = (
   const laneData = LANES[lane]
   const p = getPerspective(laneData.x, abstractY)
 
-  // No dibujar notas demasiado pequeñas (muy lejos)
+  // No dibujar Notes demasiado pequeñas (muy lejos)
   if (p.scale < 0.01) return
 
   ctx.save()

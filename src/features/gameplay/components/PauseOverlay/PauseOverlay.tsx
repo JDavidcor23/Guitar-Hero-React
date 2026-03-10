@@ -53,7 +53,7 @@ export const PauseOverlay = ({
           className={`game-pause-btn game-pause-btn--controls ${focusedIndex === 1 ? 'game-pause-btn--focused' : ''}`}
           onClick={onControls}
         >
-          ⚙ CONTROLES
+          ⚙ Controls
         </button>
         <button
           className={`game-pause-btn game-pause-btn--restart ${focusedIndex === 2 ? 'game-pause-btn--focused' : ''}`}

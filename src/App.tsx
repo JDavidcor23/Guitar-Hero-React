@@ -5,9 +5,9 @@ import { StartScreen } from './features/start-screen'
 function App() {
   const [showStartScreen, setShowStartScreen] = useState(true)
 
-  if (showStartScreen) {
-    return <StartScreen onComplete={() => setShowStartScreen(false)} />
-  }
+  // if (showStartScreen) {
+  //   return <StartScreen onComplete={() => setShowStartScreen(false)} />
+  // }
 
   return <Gameplay />
 }

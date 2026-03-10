@@ -25,9 +25,9 @@ interface UseGamepadParams {
 }
 
 interface GamepadState {
-  /** Si hay un gamepad conectado */
+  /** Si hay un gamepad Conected */
   isConnected: boolean
-  /** Nombre del gamepad conectado */
+  /** Nombre del gamepad Conected */
   gamepadName: string | null
   /** Índice del gamepad en navigator.getGamepads() */
   gamepadIndex: number | null
@@ -50,7 +50,7 @@ const isButtonPressed = (button: GamepadButton): boolean => {
 // ==========================================
 
 /**
- * Hook para leer input de un gamepad/control conectado.
+ * Hook para leer input de un gamepad/control Conected.
  *
  * La Gamepad API del navegador es basada en polling (no tiene eventos para botones),
  * así que usamos requestAnimationFrame para leer el estado de los botones cada frame.
@@ -121,7 +121,7 @@ export const useGamepad = ({
   // ==========================================
   useEffect(() => {
     const handleConnected = (event: GamepadEvent) => {
-      console.log(`🎮 Gamepad conectado: ${event.gamepad.id}`)
+      console.log(`🎮 Gamepad Conected: ${event.gamepad.id}`)
       setGamepadState({
         isConnected: true,
         gamepadName: event.gamepad.id,
@@ -132,7 +132,7 @@ export const useGamepad = ({
     }
 
     const handleDisconnected = (event: GamepadEvent) => {
-      console.log(`🎮 Gamepad desconectado: ${event.gamepad.id}`)
+      console.log(`🎮 Gamepad desConected: ${event.gamepad.id}`)
       setGamepadState({
         isConnected: false,
         gamepadName: null,
@@ -144,7 +144,7 @@ export const useGamepad = ({
     window.addEventListener('gamepadconnected', handleConnected)
     window.addEventListener('gamepaddisconnected', handleDisconnected)
 
-    // Verificar si ya hay un gamepad conectado al montar
+    // Verificar si ya hay un gamepad Conected al montar
     const gamepads = navigator.getGamepads()
     for (const gp of gamepads) {
       if (gp) {

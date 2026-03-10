@@ -241,7 +241,7 @@
   color: #ff8888;
 }
 
-/* Botón de controles — tono cian */
+/* Botón de Controls — tono cian */
 .game-pause-btn--controls {
   border-color: rgba(0, 200, 255, 0.3);
   color: rgba(0, 200, 255, 0.85);
@@ -292,7 +292,7 @@
   max-width: 100%;
 }
 
-/* Tabla de controles */
+/* Tabla de Controls */
 .game-controls-config__table {
   width: 100%;
   display: flex;

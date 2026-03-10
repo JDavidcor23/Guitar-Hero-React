@@ -31,8 +31,8 @@ const BASE_SCALE_MULTIPLIER = 1.4
  *
  * El sistema funciona así:
  * - abstractY va desde SPAWN_Y (-50, arriba) hasta hitZoneY (625, abajo)
- * - Las notas lejanas (arriba) se ven pequeñas y centradas (punto de fuga)
- * - Las notas cercanas (abajo) se ven grandes y separadas
+ * - Las Notes lejanas (arriba) se ven pequeñas y centradas (punto de fuga)
+ * - Las Notes cercanas (abajo) se ven grandes y separadas
  *
  * @param x - Posición X abstracta (ej: lane.x = 300, 400, 500...)
  * @param abstractY - Posición Y abstracta (SPAWN_Y a hitZoneY)

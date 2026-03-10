@@ -52,10 +52,10 @@ export const GameMenu = (props: GameMenuProps) => {
     onFolderSelect,
   })
 
-  // Controla qué panel tiene el "foco" del control (Gamepad)
+  // Controls which panel has gamepad focus
   const [focusedPanel, setFocusedPanel] = useState<'grid' | 'config'>('grid')
 
-  // Si no hay canción, forzar foco en grid
+  // If no song is loaded, force focus to the grid
   useEffect(() => {
     if (!song) {
       setFocusedPanel('grid')

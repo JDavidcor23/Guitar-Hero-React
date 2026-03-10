@@ -63,7 +63,7 @@ export interface UseControlsConfigReturn extends ControlsConfig {
 // ==========================================
 
 /**
- * Hook para gestionar la configuración de controles (teclado + gamepad).
+ * Hook para gestionar la configuración de Controls (teclado + gamepad).
  * Reducido usando controlsStorage para persistencia.
  */
 export const useControlsConfig = (): UseControlsConfigReturn => {

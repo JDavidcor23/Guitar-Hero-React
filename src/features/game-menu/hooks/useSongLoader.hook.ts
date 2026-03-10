@@ -105,7 +105,7 @@ export const useSongLoader = () => {
     setAvailableDifficulties(difficulties)
 
     if (difficulties.length === 0) {
-      setError('No hay notas para este instrumento')
+      setError('No hay Notes para este instrumento')
       return
     }
 

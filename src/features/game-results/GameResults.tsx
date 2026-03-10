@@ -11,11 +11,11 @@ interface GameResultsProps {
   stats: GameStats
   /** Info de la canción jugada */
   song: SongData
-  /** Callback para jugar de nuevo la misma canción */
+  /** Callback para Play Again la misma canción */
   onPlayAgain: () => void
   /** Callback para volver al menú y elegir otra canción */
   onBackToMenu: () => void
-  /** Callback para guardar la puntuación (opcional) */
+  /** Callback para guardar la Score (opcional) */
   onSaveScore?: (stats: GameStats) => void
   /** Nombre del jugador actual (opcional) */
   playerName?: string
@@ -26,11 +26,11 @@ interface GameResultsProps {
  *
  * Muestra:
  * - Nombre de la canción
- * - Puntuación final
+ * - Score final
  * - Accuracy (porcentaje de aciertos)
  * - Max combo
  * - Desglose de Perfect/Good/OK/Miss
- * - Botones para jugar de nuevo o volver al menú
+ * - Botones para Play Again o volver al menú
  */
 export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScore, playerName }: GameResultsProps) => {
   const { accuracy, rank, hasSustains, focusedIndex } = useGameResults({
@@ -43,7 +43,7 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
   return (
     <div className="game-results">
       {/* Título */}
-      <h1 className="game-results__title">CANCIÓN COMPLETADA</h1>
+      <h1 className="game-results__title">SONG COMPLETED</h1>
 
       {/* Nombre de la canción */}
       <h2 className="game-results__song-name">{song.metadata.songName}</h2>
@@ -59,17 +59,17 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
         {rank.letter}
       </div>
 
-      {/* Puntuación */}
+      {/* Score */}
       <div className="game-results__score">
         <span className="game-results__score-value">{stats.score.toLocaleString()}</span>
-        <span className="game-results__score-label">Puntuación</span>
+        <span className="game-results__score-label">Score</span>
       </div>
 
       {/* Stats principales */}
       <div className="game-results__main-stats">
         <div className="game-results__stat">
           <span className="game-results__stat-value">{accuracy}%</span>
-          <span className="game-results__stat-label">Precisión</span>
+          <span className="game-results__stat-label">Accuracy</span>
         </div>
         <div className="game-results__stat">
           <span className="game-results__stat-value">x{stats.maxCombo}</span>
@@ -106,11 +106,11 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
           </div>
           <div className="game-results__sustain-stat">
             <span className="game-results__sustain-value">{stats.sustainsComplete}</span>
-            <span className="game-results__sustain-label">Completos</span>
+            <span className="game-results__sustain-label">Complete</span>
           </div>
           <div className="game-results__sustain-stat">
             <span className="game-results__sustain-value">{stats.sustainsDropped}</span>
-            <span className="game-results__sustain-label">Soltados</span>
+            <span className="game-results__sustain-label">Released</span>
           </div>
         </div>
       ) : null}
@@ -122,14 +122,14 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
           onClick={onPlayAgain}
           className={`game-results__button game-results__button--play-again ${focusedIndex === 0 ? 'game-results__button--focused' : ''}`}
         >
-          ▶ Jugar de Nuevo
+          ▶ Play Again
         </button>
         <button
           type="button"
           onClick={onBackToMenu}
           className={`game-results__button game-results__button--menu ${focusedIndex === 1 ? 'game-results__button--focused' : ''}`}
         >
-          ♫ Cambiar Canción
+          ♫ Change Song
         </button>
       </div>
     </div>

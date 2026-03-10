@@ -82,10 +82,10 @@ export const Gameplay = () => {
 
   return (
     <div className="game-container">
-      {/* Indicador de gamepad conectado */}
+      {/* Indicador de gamepad Conected */}
       {isGamepadConnected && (
         <div className="game-gamepad-indicator" title={gamepadName || 'Gamepad'}>
-          🎮 Conectado
+          🎮 Conected
         </div>
       )}
 

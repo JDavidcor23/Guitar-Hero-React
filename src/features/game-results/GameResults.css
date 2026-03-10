@@ -10,6 +10,7 @@
   padding: 50px 60px;
   min-width: 520px;
   max-width: 680px;
+  max-height: 90vh;
   border: 1px solid rgba(191, 166, 104, 0.25);
   border-radius: 18px;
   background: radial-gradient(ellipse at center 30%,
@@ -21,8 +22,31 @@
     0 0 120px rgba(138, 79, 255, 0.06),
     inset 0 0 40px rgba(138, 79, 255, 0.04);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   animation: results-appear 0.5s ease-out;
+  margin: 50px 0;
+}
+
+/* Custom Scrollbar for the GameResults container */
+.game-results::-webkit-scrollbar {
+  width: 8px;
+}
+
+.game-results::-webkit-scrollbar-track {
+  background: rgba(13, 0, 21, 0.5);
+  border-radius: 4px;
+  margin: 10px 0;
+  /* Keeps it slightly away from the absolute top/bottom */
+}
+
+.game-results::-webkit-scrollbar-thumb {
+  background: rgba(191, 166, 104, 0.4);
+  border-radius: 4px;
+}
+
+.game-results::-webkit-scrollbar-thumb:hover {
+  background: rgba(191, 166, 104, 0.7);
 }
 
 /* Leve brillo superior decorativo */
@@ -155,7 +179,7 @@
 }
 
 /* ==========================================
-   PUNTUACIÓN
+   Score
    ========================================== */
 
 .game-results__score {
@@ -389,7 +413,7 @@
   border-color: #ffbc42;
 }
 
-/* Jugar de Nuevo — dorado resaltado */
+/* Play Again — dorado resaltado */
 .game-results__button--play-again {
   background: rgba(191, 166, 104, 0.15);
   border-color: rgba(191, 166, 104, 0.5);
@@ -403,7 +427,7 @@
   transform: scale(1.02);
 }
 
-/* Cambiar Canción — sutil */
+/* Change Song — sutil */
 .game-results__button--menu {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.15);

@@ -10,7 +10,7 @@ interface RegisterFormProps {
   onRegister: (name: string, avatar: string) => void
   /** Si es el modo inicial (primer usuario) */
   isInitialSetup?: boolean
-  /** Callback para cancelar (opcional, solo si no es setup inicial) */
+  /** Callback para Cancel (opcional, solo si no es setup inicial) */
   onCancel?: () => void
 }
 
@@ -89,7 +89,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
                 onClick={onCancel}
                 className="register-form__button register-form__button--cancel"
               >
-                Cancelar
+                Cancel
               </button>
             ) : null}
             <button 

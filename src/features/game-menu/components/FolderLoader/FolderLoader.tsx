@@ -22,7 +22,7 @@ export const FolderLoader = ({
 
     <div className="game-menu__load-section">
       <div className="game-menu__file-group game-menu__file-group--primary">
-        <span className="game-menu__file-label">📁 Carpeta de canción:</span>
+        <span className="game-menu__file-label">📁 Song folder:</span>
         <input
           type="file"
           id="folder-input"
@@ -31,7 +31,7 @@ export const FolderLoader = ({
           {...({ webkitdirectory: '', directory: '' } as React.InputHTMLAttributes<HTMLInputElement>)}
         />
         <label htmlFor="folder-input" className="game-menu__btn game-menu__btn--folder">
-          {isLoading || isAudioLoading ? 'Cargando...' : 'Select Folder'}
+          {isLoading || isAudioLoading ? 'Loading...' : 'Select Folder'}
         </label>
       </div>
     </div>

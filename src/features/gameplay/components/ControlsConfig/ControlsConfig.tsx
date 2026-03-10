@@ -23,7 +23,7 @@ interface ControlsConfigProps {
 // ==========================================
 
 /**
- * Submenú interactivo de remapeo de controles.
+ * Submenú interactivo de remapeo de Controls.
  * Muestra los mapeos actuales y permite cambiarlos haciendo click.
  */
 export const ControlsConfig = ({
@@ -55,7 +55,7 @@ export const ControlsConfig = ({
   // ==========================================
 
   const formatKeyName = (key: string): string => {
-    if (key === ' ') return 'ESPACIO'
+    if (key === ' ') return 'SPACE'
     if (key.length === 1) return key.toUpperCase()
     return key.toUpperCase()
   }
@@ -66,16 +66,16 @@ export const ControlsConfig = ({
 
   return (
     <div className="game-controls-config" ref={containerRef}>
-      <h2 className="game-controls-config__title">⚙ CONTROLES</h2>
+      <h2 className="game-controls-config__title">⚙ Controls</h2>
 
       {/* Indicador de gamepad */}
       {isGamepadConnected ? (
         <div className="game-controls-config__gamepad-info">
-          🎮 {gamepadName || 'Gamepad conectado'}
+          🎮 {gamepadName || 'Gamepad Conected'}
         </div>
       ) : null}
 
-      {/* Tabla de controles */}
+      {/* Tabla de Controls */}
       <div className="game-controls-config__table">
         {/* Headers */}
         <div className="game-controls-config__header">

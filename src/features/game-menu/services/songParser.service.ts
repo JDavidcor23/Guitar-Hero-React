@@ -35,14 +35,14 @@ export async function parseChartContent(
 
   const difficulties = parser.getAvailableDifficulties()
   if (difficulties.length === 0) {
-    throw new Error('No se encontraron notas en el archivo')
+    throw new Error('No se encontraron Notes en el archivo')
   }
 
   const defaultDifficulty = difficulties[difficulties.length - 1]
   const songData = parser.convertToSongData(defaultDifficulty, metadata)
 
   if (!songData) {
-    throw new Error('Error al convertir las notas')
+    throw new Error('Error al convertir las Notes')
   }
 
   return {
@@ -70,14 +70,14 @@ export async function parseMidiContent(
 
   const difficulties = parser.getAvailableDifficulties(currentInstrument)
   if (difficulties.length === 0) {
-    throw new Error('No se encontraron notas jugables en el archivo MIDI')
+    throw new Error('No se encontraron Notes jugables en el archivo MIDI')
   }
 
   const defaultDifficulty = difficulties[difficulties.length - 1]
   const songData = parser.convertToSongData(defaultDifficulty, metadata, currentInstrument)
 
   if (!songData) {
-    throw new Error('Error al convertir las notas MIDI')
+    throw new Error('Error al convertir las Notes MIDI')
   }
 
   return {

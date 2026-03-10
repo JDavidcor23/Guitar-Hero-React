@@ -114,7 +114,7 @@ export const ProfileSelector = ({
               onClick={() => setShowRegisterForm(true)}
             >
               <span className="profile-selector__add-icon">+</span>
-              <span>Agregar Jugador</span>
+              <span>Add Player</span>
             </button>
           </div>
         ) : null}
@@ -146,7 +146,7 @@ export const ProfileSelector = ({
             <h3>¿Eliminar perfil?</h3>
             <p>Se perderán todas las puntuaciones guardadas.</p>
             <div className="profile-selector__confirm-buttons">
-              <button onClick={() => setUserToDelete(null)}>Cancelar</button>
+              <button onClick={() => setUserToDelete(null)}>Cancel</button>
               <button onClick={confirmDelete} className="profile-selector__confirm-delete">
                 Eliminar
               </button>

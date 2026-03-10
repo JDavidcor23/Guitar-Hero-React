@@ -122,7 +122,7 @@ export const useUserProfiles = () => {
   }, [])
 
   /**
-   * Agrega una puntuación para el usuario actual
+   * Agrega una Score para el usuario actual
    */
   const addScore = useCallback((score: Omit<ScoreRecord, 'playedAt'>): void => {
     setState(prev => {
@@ -158,7 +158,7 @@ export const useUserProfiles = () => {
   }, [currentUser])
 
   /**
-   * Obtiene la mejor puntuación del usuario actual para una canción específica
+   * Obtiene la mejor Score del usuario actual para una canción específica
    */
   const getBestScore = useCallback((songId: string): ScoreRecord | null => {
     const scores = currentUser?.scores.filter(s => s.songId === songId) ?? []

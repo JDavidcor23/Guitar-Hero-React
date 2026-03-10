@@ -14,7 +14,7 @@ export interface UserProfile {
   createdAt: number
 }
 
-/** Registro de puntuación */
+/** Registro de Score */
 export interface ScoreRecord {
   /** ID de la canción (nombre del archivo) */
   songId: string
@@ -22,7 +22,7 @@ export interface ScoreRecord {
   songName: string
   /** Artista */
   artist?: string
-  /** Puntuación obtenida */
+  /** Score obtenida */
   score: number
   /** Porcentaje de accuracy */
   accuracy: number
@@ -36,7 +36,7 @@ export interface ScoreRecord {
   playedAt: number
 }
 
-/** Datos completos de un usuario */
+/** Datos Complete de un usuario */
 export interface UserData {
   /** Perfil del usuario */
   profile: UserProfile
