@@ -12,7 +12,7 @@ import './GameMenu.css'
 /**
  * Main menu component — Song selection view.
  *
- * Guitar Hero-inspired design with a guitarist background,
+ * Rock Hero-inspired design with a guitarist background,
  * instrument selector with icons, and difficulty pill buttons.
  *
  * This component is purely presentational; all business logic

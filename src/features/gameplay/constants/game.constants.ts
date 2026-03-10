@@ -158,9 +158,9 @@ export const CALCULATED_NOTE_SPEED = (GAME_CONFIG.hitZoneY - SPAWN_Y) / SPAWN_AH
 export const INITIAL_GAME_STATE = 'menu' as const
 
 /**
- * Tecla para Pause el juego
+ * Teclas para pausar el juego
  */
-export const PAUSE_KEY = ' ' // SPACE
+export const PAUSE_KEYS = [' ', 'Escape']
 
 // ==========================================
 // CONFIGURACIÓN DE Notes SOSTENIDAS (SUSTAINS)

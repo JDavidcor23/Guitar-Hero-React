@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useGameplay } from './useGameplay.hook'
 import { useAudioPlayer } from './useAudioPlayer.hook'
 import { useControlsConfig } from './useControlsConfig.hook'
@@ -8,6 +8,7 @@ import { useUserProfiles } from '../../user-profiles'
 import { useGameFlow } from './useGameFlow.hook'
 import { useGameAudioLoader } from './useGameAudioLoader.hook'
 import { useGameScoring } from './useGameScoring.hook'
+import { PRELOADED_SONGS } from '../../game-menu/utils/preloadedSongs'
 
 export const useGameplayManager = () => {
   const songLoader = useSongLoader()
@@ -54,6 +55,21 @@ export const useGameplayManager = () => {
     hasActiveUser: profilesHook.hasActiveUser,
     addScore: profilesHook.addScore,
   })
+
+  // 4. Pre-selección automática de "Smoke on the Water" al inicio
+  useEffect(() => {
+    if (!songLoader.song && !songLoader.isLoading && !isAudioLoading) {
+      const smokeSong = PRELOADED_SONGS.find(s => s.id === 'Deep Purple - Smoke on the Water')
+      if (smokeSong && smokeSong.config.chartUrl) {
+        handlePreloadedSongSelect(smokeSong.config as {
+          chartUrl: string
+          audioUrl?: string
+          stemsUrls?: string[]
+          metadata?: Partial<import('../types/GuitarGame.types').SongMetadata>
+        })
+      }
+    }
+  }, [handlePreloadedSongSelect, isAudioLoading, songLoader.isLoading, songLoader.song]) // Solo al montar o hasta cargar
 
   // ==========================================
   // 4. INTEGRACIÓN CON CANVAS (useGameplay)

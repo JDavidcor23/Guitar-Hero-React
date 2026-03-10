@@ -8,7 +8,7 @@ import { PauseOverlay } from './components/PauseOverlay/PauseOverlay'
 import './Gameplay.css'
 
 /**
- * Componente principal del juego Guitar Hero
+ * Componente principal del juego Rock Hero
  *
  * AHORA: Componente puramente presentacional. 
  * Toda la lógica reside en useGameplayManager.

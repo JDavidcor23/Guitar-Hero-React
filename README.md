@@ -1,8 +1,8 @@
-# 🎸 Guitar Hero React
+# 🎸 Rock Hero
 
-A modern implementation of Guitar Hero built with **React**, **TypeScript**, and **Vite**, utilizing the **Web Audio API** and **HTML5 Canvas** for a smooth and accurate experience.
+A modern implementation of Rock Hero built with **React**, **TypeScript**, and **Vite**, utilizing the **Web Audio API** and **HTML5 Canvas** for a smooth and accurate experience.
 
-![Guitar Hero React Preview](src/assets/game-preview/background_logo.png)
+![Rock Hero Preview](https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773102994/guitarhero/z0rwbigbgrvnphkguhws.png)
 
 ## ✨ Features
 
@@ -33,7 +33,7 @@ A modern implementation of Guitar Hero built with **React**, **TypeScript**, and
 1. Clone the repository:
    ```bash
    git clone https://github.com/JDavidcor23/Guitar-Hero-React.git
-   cd guitar-hero-react
+   cd rock-hero
    ```
 
 2. Install dependencies:
@@ -92,9 +92,10 @@ src/
 
 ## 🖼️ Gallery
 
-![Game Interface](src/assets/game-preview/interface.png)
-![Song Selection](src/assets/game-preview/songs.png)
-![Song Selection](src/assets/game-preview/songs2.png)
+![Game Interface](https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773102993/guitarhero/mkdocnsfquoshs1hvfgy.png)
+![Song Selection](https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773102994/guitarhero/q6fkxrdvxno2xlqf9wcg.png)
+![Song Selection](https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773102993/guitarhero/fibqnrc7h6bmezyxlhuo.png)
+![Song Selection](https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773104023/5d8b1002-75a8-4193-97c4-9428dd636cf1.png)
 
 ## 📝 License
 

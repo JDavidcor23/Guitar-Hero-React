@@ -38,6 +38,20 @@ export class GameplayEngine {
   private getAudioTime?: () => number
   private calibrationOffset: number
 
+  public updateCallbacks(c: {
+    onGameEnd: (stats: GameStats) => void
+    onStatsChange?: (stats: GameStats) => void
+    getAudioTime?: () => number
+    calibrationOffset?: number
+  }) {
+    this.onGameEnd = c.onGameEnd
+    this.onStatsChange = c.onStatsChange
+    this.getAudioTime = c.getAudioTime
+    if (c.calibrationOffset !== undefined) {
+      this.calibrationOffset = c.calibrationOffset
+    }
+  }
+
   private gameNotes: GameNote[] = []
   private nextNoteIndex = 0
   

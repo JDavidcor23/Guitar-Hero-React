@@ -5,7 +5,7 @@ import {
   KEY_TO_LANE,
   GAMEPAD_BUTTON_TO_LANE,
   GAMEPAD_PAUSE_BUTTON,
-  PAUSE_KEY,
+  PAUSE_KEYS,
 } from '../constants/game.constants'
 import { useGamepad } from './useGamepad.hook'
 import { GameplayEngine } from '../services/GameplayEngine'
@@ -66,18 +66,24 @@ export const useGameplay = ({
   })
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-
+    // 1. Limpieza absoluta si no debemos estar jugando
     if (!song || (gameState !== 'playing' && gameState !== 'paused')) {
       if (engineRef.current) {
         engineRef.current.destroy()
         engineRef.current = null
       }
-      if (ctx) drawHighway(ctx, canvas, 0)
+      
+      const currentCanvas = canvasRef.current
+      if (currentCanvas) {
+        const ctx = currentCanvas.getContext('2d')
+        if (ctx) drawHighway(ctx, currentCanvas, 0)
+      }
       return
     }
+
+    // 2. Aquí estamos jugando, requerimos el canvas
+    const canvas = canvasRef.current
+    if (!canvas) return
 
     if (!engineRef.current) {
       engineRef.current = new GameplayEngine({
@@ -89,12 +95,20 @@ export const useGameplay = ({
         calibrationOffset,
       })
       engineRef.current.start()
+    } else {
+      // Si el engine ya existe, actualizamos los callbacks para evitar cierres obsoletos
+      engineRef.current.updateCallbacks({
+        onGameEnd,
+        onStatsChange,
+        getAudioTime,
+        calibrationOffset,
+      })
     }
 
     engineRef.current.setPaused(gameState === 'paused')
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === PAUSE_KEY) {
+      if (PAUSE_KEYS.includes(event.key)) {
         event.preventDefault()
         onPauseToggle()
         return
