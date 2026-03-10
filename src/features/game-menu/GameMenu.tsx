@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { GameMenuProps } from './types/GameMenu.types'
 import { useGameMenu } from './hooks/useGameMenu.hook'
 import { HeroSection } from './components/HeroSection/HeroSection'
+import { DownloadInstructions } from './components/DownloadInstructions/DownloadInstructions'
 import { SongGrid } from './components/SongGrid/SongGrid'
 import { FolderLoader } from './components/FolderLoader/FolderLoader'
 import { SongConfig } from './components/SongConfig/SongConfig'
@@ -67,6 +68,8 @@ export const GameMenu = (props: GameMenuProps) => {
       <HeroSection />
 
       <div className="game-menu__content">
+        <DownloadInstructions />
+
         <SongGrid
           song={song}
           userSongs={userSongs}

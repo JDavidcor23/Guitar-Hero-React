@@ -1,0 +1,197 @@
+.download-instructions {
+    margin: 1.5rem 0;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    background: radial-gradient(circle at 50% 30%, #5e3b68 0%, #2d1038 60%, #1a0524 100%);
+    border: 3px solid #bfa668;
+    border-radius: 12px;
+    box-shadow:
+        inset 0 0 15px rgba(255, 255, 255, 0.05),
+        0 10px 30px rgba(36, 11, 46, 0.6);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.download-instructions:hover {
+    border-color: #d1b87a;
+    box-shadow:
+        inset 0 0 20px rgba(255, 255, 255, 0.1),
+        0 12px 35px rgba(36, 11, 46, 0.8);
+}
+
+.download-instructions__toggle {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: #bfa668;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-shadow: 0 0 6px rgba(191, 166, 104, 0.5);
+    transition: all 0.2s ease;
+}
+
+.download-instructions__toggle:hover {
+    background: rgba(191, 166, 104, 0.1);
+    color: #ffd88a;
+    text-shadow: 0 0 10px rgba(191, 166, 104, 0.8);
+}
+
+.download-instructions__icon {
+    margin-right: 0.75rem;
+    font-size: 1.2em;
+}
+
+.download-instructions__arrow {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 0.8em;
+}
+
+.download-instructions__arrow.open {
+    transform: rotate(180deg);
+}
+
+.download-instructions__content {
+    padding: 1.5rem;
+    border-top: 2px solid rgba(191, 166, 104, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(10, 10, 10, 0.8) 100%);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.8);
+}
+
+.instruction-step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: slideDown 0.4s ease forwards;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.instruction-step:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.instruction-step:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.instruction-step:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.instruction-step h3 {
+    margin: 0;
+    color: #e8dcc8;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 6px rgba(191, 166, 104, 0.3);
+}
+
+.instruction-step p {
+    margin: 0;
+    color: #cfc2ae;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.instruction-step code {
+    background: #1a0524;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    color: #bfa668;
+    border: 1px solid rgba(191, 166, 104, 0.4);
+}
+
+.instruction-image {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    border-radius: 8px;
+    border: 3px solid #bfa668;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.1), 0 8px 25px rgba(0, 0, 0, 0.7);
+    margin-top: 0.5rem;
+    object-fit: contain;
+    background: radial-gradient(circle, #f0f5f0 0%, #c8d8c8 100%);
+}
+
+@keyframes slideDown {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbar styling for the content if it gets too long */
+.download-instructions__content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.download-instructions__content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
+.download-instructions__content::-webkit-scrollbar-thumb {
+    background: #bfa668;
+    border-radius: 3px;
+}
+
+.download-instructions__content::-webkit-scrollbar-thumb:hover {
+    background: #bfa668;
+}
+
+/* ─── Enchor.us Link Styling ─── */
+.enchor-link {
+    color: #ff00ff;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+    position: relative;
+    padding: 0 4px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.6);
+}
+
+.enchor-link:hover {
+    background: rgba(255, 0, 255, 0.15);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+    text-shadow: 0 0 8px rgba(255, 0, 255, 1);
+}
+
+.enchor-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #ff00ff;
+    box-shadow: 0 0 5px #ff00ff;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.enchor-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}

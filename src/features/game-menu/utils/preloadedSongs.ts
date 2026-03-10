@@ -22,7 +22,13 @@ const processPreloadedSongs = (): PreloadedSong[] => {
     const parts = path.split('/')
     if (parts.length < MIN_SONG_PATH_PARTS) return
 
-    const folderName = parts[parts.length - 2]
+    const musicIndex = parts.indexOf('music')
+    if (musicIndex === -1 || musicIndex >= parts.length - 2) return
+
+    // The robust way: always use the immediate folder inside 'music/'
+    // so nested folders don't break the id matching.
+    const folderName = parts[musicIndex + 1]
+    
     if (!songsMap[folderName]) {
       const [artist, name] = folderName.split(' - ').map(s => s.trim())
       songsMap[folderName] = {
