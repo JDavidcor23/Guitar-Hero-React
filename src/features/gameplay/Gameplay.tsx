@@ -85,7 +85,7 @@ export const Gameplay = () => {
       {/* Indicador de gamepad Conected */}
       {isGamepadConnected && (
         <div className="game-gamepad-indicator" title={gamepadName || 'Gamepad'}>
-          🎮 Conected
+          🎮 Connected
         </div>
       )}
 
@@ -167,10 +167,10 @@ export const Gameplay = () => {
               </div>
             </div>
           )}
-          {/* Indicador de offset (solo si hay audio) */}
+          {/* Offset indicator (only if audio is present) */}
           {audioPlayer.isLoaded && (
             <div className="game-calibration">
-              Offset: {audioPlayer.calibrationOffset}ms (+/- para ajustar)
+              Offset: {audioPlayer.calibrationOffset}ms (+/- to adjust)
             </div>
           )}
         </>

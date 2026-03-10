@@ -440,9 +440,9 @@ export class MidiParser {
 
     // Convert notes into game format
     const songNotes = notes.map((note) => ({
-      segundo: this.ticksToSeconds(note.tick),
-      carril: note.lane,
-      duracion: this.ticksDurationToSeconds(note.tick, note.duration),
+      second: this.ticksToSeconds(note.tick),
+      lane: note.lane,
+      duration: this.ticksDurationToSeconds(note.tick, note.duration),
     }))
 
     // Compute total duration
@@ -473,13 +473,13 @@ export class MidiParser {
    * Computes max NPS in 1-second windows
    */
   private calculateMaxNPS(
-    notes: Array<{ segundo: number; carril: number; duracion: number }>,
+    notes: Array<{ second: number; lane: number; duration: number }>,
     duration: number
   ): number {
     let maxNPS = 0
 
     for (let time = 0; time < duration; time += 0.5) {
-      const count = notes.filter((n) => n.segundo >= time && n.segundo < time + 1).length
+      const count = notes.filter((n) => n.second >= time && n.second < time + 1).length
       maxNPS = Math.max(maxNPS, count)
     }
 

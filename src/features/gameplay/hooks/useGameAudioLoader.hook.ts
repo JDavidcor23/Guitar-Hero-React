@@ -67,7 +67,7 @@ export const useGameAudioLoader = ({
           await audioPlayer.loadAudioFromUrl(config.audioUrl)
         }
       } catch (err) {
-        console.error('Error cargando canción precargada:', err)
+        console.error('Error loading preloaded song:', err)
       } finally {
         setIsAudioLoading(false)
       }
@@ -91,7 +91,7 @@ export const useGameAudioLoader = ({
           await audioPlayer.loadAudioFromUrl(userSong.audioSrc)
         }
       } catch (err) {
-        console.error('Error restaurando audio de canción cargada:', err)
+        console.error('Error restoring loaded song audio:', err)
       } finally {
         setIsAudioLoading(false)
       }

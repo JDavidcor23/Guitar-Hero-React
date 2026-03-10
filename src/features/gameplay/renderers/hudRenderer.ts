@@ -170,7 +170,7 @@ export const drawPauseOverlay = (ctx: CanvasRenderingContext2D) => {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
   ctx.fillRect(0, 0, GAME_CONFIG.canvasWidth, GAME_CONFIG.canvasHeight)
 
-  // Texto PAUSA
+  // Texto PAUSE
   ctx.fillStyle = COLORS.white
   ctx.font = "bold 64px 'Orbitron', sans-serif"
   ctx.textAlign = 'center'

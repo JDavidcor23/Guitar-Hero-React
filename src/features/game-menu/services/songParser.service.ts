@@ -35,14 +35,14 @@ export async function parseChartContent(
 
   const difficulties = parser.getAvailableDifficulties()
   if (difficulties.length === 0) {
-    throw new Error('No se encontraron Notes en el archivo')
+    throw new Error('No notes found in the file')
   }
 
   const defaultDifficulty = difficulties[difficulties.length - 1]
   const songData = parser.convertToSongData(defaultDifficulty, metadata)
 
   if (!songData) {
-    throw new Error('Error al convertir las Notes')
+    throw new Error('Error converting notes')
   }
 
   return {
@@ -70,14 +70,14 @@ export async function parseMidiContent(
 
   const difficulties = parser.getAvailableDifficulties(currentInstrument)
   if (difficulties.length === 0) {
-    throw new Error('No se encontraron Notes jugables en el archivo MIDI')
+    throw new Error('No playable notes found in the MIDI file')
   }
 
   const defaultDifficulty = difficulties[difficulties.length - 1]
   const songData = parser.convertToSongData(defaultDifficulty, metadata, currentInstrument)
 
   if (!songData) {
-    throw new Error('Error al convertir las Notes MIDI')
+    throw new Error('Error converting MIDI notes')
   }
 
   return {
@@ -105,7 +105,7 @@ export async function loadFromFileService(file: File, iniFile?: File): Promise<P
     const arrayBuffer = await file.arrayBuffer()
     return parseMidiContent(arrayBuffer, metadata)
   } else {
-    throw new Error(`Formato no soportado: .${extension}`)
+    throw new Error(`Unsupported format: .${extension}`)
   }
 }
 
@@ -126,7 +126,7 @@ export async function loadFromFolderService(files: FileList): Promise<ParseResul
   }
 
   if (!chartFile) {
-    throw new Error('No se encontró notes.mid o notes.chart en la carpeta')
+    throw new Error('Could not find notes.mid or notes.chart in the folder')
   }
   return loadFromFileService(chartFile, iniFile || undefined)
 }
@@ -136,7 +136,7 @@ export async function loadFromUrlsService(
   metadata: Partial<SongMetadata> = {}
 ): Promise<ParseResult> {
   const response = await fetch(chartUrl)
-  if (!response.ok) throw new Error('No se pudo descargar el archivo de la canción')
+  if (!response.ok) throw new Error('Could not download song file')
 
   const extension = chartUrl.toLowerCase().split('.').pop()
   if (extension === 'chart' || chartUrl.endsWith('.txt')) {
@@ -146,6 +146,6 @@ export async function loadFromUrlsService(
     const arrayBuffer = await response.arrayBuffer()
     return parseMidiContent(arrayBuffer, metadata)
   } else {
-    throw new Error(`Formato no soportado: .${extension}`)
+    throw new Error(`Unsupported format: .${extension}`)
   }
 }

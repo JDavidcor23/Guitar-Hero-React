@@ -11,7 +11,7 @@ interface CassetteInputProps {
 export const CassetteInput: React.FC<CassetteInputProps> = ({ 
   value, 
   onChange, 
-  placeholder = "Tu nombre aquí...",
+  placeholder = "Your name here...",
   onEnter
 }) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {

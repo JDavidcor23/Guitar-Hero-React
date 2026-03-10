@@ -3,34 +3,34 @@ import { useGameResults } from './hooks/useGameResults.hook'
 import './GameResults.css'
 
 // ==========================================
-// TIPOS PARA LOS PROPS DEL COMPONENTE
+// TYPES FOR COMPONENT PROPS
 // ==========================================
 
 interface GameResultsProps {
-  /** Estadísticas finales del juego */
+  /** Final game statistics */
   stats: GameStats
-  /** Info de la canción jugada */
+  /** Info of the played song */
   song: SongData
-  /** Callback para Play Again la misma canción */
+  /** Callback to Play Again the same song */
   onPlayAgain: () => void
-  /** Callback para volver al menú y elegir otra canción */
+  /** Callback to return to menu and choose another song */
   onBackToMenu: () => void
-  /** Callback para guardar la Score (opcional) */
+  /** Callback to save the score (optional) */
   onSaveScore?: (stats: GameStats) => void
-  /** Nombre del jugador actual (opcional) */
+  /** Current player name (optional) */
   playerName?: string
 }
 
 /**
- * Componente de pantalla de resultados
+ * Results screen component
  *
- * Muestra:
- * - Nombre de la canción
- * - Score final
- * - Accuracy (porcentaje de aciertos)
+ * Displays:
+ * - Song name
+ * - Final score
+ * - Accuracy (hit percentage)
  * - Max combo
- * - Desglose de Perfect/Good/OK/Miss
- * - Botones para Play Again o volver al menú
+ * - Breakdown of Perfect/Good/OK/Miss
+ * - Buttons to Play Again or return to menu
  */
 export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScore, playerName }: GameResultsProps) => {
   const { accuracy, rank, hasSustains, focusedIndex } = useGameResults({
@@ -115,7 +115,7 @@ export const GameResults = ({ stats, song, onPlayAgain, onBackToMenu, onSaveScor
         </div>
       ) : null}
 
-      {/* Botones */}
+      {/* Buttons */}
       <div className="game-results__buttons">
         <button
           type="button"

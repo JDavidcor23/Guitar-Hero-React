@@ -83,33 +83,32 @@ export interface LastHitInfo {
 export type GameState = 'menu' | 'countdown' | 'playing' | 'paused' | 'finished'
 
 /**
- * Una nota tal como viene del JSON del Chart Generator
- * El JSON tiene: { segundo: 5.2, carril: 0, duracion: 1.5 }
+ * A note exactly as it comes from the JSON or parser
  */
 export interface SongNote {
-  segundo: number // Momento exacto en segundos cuando debe golpearse
-  carril: number // 0-4 (verde, rojo, amarillo, azul, naranja)
-  duracion?: number // Duración en segundos para Notes sostenidas (0 o undefined = nota normal)
+  second: number // Exact moment in seconds when it should be hit
+  lane: number // 0-4 (green, red, yellow, blue, orange)
+  duration?: number // Duration in seconds for sustained notes (0 or undefined = normal note)
 }
 
 /**
- * Metadata de la canción (viene del JSON)
+ * Song Metadata
  */
 export interface SongMetadata {
-  songName: string // Nombre de la canción
-  artist?: string // Artista (opcional)
-  charter?: string // Quién creó el chart
-  duration: number // Duración total en segundos
-  totalNotes: number // Cantidad total de Notes
-  difficulty?: string // easy, medium, hard, expert (opcional)
-  chartDifficulty?: number // Dificultad general (0-6)
-  averageNPS?: number // NPS promedio
-  maxNPS?: number // NPS máximo
-  albumArt?: string // URL o path de la imagen del álbum (opcional)
+  songName: string // Song name
+  artist?: string // Artist (optional)
+  charter?: string // Charter name
+  duration: number // Total duration in seconds
+  totalNotes: number // Total number of notes
+  difficulty?: string // easy, medium, hard, expert (optional)
+  chartDifficulty?: number // General difficulty (0-6)
+  averageNPS?: number // Average NPS
+  maxNPS?: number // Max NPS
+  albumArt?: string // Album art URL or path (optional)
 }
 
 /**
- * Estructura completa de una canción cargada del JSON
+ * Complete structure of a loaded song
  */
 export interface SongData {
   metadata: SongMetadata
@@ -117,21 +116,21 @@ export interface SongData {
 }
 
 /**
- * Una nota del juego (extendida con propiedades para el gameplay)
- * Combina la info del JSON con el estado durante el juego
+ * A game note (extended with properties for gameplay)
+ * Combines parsed info with state during the game
  */
 export interface GameNote {
-  segundo: number // Cuándo debe golpearse (del JSON)
-  carril: number // En qué carril (del JSON)
-  y: number // Posición Y actual (calculada)
-  spawned: boolean // Ya apareció en pantalla
-  hit: boolean // El jugador la golpeó
-  missed: boolean // El jugador la falló (pasó sin golpear)
-  // Propiedades para Notes sostenidas
-  duracion: number // Duración en segundos (0 = nota normal)
-  sustainActive?: boolean // El jugador está sosteniendo esta nota
-  sustainComplete?: boolean // El jugador completó el sustain
-  sustainReleased?: boolean // El jugador soltó antes de tiempo
+  second: number // When it should be hit
+  lane: number // In which lane
+  y: number // Current Y position
+  spawned: boolean // Appeared on screen
+  hit: boolean // Player hit it
+  missed: boolean // Player missed it
+  // Properties for sustained notes
+  duration: number // Duration in seconds (0 = normal note)
+  sustainActive?: boolean // Player is holding this note
+  sustainComplete?: boolean // Player completed the sustain
+  sustainReleased?: boolean // Player released early
 }
 
 /**

@@ -76,8 +76,8 @@ export class AudioEngine {
       console.log(`✓ Audio cargado: ${audioBuffer.duration.toFixed(2)}s (${file.name})`)
       return true
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
-      this.updateState({ isLoaded: false, isLoading: false, error: `Error al cargar: ${msg}` })
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      this.updateState({ isLoaded: false, isLoading: false, error: `Error loading: ${msg}` })
       return false
     }
   }
@@ -104,8 +104,8 @@ export class AudioEngine {
       })
       return true
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
-      this.updateState({ isLoaded: false, isLoading: false, error: `Error url: ${msg}` })
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      this.updateState({ isLoaded: false, isLoading: false, error: `Error loading URL: ${msg}` })
       return false
     }
   }
@@ -138,7 +138,7 @@ export class AudioEngine {
       })
 
       await Promise.all(promises)
-      if (newStems.length === 0) throw new Error('No se pudo cargar ningún stem')
+      if (newStems.length === 0) throw new Error('Could not load any stem')
 
       this.stems = newStems
       this.updateState({
@@ -149,8 +149,8 @@ export class AudioEngine {
       })
       return true
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
-      this.updateState({ isLoaded: false, isLoading: false, error: `Error iterando urls: ${msg}` })
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      this.updateState({ isLoaded: false, isLoading: false, error: `Error iterating URLs: ${msg}` })
       return false
     }
   }
@@ -181,7 +181,7 @@ export class AudioEngine {
       })
 
       await Promise.all(promises)
-      if (newStems.length === 0) throw new Error('No se pudo cargar ningún stem local')
+      if (newStems.length === 0) throw new Error('Could not load any local stem')
 
       this.stems = newStems
       this.updateState({
@@ -192,7 +192,7 @@ export class AudioEngine {
       })
       return true
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
+      const msg = err instanceof Error ? err.message : 'Unknown error'
       this.updateState({ isLoaded: false, isLoading: false, error: msg })
       return false
     }
@@ -202,7 +202,7 @@ export class AudioEngine {
     if (!this.audioContext || !this.masterGain || this.stems.length === 0) return false
     
     if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch((err) => console.error('Error al reanudar AudioContext:', err))
+      this.audioContext.resume().catch((err) => console.error('Error resuming AudioContext:', err))
     }
 
     this.stopSources()

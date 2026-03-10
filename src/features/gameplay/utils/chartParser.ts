@@ -7,8 +7,8 @@ interface BPMChange {
 
 interface ChartNote {
   beat: number
-  carril: number
-  sustainBeats: number // Duración del sustain en beats (0 = nota normal)
+  lane: number
+  sustainBeats: number // Duration of sustain in beats (0 = normal)
 }
 
 /**
@@ -109,13 +109,13 @@ export class ChartParser {
   private parseNote(line: string, difficulty: string): void {
     const match = line.match(/(\d+)\s*=\s*N\s+(\d+)\s+(\d+)/)
     if (match) {
-      const carril = parseInt(match[2])
-      // Filtrar carriles inválidos (5 y 6 son force strum/tap notes)
-      if (carril < 5) {
+      const lane = parseInt(match[2])
+      // Filter out invalid lanes (5 and 6 are force strum/tap notes)
+      if (lane < 5) {
         this.difficulties[difficulty].push({
           beat: parseInt(match[1]),
-          carril: carril,
-          sustainBeats: parseInt(match[3]), // Ahora capturamos la duración del sustain
+          lane: lane,
+          sustainBeats: parseInt(match[3]),
         })
       }
     }
@@ -221,15 +221,15 @@ export class ChartParser {
       return null
     }
 
-    // Convertir Notes a formato del juego (incluyendo duración de sustains)
+    // Convert notes to game format (including sustain durations)
     const songNotes = notes.map((note) => ({
-      segundo: this.beatsToSeconds(note.beat),
-      carril: note.carril,
-      duracion: this.beatsDurationToSeconds(note.beat, note.sustainBeats),
+      second: this.beatsToSeconds(note.beat),
+      lane: note.lane,
+      duration: this.beatsDurationToSeconds(note.beat, note.sustainBeats),
     }))
 
-    // Ordenar por tiempo
-    songNotes.sort((a, b) => a.segundo - b.segundo)
+    // Sort by time
+    songNotes.sort((a, b) => a.second - b.second)
 
     // Calcular duración (último beat + buffer)
     const lastBeat = Math.max(...notes.map((n) => n.beat))

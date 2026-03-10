@@ -1,58 +1,58 @@
 /**
- * Tipos para el sistema de perfiles de usuario
+ * Types for the user profile system
  */
 
-/** Perfil de usuario */
+/** User profile */
 export interface UserProfile {
-  /** ID único del perfil */
+  /** Unique profile ID */
   id: string
-  /** Nombre del jugador */
+  /** Player name */
   name: string
-  /** Avatar (emoji) */
+  /** Avatar */
   avatar: string
-  /** Timestamp de creación */
+  /** Creation timestamp */
   createdAt: number
 }
 
-/** Registro de Score */
+/** Score Record */
 export interface ScoreRecord {
-  /** ID de la canción (nombre del archivo) */
+  /** Song ID (filename) */
   songId: string
-  /** Nombre de la canción */
+  /** Song name */
   songName: string
-  /** Artista */
+  /** Artist */
   artist?: string
-  /** Score obtenida */
+  /** Score obtained */
   score: number
-  /** Porcentaje de accuracy */
+  /** Accuracy percentage */
   accuracy: number
-  /** Rango obtenido (S, A, B, C, D, F) */
+  /** Rank obtained (S, A, B, C, D, F) */
   rank: string
-  /** Combo máximo */
+  /** Maximum combo */
   maxCombo: number
-  /** Dificultad jugada */
+  /** Difficulty played */
   difficulty: string
-  /** Timestamp de cuando se jugó */
+  /** Timestamp of when it was played */
   playedAt: number
 }
 
-/** Datos Complete de un usuario */
+/** Complete User Data */
 export interface UserData {
-  /** Perfil del usuario */
+  /** User profile */
   profile: UserProfile
-  /** Historial de puntuaciones */
+  /** Score history */
   scores: ScoreRecord[]
 }
 
-/** Estado del almacenamiento de perfiles */
+/** Profiles storage state */
 export interface ProfilesState {
-  /** Lista de todos los usuarios */
+  /** List of all users */
   users: UserData[]
-  /** ID del usuario actualmente seleccionado */
+  /** Currently selected user ID */
   activeUserId: string | null
 }
 
-/** Avatares disponibles (Set completo de instrumentos y tributos) */
+/** Available avatars (Full set of instruments and tributes) */
 export const AVAILABLE_AVATARS = ['guitar', 'bass', 'drums', 'mic', 'bat', 'cassette'] as const
 
 export type UserAvatarId = typeof AVAILABLE_AVATARS[number]

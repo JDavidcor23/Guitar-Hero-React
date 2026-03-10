@@ -6,18 +6,18 @@ const backgroundImage = 'https://res.cloudinary.com/dhu6ga6hl/image/upload/v1773
 import { CassetteInput } from './components/CassetteInput/CassetteInput'
 
 interface RegisterFormProps {
-  /** Callback cuando se completa el registro */
+  /** Callback when registration is complete */
   onRegister: (name: string, avatar: string) => void
-  /** Si es el modo inicial (primer usuario) */
+  /** If it is the initial setup mode (first user) */
   isInitialSetup?: boolean
-  /** Callback para Cancel (opcional, solo si no es setup inicial) */
+  /** Callback for Cancel (optional, only if not initial setup) */
   onCancel?: () => void
 }
 
 /**
- * Formulario de registro de usuario
+ * User registration form
  * 
- * Permite ingresar nombre y seleccionar un avatar (emoji)
+ * Allows entering a name and selecting an avatar
  */
 export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: RegisterFormProps) => {
   const {
@@ -46,7 +46,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
         </h2>
 
         <form onSubmit={handleSubmit} className="register-form__form">
-          {/* Input de nombre con Casete */}
+          {/* Name input with Cassette */}
           <div className="register-form__field">
             <label className="register-form__label">Your Artist Name</label>
             <CassetteInput
@@ -63,7 +63,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
             ) : null}
           </div>
 
-          {/* Selector de avatar */}
+          {/* Avatar selector */}
           <div className="register-form__field">
             <label className="register-form__label">Avatar</label>
             <div className="register-form__avatars">
@@ -81,7 +81,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
             </div>
           </div>
 
-          {/* Botones */}
+          {/* Buttons */}
           <div className="register-form__buttons">
             {!isInitialSetup && onCancel ? (
               <button 
@@ -97,7 +97,7 @@ export const RegisterForm = ({ onRegister, isInitialSetup = false, onCancel }: R
               disabled={!name.trim() || !selectedAvatar}
               className="register-form__button register-form__button--submit"
             >
-              {isInitialSetup ? ' ¡Start!' : 'Create Profile'}
+              {isInitialSetup ? ' Start!' : 'Create Profile'}
             </button>
           </div>
         </form>

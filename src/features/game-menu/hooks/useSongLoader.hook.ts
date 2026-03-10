@@ -46,7 +46,7 @@ export const useSongLoader = () => {
       const result = await loadFromFileService(file, iniFile)
       applyParseResult(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setError(err instanceof Error ? err.message : 'Unknown error')
       setSong(null)
     } finally {
       setIsLoading(false)
@@ -60,7 +60,7 @@ export const useSongLoader = () => {
       const result = await loadFromFolderService(files)
       applyParseResult(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setError(err instanceof Error ? err.message : 'Unknown error')
       setSong(null)
     } finally {
       setIsLoading(false)
@@ -74,7 +74,7 @@ export const useSongLoader = () => {
       const result = await loadFromUrlsService(chartUrl, metadata)
       applyParseResult(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setError(err instanceof Error ? err.message : 'Unknown error')
       setSong(null)
     } finally {
       setIsLoading(false)
@@ -83,7 +83,7 @@ export const useSongLoader = () => {
 
   const changeDifficulty = useCallback((difficulty: string) => {
     if (!parserRef.current) {
-      setError('No hay canción cargada')
+      setError('No song loaded')
       return
     }
     const songData = parserRef.current.convertToSongData(difficulty, metadataRef.current, currentInstrument)
@@ -91,13 +91,13 @@ export const useSongLoader = () => {
       setSong(songData)
       setError(null)
     } else {
-      setError('Error al cargar dificultad')
+      setError('Error loading difficulty')
     }
   }, [currentInstrument])
 
   const changeInstrument = useCallback((trackName: string) => {
     if (!parserRef.current) {
-      setError('No hay canción cargada')
+      setError('No song loaded')
       return
     }
     setCurrentInstrument(trackName)
@@ -105,7 +105,7 @@ export const useSongLoader = () => {
     setAvailableDifficulties(difficulties)
 
     if (difficulties.length === 0) {
-      setError('No hay Notes para este instrumento')
+      setError('No notes for this instrument')
       return
     }
 
@@ -115,7 +115,7 @@ export const useSongLoader = () => {
       setSong(songData)
       setError(null)
     } else {
-      setError('Error al cargar instrumento')
+      setError('Error loading instrument')
     }
   }, [])
 

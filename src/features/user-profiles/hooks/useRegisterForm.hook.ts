@@ -15,17 +15,17 @@ export const useRegisterForm = ({ onRegister }: UseRegisterFormOptions) => {
     
     const trimmedName = name.trim()
     if (!trimmedName) {
-      setError('Por favor ingresa tu nombre')
+      setError('Please enter your name')
       return
     }
     
     if (trimmedName.length < 2) {
-      setError('El nombre debe tener al menos 2 caracteres')
+      setError('Name must be at least 2 characters long')
       return
     }
     
     if (trimmedName.length > 20) {
-      setError('El nombre no puede tener más de 20 caracteres')
+      setError('Name cannot be more than 20 characters long')
       return
     }
 

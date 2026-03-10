@@ -68,19 +68,19 @@ export const ControlsConfig = ({
     <div className="game-controls-config" ref={containerRef}>
       <h2 className="game-controls-config__title">⚙ Controls</h2>
 
-      {/* Indicador de gamepad */}
+      {/* Gamepad indicator */}
       {isGamepadConnected ? (
         <div className="game-controls-config__gamepad-info">
-          🎮 {gamepadName || 'Gamepad Conected'}
+          🎮 {gamepadName || 'Gamepad Connected'}
         </div>
       ) : null}
 
-      {/* Tabla de Controls */}
+      {/* Controls table */}
       <div className="game-controls-config__table">
         {/* Headers */}
         <div className="game-controls-config__header">
-          <span className="game-controls-config__header-cell">CARRIL</span>
-          <span className="game-controls-config__header-cell">TECLADO</span>
+          <span className="game-controls-config__header-cell">LANE</span>
+          <span className="game-controls-config__header-cell">KEYBOARD</span>
           {isGamepadConnected ? (
             <span className="game-controls-config__header-cell">GAMEPAD</span>
           ) : null}
@@ -128,25 +128,25 @@ export const ControlsConfig = ({
       </div>
 
       <div className="game-controls-config__listening-hint">
-        💡 <strong>Selecciona una fila</strong> y presiona<br/>
-        cualquier tecla o botón para reasignarlo.
+        💡 <strong>Select a row</strong> and press<br/>
+        any key or button to reassign it.
       </div>
 
-      {/* Botones de acción */}
+      {/* Action buttons */}
       <div className="game-controls-config__actions">
         <button
           className={`game-pause-btn game-controls-config__reset-btn ${focusedRow === rowCount ? 'game-pause-btn--focused' : ''}`}
           onClick={handleReset}
           onMouseEnter={() => setFocusedRow(rowCount)}
         >
-          ↺ RESTAURAR DEFAULTS
+          ↺ RESTORE DEFAULTS
         </button>
         <button
           className={`game-pause-btn game-pause-btn--resume ${focusedRow === rowCount + 1 ? 'game-pause-btn--focused' : ''}`}
           onClick={onBack}
           onMouseEnter={() => setFocusedRow(rowCount + 1)}
         >
-          ← VOLVER
+          ← BACK
         </button>
       </div>
     </div>

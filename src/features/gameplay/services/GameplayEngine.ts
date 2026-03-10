@@ -106,13 +106,13 @@ export class GameplayEngine {
 
   private initNotes() {
     this.gameNotes = this.song.notes.map((note) => ({
-      segundo: note.segundo,
-      carril: note.carril,
+      second: note.second,
+      lane: note.lane,
       y: SPAWN_Y,
       spawned: false,
       hit: false,
       missed: false,
-      duracion: note.duracion || 0,
+      duration: note.duration || 0,
     }))
   }
 
@@ -162,7 +162,7 @@ export class GameplayEngine {
     let closestDistance = Infinity
 
     for (const note of this.gameNotes) {
-      if (!note.spawned || note.hit || note.missed || note.carril !== lane) continue
+      if (!note.spawned || note.hit || note.missed || note.lane !== lane) continue
       const distance = Math.abs(note.y - GAME_CONFIG.hitZoneY)
       if (distance < closestDistance && distance <= HIT_WINDOWS.ok) {
         closestNote = note
@@ -194,7 +194,7 @@ export class GameplayEngine {
 
       closestNote.hit = true
 
-      if (closestNote.duracion > 0) {
+      if (closestNote.duration > 0) {
         closestNote.sustainActive = true
         this.activeSustains.set(lane, this.gameNotes.indexOf(closestNote))
         this.stats.sustainsHit++
@@ -217,7 +217,7 @@ export class GameplayEngine {
     const noteIndex = this.activeSustains.get(lane)
     if (noteIndex !== undefined) {
       const note = this.gameNotes[noteIndex]
-      const expectedEnd = note.segundo + note.duracion
+      const expectedEnd = note.second + note.duration
 
       if (this.gameTime >= expectedEnd) {
         note.sustainComplete = true
@@ -228,7 +228,7 @@ export class GameplayEngine {
       } else {
         note.sustainReleased = true
         note.sustainActive = false
-        const heldPercent = (this.gameTime - note.segundo) / note.duracion
+        const heldPercent = (this.gameTime - note.second) / note.duration
         if (heldPercent < SUSTAIN_SCORING.minHoldPercent) {
           this.stats.combo = 0
           this.stats.sustainsDropped++
@@ -288,8 +288,8 @@ export class GameplayEngine {
   private spawnNotes() {
     while (this.nextNoteIndex < this.gameNotes.length) {
       const note = this.gameNotes[this.nextNoteIndex]
-      if (note.segundo - SPAWN_AHEAD_TIME <= this.gameTime) {
-        const timeUntilHit = note.segundo - this.gameTime
+      if (note.second - SPAWN_AHEAD_TIME <= this.gameTime) {
+        const timeUntilHit = note.second - this.gameTime
         note.y = GAME_CONFIG.hitZoneY - timeUntilHit * this.noteSpeed
         note.spawned = true
         this.nextNoteIndex++
@@ -321,7 +321,7 @@ export class GameplayEngine {
   private updateSustains(deltaTime: number) {
     for (const [lane, noteIndex] of this.activeSustains.entries()) {
       const note = this.gameNotes[noteIndex]
-      const expectedEnd = note.segundo + note.duracion
+      const expectedEnd = note.second + note.duration
       const { multiplier } = getMultiplier(this.stats.combo)
       
       const pointsThisFrame = Math.floor(SUSTAIN_SCORING.pointsPerSecond * deltaTime * multiplier)
@@ -342,14 +342,14 @@ export class GameplayEngine {
     drawHighway(this.ctx, this.canvas, this.gameTime)
 
     for (const note of this.gameNotes) {
-      if (note.spawned && note.duracion > 0 && !note.missed && !note.sustainComplete && !note.sustainReleased) {
-        const tailLength = Math.max(SUSTAIN_CONFIG.minVisualLength, note.duracion * this.noteSpeed)
+      if (note.spawned && note.duration > 0 && !note.missed && !note.sustainComplete && !note.sustainReleased) {
+        const tailLength = Math.max(SUSTAIN_CONFIG.minVisualLength, note.duration * this.noteSpeed)
         let headY = note.y
         let tailEndY = note.y - tailLength
 
         if (note.sustainActive) {
           headY = GAME_CONFIG.hitZoneY
-          const elapsedInSustain = this.gameTime - note.segundo
+          const elapsedInSustain = this.gameTime - note.second
           const consumedLength = elapsedInSustain * this.noteSpeed
           tailEndY = GAME_CONFIG.hitZoneY - tailLength + consumedLength
         }
@@ -357,7 +357,7 @@ export class GameplayEngine {
         tailEndY = Math.max(SPAWN_Y, tailEndY)
         drawSustainTail(
           this.ctx,
-          note.carril,
+          note.lane,
           headY,
           tailEndY,
           !!note.sustainActive,
@@ -370,10 +370,10 @@ export class GameplayEngine {
     const sortedNotes = [...this.gameNotes].sort((a, b) => a.y - b.y)
     for (const note of sortedNotes) {
       if (note.spawned && !note.hit && !note.missed) {
-        drawNote(this.ctx, note.carril, note.y)
+        drawNote(this.ctx, note.lane, note.y)
       }
       if (note.sustainActive) {
-        drawNote(this.ctx, note.carril, GAME_CONFIG.hitZoneY)
+        drawNote(this.ctx, note.lane, GAME_CONFIG.hitZoneY)
       }
     }
 

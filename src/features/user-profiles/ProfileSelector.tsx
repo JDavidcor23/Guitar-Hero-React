@@ -99,7 +99,7 @@ export const ProfileSelector = ({
                     <button
                       className="profile-selector__item-delete"
                       onClick={(e) => handleDeleteClick(e, profile.id)}
-                      aria-label={`Eliminar perfil de ${profile.name}`}
+                      aria-label={`Delete profile for ${profile.name}`}
                     >
                       ✕
                     </button>
@@ -139,16 +139,16 @@ export const ProfileSelector = ({
         </div>
       ) : null}
 
-      {/* Modal de confirmación de eliminación */}
+      {/* Confirmation modal for deletion */}
       {userToDelete ? (
         <div className="profile-selector__modal-backdrop">
           <div className="profile-selector__confirm-modal">
-            <h3>¿Eliminar perfil?</h3>
-            <p>Se perderán todas las puntuaciones guardadas.</p>
+            <h3>Delete profile?</h3>
+            <p>All saved scores will be lost.</p>
             <div className="profile-selector__confirm-buttons">
               <button onClick={() => setUserToDelete(null)}>Cancel</button>
               <button onClick={confirmDelete} className="profile-selector__confirm-delete">
-                Eliminar
+                Delete
               </button>
             </div>
           </div>

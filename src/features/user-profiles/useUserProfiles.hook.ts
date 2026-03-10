@@ -4,14 +4,14 @@ import type { UserProfile, UserData, ScoreRecord, ProfilesState } from './types'
 const STORAGE_KEY = 'guitar-hero-profiles'
 
 /**
- * Genera un ID único para un nuevo usuario
+ * Generates a unique ID for a new user
  */
 const generateUserId = (): string => {
   return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
 /**
- * Carga los perfiles desde localStorage
+ * Loads profiles from localStorage
  */
 const loadProfilesFromStorage = (): ProfilesState => {
   try {
@@ -26,7 +26,7 @@ const loadProfilesFromStorage = (): ProfilesState => {
 }
 
 /**
- * Guarda los perfiles en localStorage
+ * Saves profiles to localStorage
  */
 const saveProfilesToStorage = (state: ProfilesState): void => {
   try {
@@ -37,34 +37,34 @@ const saveProfilesToStorage = (state: ProfilesState): void => {
 }
 
 /**
- * Hook para manejar el sistema de perfiles de usuario
+ * Hook to manage the user profile system
  * 
- * Proporciona:
- * - Lista de todos los perfiles
- * - Usuario actualmente activo
- * - Funciones para registrar, cambiar y eliminar usuarios
- * - Funciones para guardar y obtener puntuaciones
+ * Provides:
+ * - List of all profiles
+ * - Currently active user
+ * - Functions to register, switch and delete users
+ * - Functions to save and retrieve scores
  */
 export const useUserProfiles = () => {
   const [state, setState] = useState<ProfilesState>(() => loadProfilesFromStorage())
 
-  // Guardar en localStorage cuando cambia el estado
+  // Save to localStorage when state changes
   useEffect(() => {
     saveProfilesToStorage(state)
   }, [state])
 
   /**
-   * Obtiene todos los perfiles disponibles
+   * Gets all available profiles
    */
   const profiles = state.users.map(u => u.profile)
 
   /**
-   * Obtiene el usuario actualmente activo
+   * Gets the currently active user
    */
   const currentUser = state.users.find(u => u.profile.id === state.activeUserId) ?? null
 
   /**
-   * Registra un nuevo usuario
+   * Registers a new user
    */
   const registerUser = useCallback((name: string, avatar: string): UserProfile => {
     const newProfile: UserProfile = {
@@ -81,14 +81,14 @@ export const useUserProfiles = () => {
 
     setState(prev => ({
       users: [...prev.users, newUserData],
-      activeUserId: newProfile.id // Auto-seleccionar el nuevo usuario
+      activeUserId: newProfile.id // Auto-select the new user
     }))
 
     return newProfile
   }, [])
 
   /**
-   * Cambia al usuario indicado
+   * Switches to the indicated user
    */
   const switchUser = useCallback((userId: string): void => {
     setState(prev => {
@@ -102,14 +102,14 @@ export const useUserProfiles = () => {
   }, [])
 
   /**
-   * Elimina un usuario
+   * Deletes a user
    */
   const deleteUser = useCallback((userId: string): void => {
     setState(prev => {
       const newUsers = prev.users.filter(u => u.profile.id !== userId)
       let newActiveId = prev.activeUserId
 
-      // Si eliminamos el usuario activo, seleccionar otro o null
+      // If we delete the active user, select another one or null
       if (prev.activeUserId === userId) {
         newActiveId = newUsers.length > 0 ? newUsers[0].profile.id : null
       }
@@ -122,7 +122,7 @@ export const useUserProfiles = () => {
   }, [])
 
   /**
-   * Agrega una Score para el usuario actual
+   * Adds a score for the current user
    */
   const addScore = useCallback((score: Omit<ScoreRecord, 'playedAt'>): void => {
     setState(prev => {
@@ -151,14 +151,14 @@ export const useUserProfiles = () => {
   }, [])
 
   /**
-   * Obtiene las puntuaciones del usuario actual
+   * Gets the scores of the current user
    */
   const getUserScores = useCallback((): ScoreRecord[] => {
     return currentUser?.scores ?? []
   }, [currentUser])
 
   /**
-   * Obtiene la mejor Score del usuario actual para una canción específica
+   * Gets the best score of the current user for a specific song
    */
   const getBestScore = useCallback((songId: string): ScoreRecord | null => {
     const scores = currentUser?.scores.filter(s => s.songId === songId) ?? []
@@ -167,23 +167,23 @@ export const useUserProfiles = () => {
   }, [currentUser])
 
   /**
-   * Indica si hay al menos un perfil registrado
+   * Indicates if there is at least one registered profile
    */
   const hasProfiles = state.users.length > 0
 
   /**
-   * Indica si hay un usuario activo
+   * Indicates if there is an active user
    */
   const hasActiveUser = state.activeUserId !== null && currentUser !== null
 
   return {
-    // Estado
+    // State
     profiles,
     currentUser,
     hasProfiles,
     hasActiveUser,
     
-    // Acciones
+    // Actions
     registerUser,
     switchUser,
     deleteUser,
