@@ -198,11 +198,16 @@ export class AudioEngine {
     }
   }
 
-  public play(fromTime = 0): boolean {
+  public async play(fromTime = 0): Promise<boolean> {
     if (!this.audioContext || !this.masterGain || this.stems.length === 0) return false
-    
+
     if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch((err) => console.error('Error resuming AudioContext:', err))
+      try {
+        await this.audioContext.resume()
+      } catch (err) {
+        console.error('Error resuming AudioContext:', err)
+        return false
+      }
     }
 
     this.stopSources()
@@ -304,8 +309,9 @@ export class AudioEngine {
   }
 
   public unlock(): void {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(e => console.warn('Could not unlock AudioContext:', e))
+    const ctx = this.getAudioContext()
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(e => console.warn('Could not unlock AudioContext:', e))
     }
   }
 
