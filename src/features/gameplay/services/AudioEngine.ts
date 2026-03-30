@@ -83,6 +83,7 @@ export class AudioEngine {
   }
 
   public async loadAudioFromUrl(url: string): Promise<boolean> {
+    console.log(`[AudioEngine] 🎵 Cargando audio simple desde URL: ${url}`);
     try {
       this.updateState({ error: null, isLoaded: false, isLoading: true })
       const ctx = this.getAudioContext()
@@ -111,7 +112,8 @@ export class AudioEngine {
   }
 
   public async loadStemsFromUrls(urls: string[]): Promise<boolean> {
-    if (urls.length === 0) return false
+    console.log(`[AudioEngine] 🎸 Cargando múltiples pistas (stems):`, urls);
+    if (urls.length === 0) return false;
     try {
       this.updateState({ error: null, isLoaded: false, isLoading: true, stemsLoaded: 0 })
       const ctx = this.getAudioContext()

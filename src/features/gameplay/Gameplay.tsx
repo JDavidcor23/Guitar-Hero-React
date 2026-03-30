@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameplayManager } from './hooks/useGameplayManager.hook'
 import { GameMenu } from '../game-menu'
 import { GameResults } from '../game-results'
 import { ProfileSelector, RegisterForm } from '../user-profiles'
 import { ControlsConfig } from './components/ControlsConfig/ControlsConfig'
 import { PauseOverlay } from './components/PauseOverlay/PauseOverlay'
+import { DebugOverlay } from './components/DebugOverlay/DebugOverlay'
 import './Gameplay.css'
 
 /**
@@ -68,9 +69,22 @@ export const Gameplay = () => {
     switchUser,
     deleteUser,
     handleUserSongSelect,
+    gameTime: currentGameTime,
   } = useGameplayManager()
 
   const [showControlsConfig, setShowControlsConfig] = useState(false)
+  const [showDebug, setShowDebug] = useState(false)
+
+  // Toggle debug with 'D'
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'd') {
+        setShowDebug(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
 
   // Si no hay perfiles, mostrar formulario de registro inicial
   if (!hasProfiles) {
@@ -185,6 +199,19 @@ export const Gameplay = () => {
           onBackToMenu={handleBackToMenu}
           onSaveScore={handleSaveScore}
           playerName={currentUser?.profile.name}
+        />
+      )}
+
+      {/* Debug Overlay */}
+      {showDebug && (
+        <DebugOverlay
+          gameState={gameState}
+          songName={song?.metadata?.songName}
+          isAudioLoaded={audioPlayer.isLoaded}
+          isAudioLoading={isAudioLoading}
+          stemsLoaded={audioPlayer.stemsLoaded}
+          audioError={audioPlayer.error}
+          gameTime={currentGameTime || 0}
         />
       )}
     </div>

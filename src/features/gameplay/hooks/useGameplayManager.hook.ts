@@ -59,6 +59,7 @@ export const useGameplayManager = () => {
   // 4. Pre-selección automática de "Smoke on the Water" al inicio
   useEffect(() => {
     if (!songLoader.song && !songLoader.isLoading && !isAudioLoading) {
+      console.log('[DEBUG] 🔄 No hay canción detectada. Intentando cargar "Smoke on the Water" por defecto.');
       const smokeSong = PRELOADED_SONGS.find(s => s.id === 'Deep Purple - Smoke on the Water')
       if (smokeSong && smokeSong.config.chartUrl) {
         handlePreloadedSongSelect(smokeSong.config as {
@@ -68,8 +69,15 @@ export const useGameplayManager = () => {
           metadata?: Partial<import('../types/GuitarGame.types').SongMetadata>
         })
       }
+    } else {
+      console.log('[DEBUG] 🛑 Omitiendo carga por defecto. Estado:', { 
+        hasSong: !!songLoader.song, 
+        isLoading: songLoader.isLoading, 
+        isAudioLoading 
+      });
     }
-  }, [handlePreloadedSongSelect, isAudioLoading, songLoader.isLoading, songLoader.song]) // Solo al montar o hasta cargar
+  }, [handlePreloadedSongSelect, isAudioLoading, songLoader.isLoading, songLoader.song])
+ // Solo al montar o hasta cargar
 
   // ==========================================
   // 4. INTEGRACIÓN CON CANVAS (useGameplay)
@@ -130,6 +138,9 @@ export const useGameplayManager = () => {
     // Variables del Gamepad (desde useGameplay -> useGamepad)
     isGamepadConnected: gameplay.isGamepadConnected,
     gamepadName: gameplay.gamepadName,
+    
+    // Tiempo actual para el debug
+    gameTime: audioPlayer.isLoaded ? audioPlayer.getCurrentTime() : 0,
     
     // Opciones de configuración
     controlsConfig,

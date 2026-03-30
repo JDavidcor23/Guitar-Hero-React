@@ -1,0 +1,51 @@
+.debug-overlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  color: #fff;
+  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  min-width: 220px;
+}
+
+.debug-overlay h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: #00d2ff;
+  border-bottom: 1px solid rgba(0, 210, 255, 0.3);
+  padding-bottom: 0.5rem;
+}
+
+.debug-item {
+  margin-bottom: 0.6rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.debug-item strong {
+  color: #aaa;
+  font-weight: normal;
+}
+
+.debug-item.error {
+  color: #ff4d4d;
+  background: rgba(255, 77, 77, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.debug-hint {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #666;
+  text-align: center;
+}
